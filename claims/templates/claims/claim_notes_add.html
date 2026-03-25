@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+
+{% block title %}Add Note — {{ claim.claim_number }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h6 class="mb-0">Claim Information</h6>
+                </div>
+                <div class="card-body">
+                    <p><strong>Claim Number:</strong> {{ claim.claim_number }}</p>
+                    <p><strong>Policy:</strong> {{ claim.policy.policy_number }}</p>
+                    <p><strong>Status:</strong> 
+                        <span class="badge bg-secondary">{{ claim.get_status_display }}</span>
+                    </p>
+                    <p><strong>Incident Date:</strong> {{ claim.incident_date|date:"M d, Y" }}</p>
+                    <p><strong>Claimed Amount:</strong> ₹{{ claim.claimed_amount|intcomma }}</p>
+                    
+                    <hr>
+                    
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'claim:notes' claim.id %}" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-arrow-left"></i> Back to Notes
+                        </a>
+                        <a href="{% url 'claim:detail' claim.id %}" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-file-text"></i> View Claim
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-9">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-plus-circle"></i> Add New Note
+                    </h5>
+                </div>
+                
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.note_type.id_for_label }}" class="form-label">
+                                        Note Type <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.note_type }}
+                                    <div class="form-text">
+                                        <strong>Customer Note:</strong> Visible to Policyholder, Staff, and Admin<br>
+                                        <strong>Internal Note:</strong> Visible only to Staff and Admin
+                                    </div>
+                                    {% if form.note_type.errors %}
+                                        <div class="text-danger mt-1">{{ form.note_type.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <div class="form-check mt-4">
+                                        {{ form.is_important }}
+                                        <label class="form-check-label" for="{{ form.is_important.id_for_label }}">
+                                            Mark as Important
+                                        </label>
+                                    </div>
+                                    {% if form.is_important.errors %}
+                                        <div class="text-danger mt-1">{{ form.is_important.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.message.id_for_label }}" class="form-label">
+                                Note Message <span class="text-danger">*</span>
+                            </label>
+                            {{ form.message }}
+                            <div class="form-text">Enter your note message here. This will be saved with timestamp and your name.</div>
+                            {% if form.message.errors %}
+                                <div class="text-danger mt-1">{{ form.message.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'claim:notes' claim.id %}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save"></i> Save Note
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Note Guidelines -->
+            <div class="card mt-4">
+                <div class="card-header bg-info text-white">
+                    <h6 class="mb-0"><i class="bi bi-info-circle"></i> Note Guidelines</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Customer Notes:</h6>
+                            <ul>
+                                <li>Use professional and courteous language</li>
+                                <li>Provide clear updates on claim status</li>
+                                <li>Avoid technical jargon when possible</li>
+                                <li>Include relevant next steps for the customer</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Internal Notes:</h6>
+                            <ul>
+                                <li>Document internal discussions and decisions</li>
+                                <li>Record investigation findings</li>
+                                <li>Note any special considerations or exceptions</li>
+                                <li>Use for team communication about the claim</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card-header {
+    border-top-left-radius: 0.375rem;
+    border-top-right-radius: 0.375rem;
+}
+
+.form-label {
+    font-weight: 600;
+}
+
+.form-text {
+    font-size: 0.875rem;
+    color: #6c757d;
+}
+
+.text-danger {
+    font-size: 0.875rem;
+}
+</style>
+{% endblock %}

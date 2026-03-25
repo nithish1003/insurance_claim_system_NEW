@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Claim Settlement — {{ claim.claim_number }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-4">
+    <div class="col-md-8">
+        
+        <div class="mb-3">
+            <a href="{% url 'claim:review' claim.id %}" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Review
+            </a>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0">Settle Claim: {{ claim.claim_number }}</h5>
+            </div>
+            
+            <div class="card-body">
+                
+                <div class="alert mb-4 border-0 shadow-sm" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255,255,255,0.05) !important; border-radius: 12px;">
+                    <div class="row text-center align-items-center py-2">
+                        <div class="col-md-4">
+                            <small class="text-muted-premium text-uppercase d-block mb-1" style="font-size: 9px; font-weight: 800; letter-spacing: 1px; color: #94a3b8 !important;">CLAIMED AMOUNT</small>
+                            <span class="fs-4 fw-bold text-white" style="text-shadow: 0 0 10px rgba(255,255,255,0.1);">₹{{ claim.claimed_amount|intcomma }}</span>
+                        </div>
+                        <div class="col-md-4 border-start border-secondary border-opacity-25">
+                            <small class="text-muted-premium text-uppercase d-block mb-1" style="font-size: 9px; font-weight: 800; letter-spacing: 1px; color: #94a3b8 !important;">APPLIED DEDUCTIBLE</small>
+                            <span class="fs-4 fw-bold text-danger" style="text-shadow: 0 0 10px rgba(220, 53, 69, 0.2);">- ₹{{ claim.deductible_amount|intcomma }}</span>
+                        </div>
+                        <div class="col-md-4 border-start border-secondary border-opacity-25">
+                            <small class="text-primary-premium text-uppercase d-block mb-1" style="font-size: 9px; font-weight: 800; letter-spacing: 1.5px; color: #3b82f6 !important;">FINAL PAYABLE</small>
+                            <span class="fs-3 fw-bold text-primary" id="finalPayableDisplay" style="text-shadow: 0 0 15px rgba(59, 130, 246, 0.3);">₹{{ final_payable|intcomma }}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-muted text-uppercase">Payment Mode</label>
+                            <select name="payment_mode" class="form-select border-2" required>
+                                <option value="">Select Payment Method...</option>
+                                <option value="neft">NEFT/IMPS/RTGS</option>
+                                <option value="cheque">Cheque</option>
+                                <option value="upi">UPI</option>
+                                <option value="cash">Cash</option>
+                                <option value="dd">Demand Draft</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-muted text-uppercase" style="color: #94a3b8 !important; letter-spacing: 0.5px;">Settled Amount (₹)</label>
+                            <input type="number" step="0.01" name="settled_amount" id="settledAmountInput" 
+                                   class="form-control border-0 fw-bold text-primary fs-5 bg-dark" 
+                                   style="background: rgba(59, 130, 246, 0.05) !important; color: #3b82f6 !important; border: 1px solid rgba(59, 130, 246, 0.2) !important; border-radius: 8px;"
+                                   value="{{ final_payable|stringformat:'f' }}" 
+                                   oninput="validateAmount(this)"
+                                   max="{{ net_claimable|stringformat:'f' }}">
+                            <div id="amountWarning" class="form-text text-danger x-small mt-2 d-none"><i class="bi bi-exclamation-triangle me-1"></i> Payout cannot exceed Net Claimable ceiling (₹{{ net_claimable|intcomma }}).</div>
+                            <div class="form-text text-muted x-small mt-2"><i class="bi bi-info-circle me-1"></i> Based on: Review Decision (₹{{ final_payable|intcomma }}) capped at Net Claimable limit.</div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-muted text-uppercase" style="color: #94a3b8 !important; letter-spacing: 0.5px;">Payee Name</label>
+                            <input type="text" name="payee_name" class="form-control bg-dark text-white border-secondary" value="{{ claim.created_by.get_full_name|default:claim.created_by.username }}" required>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label">Transaction Reference (Txn ID/Cheque No/UPI ID)</label>
+                            <input type="text" name="reference" class="form-control" placeholder="Optional/if applicable">
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Internal Remarks/Notes</label>
+                        <textarea name="remarks" class="form-control" rows="3" placeholder="Enter settlement notes..."></textarea>
+                    </div>
+                    
+                    <div class="d-flex align-items-center gap-3">
+                        <button type="submit" class="btn btn-primary px-4 py-2" id="settleButton" onclick="handleSettlement(event)">
+                            <i class="bi bi-check2-circle me-1"></i> Submit Settlement Record
+                        </button>
+                        <a href="{% url 'claim:review' claim.id %}" class="btn btn-outline-secondary px-4 py-2">
+                            Cancel
+                        </a>
+                    </div>
+                    
+                </form>
+                
+            </div>
+        </div>
+        
+    </div>
+</div>
+
+<script>
+function validateAmount(el) {
+    const val = parseFloat(el.value) || 0;
+    const limit = parseFloat("{{ net_claimable|stringformat:'f' }}");
+    const warning = document.getElementById('amountWarning');
+    const display = document.getElementById('finalPayableDisplay');
+    const submitBtn = document.getElementById('settleButton');
+
+    if (val > limit) {
+        warning.classList.remove('d-none');
+        el.classList.add('is-invalid');
+        submitBtn.disabled = true;
+    } else {
+        warning.classList.add('d-none');
+        el.classList.remove('is-invalid');
+        submitBtn.disabled = false;
+    }
+    
+    // Update the visual display card too
+    display.innerText = '₹' + val.toLocaleString('en-IN', {minimumFractionDigits: 2});
+}
+
+function handleSettlement(e) {
+    const amt = document.getElementById('settledAmountInput').value;
+    if (confirm("Confirm Final Settlement? This will dispatch the payment of ₹" + parseFloat(amt).toLocaleString('en-IN', {minimumFractionDigits: 2}) + " and finalize the claim lifecycle.")) {
+        const btn = document.getElementById('settleButton');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processing Settlement...';
+        btn.closest('form').submit();
+    } else {
+        e.preventDefault();
+    }
+}
+</script>
+{% endblock %}

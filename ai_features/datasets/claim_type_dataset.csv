@@ -1,0 +1,292 @@
+description,claim_type
+I was involved in a car accident on the highway,accident
+My vehicle collided with another car at the intersection,accident
+I had a motorcycle accident while riding,accident
+Slipped and fell at work causing injury,accident
+Workplace accident with machinery,accident
+Traffic accident with injuries,accident
+Fell down stairs and hurt my back,accident
+Sports injury during game,accident
+Bicycle accident on road,accident
+Hit by falling object at construction site,accident
+    bike accident fracture leg,accident
+fell from bike hand injury,accident
+car crash minor injuries,accident
+slipped in bathroom hurt back,accident
+bike skid and fracture,accident
+accident at work machine injury,accident
+road accident shoulder pain,accident
+fell down stairs leg pain,accident
+sports injury knee damage,accident
+hit by vehicle small injury,accident
+bike accidnt leg fracture,accident
+car accident no major injury,accident
+fell from bike need treatment,accident
+work accident hand cut,accident
+bike accident back pain,accident
+bike accident minor injury,accident
+car crash leg fracture,accident
+car crash hand injury,accident
+car crash back pain,accident
+car crash minor injury,accident
+road accident shoulder pain,accident
+road accident knee injury,accident
+road accident fracture leg,accident
+road accident head injury,accident
+fell down stairs leg fracture,accident
+fell down stairs back pain,accident
+fell down stairs hand injury,accident
+fell down stairs minor injury,accident
+work accident machine injury,accident
+work accident hand cut,accident
+work accident leg injury,accident
+work accident minor injury,accident
+road slip and fall injury,accident
+bike accidnt leg,accident
+bike skid fracture,accident
+fell bike hand pain,accident
+road accidnt shoulder,accident
+fell stairs leg pain,accident
+wrk accident hand cut,accident
+bike fall small injury,accident
+car accidnt no major injury,accident
+bike la accident aachu,accident
+slip and fall back pain,accident
+bike crash need treatment,accident
+minor accident claim,accident
+hospital surgery bill,medical
+hospital surgery expenses,medical
+hospital surgery charges,medical
+hospital surgery claim,medical
+fever treatment hospital bill,medical
+fever treatment medicine cost,medical
+fever treatment doctor fee,medical
+fever treatment claim,medical
+diabetes checkup bill,medical
+diabetes medicine cost,medical
+diabetes hospital visit,medical
+diabetes treatment claim,medical
+eye surgery hospital bill,medical
+eye surgery charges,medical
+eye surgery expenses,medical
+eye surgery claim,medical
+dental treatment bill,medical
+dental treatment charges,medical
+dental treatment cost,medical
+dental treatment claim,medical
+hospital bill for surgery,medical
+fever treatment hospital bill,medical
+diabetes checkup expenses,medical
+eye surgery cost claim,medical
+dental treatment bill,medical
+doctor visit and medicine cost,medical
+blood test and scan charges,medical
+operation charges hospital,medical
+pregnancy hospital expenses,medical
+therapy session mental health,medical
+hosp bill fever treatment,medical
+surgery done need claim,medical
+medication cost high,medical
+checkup bill reimbursement,medical
+hospital admission charges,medical
+hosp bill surgery,medical
+fever hosp visit,medical
+sugar checkup bill,medical
+eye operation cost,medical
+tooth treatment bill,medical
+doctor fee and meds,medical
+scan charges high,medical
+med cost reimbursement,medical
+hospital la treatment,medical
+pregnancy hosp bill,medical
+therapy session cost,medical
+regular checkup bill,medical
+Hospitalized for heart surgery,medical
+Treatment for cancer diagnosis,medical
+Medical expenses for diabetes management,medical
+Hospital bill for appendectomy,medical
+Doctor consultation and medication,medical
+MRI scan and specialist consultation,medical
+Dental treatment and crowns,medical
+hospital surgery bill,medical
+surgery hospital charges,medical
+operation bill reimbursement,medical
+hospital admission surgery,medical
+medical treatment bill,medical
+Eye surgery for cataract,medical
+Physical therapy after injury,medical
+Prescription medication costs,medical
+Emergency room visit for fever,medical
+Regular checkup and blood tests,medical
+Mental health therapy sessions,medical
+Pregnancy and delivery costs,medical
+Chronic illness treatment,medical
+mob stolen bus,theft
+phone snatched road,theft
+wallet miss crowd,theft
+laptop gone office,theft
+bike thirudiduchu,theft
+gold chain stolen,theft
+bag missing travel,theft
+car break glass stolen,theft
+house la theft aachu,theft
+pickpocket bus stand,theft
+mobile miss train,theft
+wallet stoln market,theft
+phone stolen in bus stand,theft
+phone stolen in train,theft
+phone stolen in market,theft
+phone stolen in road,theft
+mobile stolen bus stand,theft
+mobile stolen train,theft
+mobile stolen shop,theft
+mobile stolen street,theft
+wallet stolen in market,theft
+wallet stolen in crowd,theft
+wallet stolen bus stand,theft
+wallet stolen train,theft
+laptop stolen office,theft
+laptop stolen home,theft
+laptop stolen shop,theft
+laptop stolen workplace,theft
+bike stolen parking,theft
+bike stolen apartment,theft
+bike stolen street,theft
+bike stolen office,theft
+phone stolen in bus,theft
+mobile stolen in train,theft
+wallet stolen market area,theft
+laptop missing from office,theft
+bike stolen from parking,theft
+gold chain stolen home,theft
+bag stolen while travel,theft
+theft happened in shop,theft
+car break in items missing,theft
+house burglary night time,theft
+mob stoln bus stand,theft
+wallet miss in crowd,theft
+phone snatched road,theft
+laptop stolen office desk,theft
+bike theft apartment,theft
+My car was stolen from parking lot,theft
+House burglary with valuable items stolen,theft
+Laptop stolen from office desk,theft
+Phone snatched while walking,theft
+Bicycle stolen from apartment complex,theft
+Wallet stolen with credit cards,theft
+Jewelry stolen during vacation,theft
+Business equipment stolen,theft
+Identity theft and fraudulent charges,theft
+Package stolen from doorstep,theft
+Car break-in with items stolen,theft
+Shoplifting incident,theft
+Pickpocketing in crowded area,theft
+Stolen laptop with important data,theft
+Burglary at home during night,theft
+mob stolen bus,theft
+phone snatched road,theft
+wallet miss crowd,theft
+laptop gone office,theft
+bike thirudiduchu,theft
+gold chain stolen,theft
+bag missing travel,theft
+car break glass stolen,theft
+house la theft aachu,theft
+pickpocket bus stand,theft
+mobile miss train,theft
+wallet stoln market,theft
+house fire damage claim,other
+house fire damage repair,other
+house fire damage insurance,other
+house fire damage cost,other
+flood damage house claim,other
+flood damage house repair,other
+flood damage house insurance,other
+flood damage house cost,other
+storm damage roof claim,other
+storm damage roof repair,other
+storm damage roof insurance,other
+storm damage roof cost,other
+travel insurance delay claim,other
+travel insurance refund claim,other
+travel insurance cancellation,other
+travel insurance issue,other
+business loss claim,other
+business loss insurance,other
+business loss recovery,other
+business loss damage,other
+house fire damage claim,other
+flood damage to house,other
+rain water damage property,other
+shop damage due to fire,other
+travel insurance claim delay,other
+flight cancelled claim,other
+event cancelled refund claim,other
+pet treatment insurance,other
+home repair insurance claim,other
+storm damage roof claim,other
+fire accident home damage,other
+flood water entered house,other
+insurance claim for travel,other
+business loss claim,other
+property damage claim,other
+Property damage from fire,other
+Natural disaster damage to home,other
+Third party liability claim,other
+Business interruption claim,other
+Professional liability claim,other
+Product liability claim,other
+Travel insurance claim,other
+Event cancellation claim,other
+Pet insurance claim,other
+Home insurance claim,other
+I need to claim for Car break-in with items stolen,theft
+I need to claim for Traffic accident with injuries,accident
+Regarding Bicycle accident on road - please process,accident
+I need to claim for Natural disaster damage to home,other
+I need to claim for Car break-in with items stolen,theft
+Regarding I was involved in a car accident on the highway - please process,accident
+Regarding I need to claim for Traffic accident with injuries - please process,accident
+Regarding Wallet stolen with credit cards - please process,theft
+Regarding My vehicle collided with another car at the intersection - please process,accident
+I need to claim for MRI scan and specialist consultation,medical
+Jewelry stolen during vacation last week,theft
+Emergency Hospitalized for heart surgery situation,medical
+Regarding Wallet stolen with credit cards - please process,theft
+I need to claim for Burglary at home during night,theft
+Emergency Doctor consultation and medication situation,medical
+Emergency Business interruption claim situation,other
+I need to claim for Car break-in with items stolen,theft
+Home insurance claim last week,other
+Eye surgery for cataract last week,medical
+Laptop stolen from office desk last week,theft
+I need to claim for Regarding I need to claim for Traffic accident with injuries - please process,accident
+I need to claim for Traffic accident with injuries last week,accident
+I need to claim for Emergency Business interruption claim situation,other
+I need to claim for Traffic accident with injuries,accident
+Claim submission: Third party liability claim,other
+Regarding Business equipment stolen - please process,theft
+Emergency Wallet stolen with credit cards situation,theft
+Jewelry stolen during vacation last week,theft
+I need to claim for Traffic accident with injuries last week last week,accident
+I need to claim for Shoplifting incident,theft
+Emergency Pregnancy and delivery costs situation,medical
+Emergency Regarding Wallet stolen with credit cards - please process situation,theft
+Claim submission: Eye surgery for cataract last week,medical
+Emergency Burglary at home during night situation,theft
+Regarding Package stolen from doorstep - please process,theft
+I had a motorcycle accident while riding last week,accident
+Emergency Emergency Wallet stolen with credit cards situation situation,theft
+Claim submission: Emergency Doctor consultation and medication situation,medical
+I need to claim for Emergency Emergency Wallet stolen with credit cards situation situation,theft
+Emergency Hospital bill for appendectomy situation,medical
+Regarding Pregnancy and delivery costs - please process,medical
+I need to claim for Burglary at home during night last week,theft
+Regarding I need to claim for Traffic accident with injuries - please process,accident
+I need to claim for Workplace accident with machinery,accident
+Regarding Travel insurance claim - please process,other
+I need to claim for Emergency room visit for fever,medical
+Hospitalized for heart surgery last week,medical
+Regarding Travel insurance claim - please process,other
+Natural disaster damage to home last week,other
+Emergency My car was stolen from parking lot situation,theft

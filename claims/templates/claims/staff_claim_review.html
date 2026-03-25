@@ -1,0 +1,348 @@
+{% extends "base.html" %}
+{% load humanize file_filters %}
+
+{% block title %}Staff Review — {{ claim.claim_number }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .dashboard-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    .assessment-card {
+        background: linear-gradient(145deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 12px;
+        padding: 18px;
+        margin-bottom: 20px;
+        height: 100%;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        display: flex;
+        flex-direction: column;
+    }
+    .data-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+        font-size: 12.5px;
+    }
+    .data-row:last-child {
+        border-bottom: none;
+    }
+    .data-label {
+        color: #94a3b8;
+        font-weight: 500;
+        letter-spacing: 0.2px;
+    }
+    .data-value {
+        color: #ffffff;
+        font-weight: 600;
+        text-align: right;
+    }
+    .scroll-area-fixed {
+        max-height: 200px;
+        overflow-y: auto;
+        padding-right: 8px;
+    }
+    .scroll-area-fixed::-webkit-scrollbar { width: 4px; }
+    .scroll-area-fixed::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+
+    /* Layout specific */
+    .doc-table-section {
+        max-width: 850px;
+        margin-bottom: 30px;
+    }
+    .truncate-text {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: block;
+    }
+
+
+    .timeline {
+        border-left: 1.5px solid rgba(255,255,255,0.05);
+        padding-left: 12px;
+        margin-left: 5px;
+    }
+    .timeline-item { position: relative; padding-bottom: 12px; }
+    .timeline-item::before {
+        content: "";
+        position: absolute;
+        left: -18px;
+        top: 4px;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #1a6ef5;
+    }
+    .timeline-date { font-size: 9px; color: #4b5563; }
+    .timeline-content { font-size: 11px; color: #94a3b8; }
+
+    .decision-panel {
+        background: rgba(15, 23, 42, 0.4);
+        border: 1px solid rgba(26, 110, 245, 0.15);
+        border-radius: 8px;
+        padding: 15px;
+    }
+    .btn-doc-preview {
+        background: rgba(26, 110, 245, 0.1) !important;
+        border: 1px solid rgba(26, 110, 245, 0.2) !important;
+        color: #3b82f6 !important;
+        padding: 4px 12px !important;
+        border-radius: 20px !important;
+        font-size: 10.5px !important;
+        font-weight: 600 !important;
+        text-decoration: none !important;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .btn-doc-preview:hover {
+        background: #1a6ef5 !important;
+        color: #ffffff !important;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 10px rgba(26, 110, 245, 0.3);
+    }
+    .btn-doc-preview i {
+        font-size: 13px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h5 class="text-white mb-1"><i class="bi bi-shield-lock me-2 text-primary"></i>Claim Assessment Panel</h5>
+            <small class="text-muted">Assessment for {{ claim.claim_number }} | {{ claim.created_by.get_full_name|default:claim.created_by.username }}</small>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'accounts:staff_dashboard' %}" class="btn btn-outline-secondary btn-sm p-1 px-3" style="font-size: 11px;">
+                <i class="bi bi-arrow-left me-1"></i> Dashboard
+            </a>
+            <span class="badge-status badge-info">{{ claim.get_status_display }}</span>
+        </div>
+    </div>
+
+    <!-- Top KPI Grid (Basic Info + AI Insights) -->
+    <div class="row g-3 mb-3">
+        <div class="col-md-4">
+            <div class="assessment-card">
+                <div class="data-row"><span class="data-label">Claimed</span><span class="data-value text-warning">₹{{ claim.claimed_amount|intcomma }}</span></div>
+                <div class="data-row"><span class="data-label">OCR Extraction</span><span class="data-value text-success">₹{{ claim.bill_amount|default:0|intcomma }}</span></div>
+                <div class="data-row"><span class="data-label">Deductible</span><span class="data-value text-danger">₹{{ claim.deductible_amount|intcomma }}</span></div>
+                <div class="data-row"><span class="data-label">Net Claimable</span><span class="data-value text-info">₹{{ net_claimable|intcomma }}</span></div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="assessment-card" style="border: 1px solid rgba(59, 130, 246, 0.2) !important; background: rgba(59, 130, 246, 0.03);">
+                <div class="small fw-bold text-primary text-uppercase mb-3 d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-robot me-1"></i> AI Prediction Reliability</span>
+                    <span class="badge rounded-pill {% if claim.confidence_score > 85 %}bg-success{% elif claim.confidence_score > 60 %}bg-warning text-dark{% else %}bg-danger{% endif %}" 
+                          style="font-size: 11px; font-weight: 800; letter-spacing: 0.8px; padding: 6px 12px; box-shadow: 0 0 15px rgba(26, 110, 245, 0.2); border: 1px solid rgba(255,255,255,0.1);">
+                        {{ claim.confidence_score|floatformat:1 }}% CONFIDENCE
+                    </span>
+                </div>
+                
+                <div class="data-row">
+                    <span class="data-label">Predicted Type</span>
+                    <span class="data-value text-primary fw-bold text-uppercase">{{ claim.ai_claim_type|default:"Unknown" }}</span>
+                </div>
+                <div class="data-row">
+                    <span class="data-label">AI Decision</span>
+                    <span class="badge {% if claim.ai_decision == 'auto_process' %}bg-success{% elif claim.ai_decision == 'reject' %}bg-danger{% else %}bg-info{% endif %}" style="font-size: 10px; font-weight: 700;">
+                        {{ claim.get_ai_decision_display|default:"PENDING"|upper }}
+                    </span>
+                </div>
+                <div class="data-row">
+                    <span class="data-label">Recommended payout</span>
+                    <span class="data-value text-primary fs-5 fw-bold">₹{{ claim.ai_predicted_amount|default:0|floatformat:0|intcomma }}</span>
+                </div>
+
+                <!-- Risk Badge -->
+                <div class="mt-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="data-label">Fraud Risk Level</span>
+                        <span class="badge {% if claim.risk_score > 70 %}bg-danger{% elif claim.risk_score > 40 %}bg-warning text-dark{% else %}bg-success{% endif %}" style="padding: 4px 10px; font-size: 10px;">
+                            {% if claim.risk_score > 70 %}CRITICAL{% elif claim.risk_score > 40 %}MEDIUM{% else %}LOW{% endif %}
+                        </span>
+                    </div>
+                </div>
+                
+                <!-- XAI Justification Trace -->
+                <div class="mt-2 pt-2 border-top border-secondary">
+                    <div class="p-2 rounded bg-dark bg-opacity-50" style="font-size: 10px; color: #94a3b8; line-height: 1.4; border-left: 2px solid #3b82f6;">
+                        {{ claim.ai_calculation_logic|default:"No automated justification trace found." }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="assessment-card">
+                <div class="data-row"><span class="data-label">Policy No</span><span class="data-value">{{ claim.policy.policy_number }}</span></div>
+                <div class="data-row"><span class="data-label">Policy Status</span><span class="data-value {% if policy_active %}text-success{% else %}text-danger{% endif %}">{% if policy_active %}Active{% else %}Inactive{% endif %}</span></div>
+                <div class="data-row"><span class="data-label">Claim Stats</span><span class="data-value">Freq: {{ claim_history_count|default:0 }}</span></div>
+                <div class="data-row"><span class="data-label">Incident Date</span><span class="data-value">{{ claim.incident_date|date:"d M Y" }}</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Description & Audit (2 Column) -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-7">
+            <div class="assessment-card">
+                <h6 class="text-white small fw-bold text-uppercase mb-2">Incident Description</h6>
+                <div class="scroll-area-fixed">
+                    <p class="text-white-50 mb-0" style="font-size: 11.5px; line-height: 1.6;">
+                        {{ claim.description|default:"No description provided." }}
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-5">
+            <div class="assessment-card">
+                <h6 class="text-white small fw-bold text-uppercase mb-2">Audit History</h6>
+                <div class="timeline scroll-area-fixed">
+                    {% for log in audit_logs %}
+                    <div class="timeline-item">
+                        <div class="timeline-date">{{ log.created_at|date:"d M, H:i" }}</div>
+                        <div class="timeline-content">
+                            <span class="text-info fw-bold">{{ log.performed_by.username }}</span>: {{ log.action }}
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted x-small">No history available</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Centered Table -->
+    <div class="doc-table-section">
+        <h6 class="text-white small fw-bold text-uppercase mb-2"><i class="bi bi-file-earmark-check me-2"></i>Verified Documents</h6>
+        <div class="table-card p-0 overflow-hidden">
+            <table class="table-modern">
+                <thead>
+                    <tr>
+                        <th style="width: 30%;">Document Type</th>
+                        <th style="width: 40%;">Filename</th>
+                        <th style="width: 30%;">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for doc in documents %}
+                    <tr>
+                        <td class="text-white-50">{{ doc.get_document_type_display }}</td>
+                        <td><span class="truncate-text" title="{{ doc.file|filename }}">{{ doc.file|filename }}</span></td>
+                        <td class="text-start">
+                            <button class="btn btn-doc-preview" onclick="previewDoc('{% url 'claim:view_document' doc.id %}', '{{ doc.get_document_type_display|escapejs }}')">
+                                <i class="bi bi-eye"></i> Preview
+                            </button>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="3" class="text-center py-3 text-muted">No documents uploaded</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Decison Footer -->
+    <div class="row g-3">
+        <div class="col-md-4">
+            <div class="assessment-card">
+                <h6 class="text-white small fw-bold text-uppercase mb-3">Internal Discussion</h6>
+                <div class="scroll-area-fixed" style="max-height: 150px;">
+                    {% for note in notes %}
+                    <div class="bg-dark p-2 rounded mb-2 border border-secondary" style="border-color: rgba(255,255,255,0.03) !important;">
+                        <small class="text-primary fw-bold" style="font-size: 10px;">{{ note.created_by.username }}</small>
+                        <p class="m-0 text-white-50" style="font-size: 10.5px;">{{ note.message }}</p>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted x-small text-center py-3">No internal notes</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8">
+            <div class="decision-panel">
+                <h6 class="text-white small fw-bold text-uppercase mb-3">Staff Assessment & Decision</h6>
+                <form method="POST">
+                    {% csrf_token %}
+                    
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="data-label mb-1 d-block" style="font-size: 10px; text-align: left;">ADJUSTED CLAIM TYPE</label>
+                            <select name="claim_type" class="form-select bg-dark text-white border-secondary" style="font-size: 12px;">
+                                {% for code, label in claim.CLAIM_TYPE %}
+                                <option value="{{ code }}" {% if claim.claim_type == code %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="data-label mb-1 d-block" style="font-size: 10px; text-align: left;">
+                                APPROVED AMOUNT (₹) 
+                                <span class="text-info-premium float-end" style="font-size: 8px;">MAX PAYABLE: ₹{{ net_claimable|floatformat:2 }}</span>
+                            </label>
+                            <input type="number" step="0.01" name="approved_amount" class="form-control bg-dark text-white border-secondary" 
+                                   max="{{ net_claimable }}"
+                                   value="{{ claim.approved_amount|default:claim.ai_predicted_amount|default:net_claimable|floatformat:2 }}" 
+                                   style="font-size: 12px; font-weight: bold; color: #3b82f6 !important;"
+                                   oninput="if(this.value > {{ net_claimable }}) { this.classList.add('border-danger'); this.classList.remove('border-secondary'); } else { this.classList.remove('border-danger'); this.classList.add('border-secondary'); }">
+                            <div class="x-small text-muted mt-1" style="font-size: 9px;">Total Claim ({{ claim.claimed_amount }}) - Deductible ({{ claim.deductible_amount }})</div>
+                        </div>
+                    </div>
+
+                    <textarea name="comment" class="form-control bg-transparent text-white border-secondary mb-3" rows="2" style="font-size: 12px;" placeholder="Add assessment findings or justification for changes..."></textarea>
+                    
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex gap-2">
+                             <button type="submit" name="action" value="comment_only" class="btn btn-outline-secondary btn-sm px-3" style="font-size: 10.5px;">Save Note</button>
+                             <button type="submit" name="action" value="flag" class="btn btn-outline-warning btn-sm px-3" style="font-size: 10.5px;">Flag for Review</button>
+                        </div>
+                        <div class="d-flex gap-2">
+                             <button type="submit" name="action" value="reject" class="btn btn-danger btn-sm px-3" style="font-size: 10.5px;" onclick="return confirm('Confirm Reject?')">Reject</button>
+                             <button type="submit" name="action" value="submit_to_admin" class="btn btn-primary btn-sm px-3" style="font-size: 10.5px;" onclick="return confirm('Submit to Admin for finalization?')">Submit to Admin</button>
+                             <button type="submit" name="action" value="approve" class="btn btn-success btn-sm px-3" style="font-size: 10.5px;" onclick="return confirm('Mark as Approved?')">Approve</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="previewModal" tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content bg-dark border-secondary">
+            <div class="modal-header py-2 border-secondary">
+                <h6 class="modal-title text-white" id="modalTitle">Preview</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-0" style="height: 75vh;">
+                <iframe id="previewFrame" src="" style="width: 100%; height: 100%; border: none;"></iframe>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function previewDoc(url, title) {
+        document.getElementById('modalTitle').innerText = title;
+        document.getElementById('previewFrame').src = url;
+        new bootstrap.Modal(document.getElementById('previewModal')).show();
+    }
+</script>
+{% endblock %}

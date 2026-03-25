@@ -1,0 +1,336 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Premium History{% endblock %}
+
+{% block breadcrumb %}Premium History{% endblock %}
+
+{% block extra_css %}
+<style>
+    .nav-tabs { border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .nav-tabs .nav-link { color: #94a3b8; border: none; padding: 12px 24px; font-weight: 500; transition: all 0.3s ease; }
+    .nav-tabs .nav-link:hover { color: #e2e8f0; background: rgba(255,255,255,0.03); }
+    .nav-tabs .nav-link.active { color: #3b82f6; background: transparent; border-bottom: 2px solid #3b82f6; }
+    .tracking-wider { letter-spacing: 0.05em; }
+    
+    /* Premium Table System (Standalone) */
+    .premium-card {
+        --section-accent: #06b6d4;
+        background:
+            radial-gradient(circle at top right, rgba(255, 255, 255, 0.08), transparent 38%),
+            linear-gradient(160deg, rgba(15, 23, 42, 0.96) 0%, rgba(15, 23, 42, 0.82) 55%, rgba(30, 41, 59, 0.96) 100%);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(148, 163, 184, 0.16);
+        border-radius: 18px;
+        box-shadow: 0 14px 32px rgba(2, 6, 23, 0.24);
+        margin-bottom: 30px;
+        overflow: hidden;
+        position: relative;
+    }
+    .premium-card::before {
+        content: "";
+        position: absolute;
+        inset: 0 0 auto 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--section-accent), rgba(255, 255, 255, 0));
+        opacity: 0.95;
+    }
+    .premium-card-header {
+        padding: 20px 24px;
+        background: linear-gradient(to right, rgba(255, 255, 255, 0.03), transparent);
+        border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .premium-card-header h5 { margin-bottom: 0; color: #f1f5f9; font-weight: 700; font-size: 1rem; letter-spacing: 0.02em; }
+    
+    .premium-table-container { overflow-x: auto; padding: 10px 12px 14px; }
+    .premium-table { width: 100%; border-collapse: separate; border-spacing: 0 10px; }
+    .premium-table thead th {
+        background: transparent;
+        color: #7f91ab;
+        font-weight: 700;
+        font-size: 0.68rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        padding: 4px 18px 8px;
+        border-bottom: 0;
+    }
+    .premium-table tbody td {
+        padding: 16px 18px;
+        vertical-align: middle;
+        color: #cbd5e1;
+        font-size: 13px;
+        background: rgba(8, 15, 30, 0.62);
+        border-top: 1px solid rgba(148, 163, 184, 0.08);
+        border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+    }
+    .premium-table tbody td:first-child {
+        border-left: 1px solid rgba(148, 163, 184, 0.08);
+        border-radius: 14px 0 0 14px;
+    }
+    .premium-table tbody td:last-child {
+        border-right: 1px solid rgba(148, 163, 184, 0.08);
+        border-radius: 0 14px 14px 0;
+    }
+    .premium-table tbody tr:hover td { background: rgba(15, 23, 42, 0.92); border-color: rgba(59, 130, 246, 0.18); }
+    .premium-table tbody tr.table-empty-row:hover td { background: rgba(8, 15, 30, 0.62); border-color: rgba(148, 163, 184, 0.08); }
+
+    /* Badges from detail view */
+    .badge {
+        font-size: 9px; padding: 4px 10px; border-radius: 20px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .badge.upcoming { background: rgba(59, 130, 246, 0.1); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.2); }
+    .badge.paid { background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); }
+    .badge.pending { background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.2); }
+    .badge.overdue { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
+    .badge.lapsed { background: rgba(148, 163, 184, 0.1); color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.2); }
+
+    .btn-premium-sm {
+        display: inline-flex; align-items: center; justify-content: center;
+        border-radius: 10px; background: rgba(59, 130, 246, 0.1); color: #60a5fa !important;
+        transition: all 0.25s ease; border: 1px solid rgba(59, 130, 246, 0.22);
+        padding: 7px 14px; font-size: 0.68rem; font-weight: 700; text-decoration: none;
+        text-transform: uppercase; letter-spacing: 0.08em;
+    }
+    .btn-premium-sm:hover { transform: translateY(-1px); background: #1a6ef5; color: white !important; box-shadow: 0 10px 20px rgba(26, 110, 245, 0.18); }
+
+    .btn-glass-back {
+        background: rgba(255, 255, 255, 0.03);
+        color: #94a3b8;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 8px 18px;
+        border-radius: 50px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        margin-bottom: 20px;
+    }
+    .btn-glass-back:hover {
+        background: rgba(26, 110, 245, 0.1);
+        color: #6fa3f5;
+        border-color: rgba(26, 110, 245, 0.3);
+
+    .btn-glass-back {
+        background: rgba(255, 255, 255, 0.03);
+        color: #94a3b8;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 8px 18px;
+        border-radius: 50px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        margin-bottom: 20px;
+    }
+    .btn-glass-back:hover {
+        background: rgba(26, 110, 245, 0.1);
+        color: #6fa3f5;
+        border-color: rgba(26, 110, 245, 0.3);
+        transform: translateX(-5px);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0" data-aos="fade-down">
+    {% if request.user.is_superuser or request.user.role == 'admin' %}
+    <a href="{% url 'accounts:admin_dashboard' %}" class="btn-glass-back hover-scale">
+        <i class="bi bi-arrow-left"></i> Return to Master Control
+    </a>
+    {% elif request.user.role == 'staff' %}
+    <a href="{% url 'accounts:staff_dashboard' %}" class="btn-glass-back hover-scale">
+        <i class="bi bi-arrow-left"></i> Auditor Dashboard
+    </a>
+    {% else %}
+    <a href="{% url 'accounts:policyholder_dashboard' %}" class="btn-glass-back hover-scale">
+        <i class="bi bi-arrow-left"></i> Account Overview
+    </a>
+    {% endif %}
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="mb-1 text-white fw-bold">Billing Console</h3>
+            <p class="text-muted mb-0">Track installment history and upcoming payment obligations.</p>
+        </div>
+    </div>
+</div>
+
+<div class="premium-card" data-aos="fade-up" data-aos-delay="100">
+    <div class="premium-card-header">
+        <h5><i class="bi bi-clock-history me-2 text-info"></i>Premium Installments</h5>
+        {% if is_admin_view %}
+        <span class="text-muted small tracking-wider text-uppercase">{{ admin_payments|length }} TOTAL TRANSACTIONS</span>
+        {% endif %}
+    </div>
+
+    <div class="p-0">
+        {% if is_admin_view %}
+        <div class="premium-table-container">
+            <table class="premium-table">
+                <thead>
+                    <tr>
+                        <th class="ps-4">Policy Holder</th>
+                        <th>Policy Number</th>
+                        <th>Plan Type</th>
+                        <th>Phase</th>
+                        <th>Due Date</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Paid Date</th>
+                        <th class="pe-4 text-end">Action</th>
+                    </tr>
+                </thead>
+                <tbody class="stagger-container">
+                    {% for payment in admin_payments %}
+                    <tr>
+                        <td class="ps-4">
+                            <div class="text-white fw-bold">{{ payment.schedule.user_policy.user.get_full_name|default:payment.schedule.user_policy.user.username }}</div>
+                            <div class="text-muted small" style="font-size: 11px;">ID: #{{ payment.schedule.user_policy.user.id }}</div>
+                        </td>
+                        <td class="fw-semibold">{{ payment.schedule.policy.policy_number }}</td>
+                        <td>
+                            <span class="badge bg-secondary opacity-75">{{ payment.schedule.policy.policy_type|default:"General" }}</span>
+                        </td>
+                        <td><span class="text-muted small">Phase </span><span class="fw-bold">#{{ payment.installment_number }}</span></td>
+                        <td><span class="text-info">{{ payment.due_date|date:"M d, Y" }}</span></td>
+                        <td class="fw-bold">₹{{ payment.amount|intcomma }}</td>
+                        <td>
+                            <span class="badge {{ payment.status }}">
+                                {{ payment.get_status_display }}
+                            </span>
+                        </td>
+                        <td><span class="small opacity-75">{{ payment.paid_date|date:"M d, Y"|default:"<span class='opacity-25'>--</span>"|safe }}</span></td>
+                        <td class="pe-4 text-end">
+                            <div class="d-flex justify-content-end gap-2">
+                                <a href="{% url 'premiums:detail' payment.schedule.id %}" class="btn-premium-sm hover-scale" style="background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: #cbd5e1 !important;">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                {% if payment.status != 'paid' %}
+                                <a href="{% url 'premiums:pay' payment.id %}" class="btn-premium-sm hover-scale" style="background: #10b981; border-color: #10b981; color: white !important;">
+                                    <i class="bi bi-check2-circle"></i> Verify
+                                </a>
+                                {% else %}
+                                <span class="text-success small"><i class="bi bi-shield-check"></i></span>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr class="table-empty-row">
+                        <td colspan="9" class="empty-state py-5 text-center">
+                            <i class="bi bi-receipt fs-2 mb-3 d-block opacity-25"></i>
+                            No premium payment records discovered in the master ledger.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="px-3 pt-3">
+            <ul class="nav nav-tabs" id="premiumTabs" role="tablist">
+                <li class="nav-item">
+                    <button class="nav-link active" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" type="button" role="tab">
+                        <i class="bi bi-hourglass-split me-2"></i>Pending Dues <span class="badge bg-primary ms-2">{{ pending_payments|length }}</span>
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" id="history-tab" data-bs-toggle="tab" data-bs-target="#history" type="button" role="tab">
+                        <i class="bi bi-check-circle me-2"></i>History <span class="badge bg-secondary ms-2">{{ payment_history|length }}</span>
+                    </button>
+                </li>
+            </ul>
+        </div>
+        
+        <div class="tab-content">
+            <div class="tab-pane fade show active" id="pending" role="tabpanel">
+                <div class="premium-table-container">
+                    <table class="premium-table">
+                        <thead>
+                            <tr>
+                                <th class="ps-4">Policy</th>
+                                <th>Inst.</th>
+                                <th>Due Date</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th class="pe-4 text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody class="stagger-container">
+                            {% for payment in pending_payments %}
+                            <tr>
+                                <td class="ps-4 fw-bold text-white">{{ payment.schedule.policy.policy_number }}</td>
+                                <td><span class="text-muted">#{{ payment.installment_number }}</span></td>
+                                <td>{{ payment.due_date|date:"M d, Y" }}</td>
+                                <td class="fw-bold">₹{{ payment.amount|intcomma }}</td>
+                                <td><span class="badge {{ payment.status }}">{{ payment.get_status_display }}</span></td>
+                                <td class="pe-4 text-end">
+                                    <a href="{% url 'premiums:pay' payment.id %}" class="btn-premium-sm hover-scale">
+                                        Pay Now
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr class="table-empty-row">
+                                <td colspan="6" class="empty-state py-5 text-center">
+                                    <i class="bi bi-emoji-smile fs-3 mb-2 d-block opacity-25"></i>
+                                    All clear! No pending payments at the moment.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="tab-pane fade" id="history" role="tabpanel">
+                <div class="premium-table-container">
+                    <table class="premium-table">
+                        <thead>
+                            <tr>
+                                <th class="ps-4">Policy</th>
+                                <th>Inst.</th>
+                                <th>Due Date</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Paid Date</th>
+                                <th class="pe-4 text-end">Reference</th>
+                            </tr>
+                        </thead>
+                        <tbody class="stagger-container">
+                            {% for payment in payment_history %}
+                            <tr>
+                                <td class="ps-4 fw-bold text-white">{{ payment.schedule.policy.policy_number }}</td>
+                                <td>#{{ payment.installment_number }}</td>
+                                <td>{{ payment.due_date|date:"M d, Y" }}</td>
+                                <td class="fw-bold">₹{{ payment.amount|intcomma }}</td>
+                                <td><span class="badge bg-success" style="background: #10b981 !important;">Paid</span></td>
+                                <td>{{ payment.paid_date|date:"M d, Y" }}</td>
+                                <td class="pe-4 text-end"><span class="text-muted small">REC-{{ payment.id|stringformat:"05d" }}</span></td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" class="empty-state py-5 text-center">
+                                    <i class="bi bi-folder2-open fs-3 mb-2 d-block opacity-25"></i>
+                                    You haven't made any payments yet.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

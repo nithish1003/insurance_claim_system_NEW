@@ -1,0 +1,960 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}My Dashboard{% endblock %}
+
+{% block sidebar_items %}
+<a href="{% url 'accounts:policyholder_dashboard' %}" class="active">
+    <i class="bi bi-house"></i> Dashboard
+</a>
+
+<a href="{% url 'policy:list' %}">
+    <i class="bi bi-shield-check"></i> My Policies
+</a>
+
+<a href="{% url 'policy:my_applications' %}">
+    <i class="bi bi-file-earmark-text"></i> My Applications
+</a>
+
+<a href="{% url 'premiums:history' %}">
+    <i class="bi bi-receipt"></i> My Premiums
+</a>
+
+<a href="{% url 'policy:browse' %}">
+    <i class="bi bi-bag-plus"></i> Browse Policies
+</a>
+
+<a href="{% url 'claim:list' %}">
+    <i class="bi bi-shield-exclamation"></i> Claims
+</a>
+
+<a href="{% url 'claim:create' %}">
+    <i class="bi bi-plus-circle"></i> File Claim
+</a>
+
+<a href="{% url 'accounts:logout' %}" class="sidebar-logout">
+    <i class="bi bi-box-arrow-right"></i> Logout
+</a>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* 🌑 Modern Dark Dashboard Theme */
+:root {
+    --card-bg: rgba(255, 255, 255, 0.05);
+    --card-border: rgba(255, 255, 255, 0.1);
+    --accent-blue: #1a6ef5;
+    --success-green: #00c664;
+    --text-main: #f8f9fa;
+    --text-muted: #9fb3d1;
+}
+
+#page {
+    background: linear-gradient(135deg, #0a1628 0%, #0f1b33 100%);
+    min-height: 100vh;
+}
+
+.dashboard-container {
+    /* Manual animation removed in favor of AOS */
+}
+
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* 🏢 Header Section */
+.hero-section {
+    padding: 2rem 0;
+    border-bottom: 1px solid var(--card-border);
+    margin-bottom: 2rem;
+}
+
+.hero-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2.5rem;
+    color: var(--text-main);
+    margin-bottom: 0.5rem;
+}
+
+.hero-subtitle {
+    color: var(--text-muted);
+    font-size: 1.1rem;
+}
+
+.btn-file-claim {
+    background: var(--accent-blue);
+    color: white;
+    padding: 12px 28px;
+    border-radius: 50px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border: none;
+    box-shadow: 0 4px 15px rgba(26, 110, 245, 0.4);
+}
+
+.btn-file-claim:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 6px 20px rgba(26, 110, 245, 0.6);
+    color: white;
+}
+
+/* 🃏 Glassmorphic Cards */
+.kpi-card {
+    --card-accent: #3b82f6;
+    background:
+        radial-gradient(circle at top right, rgba(255, 255, 255, 0.08), transparent 38%),
+        linear-gradient(160deg, rgba(15, 23, 42, 0.96) 0%, rgba(15, 23, 42, 0.82) 55%, rgba(30, 41, 59, 0.96) 100%);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(148, 163, 184, 0.16);
+    border-radius: 18px;
+    padding: 18px 18px 16px;
+    min-height: 128px;
+    height: 100%;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 14px;
+    box-shadow: 0 14px 32px rgba(2, 6, 23, 0.26);
+}
+
+.kpi-card::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--card-accent), rgba(255, 255, 255, 0));
+    opacity: 0.95;
+}
+
+.kpi-card::after {
+    content: "";
+    position: absolute;
+    top: -28px;
+    right: -18px;
+    width: 88px;
+    height: 88px;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--card-accent) 14%, transparent);
+    filter: blur(8px);
+    opacity: 0.75;
+    pointer-events: none;
+}
+
+.kpi-card:hover {
+    transform: translateY(-4px);
+    border-color: color-mix(in srgb, var(--card-accent) 40%, rgba(148, 163, 184, 0.18));
+    box-shadow: 0 20px 38px rgba(2, 6, 23, 0.32);
+}
+
+.kpi-card > div:not(.kpi-icon) {
+    position: relative;
+    z-index: 1;
+}
+
+.kpi-icon {
+    width: 42px;
+    height: 42px;
+    background: rgba(15, 23, 42, 0.52);
+    color: var(--card-accent);
+    border-radius: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    margin-bottom: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    position: relative;
+    z-index: 1;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.policies-card { --card-accent: #3b82f6; }
+.claims-card { --card-accent: #f59e0b; }
+.coverage-card { --card-accent: #8b5cf6; }
+.settled-card { --card-accent: #10b981; }
+
+.policies-card .kpi-icon { background: rgba(59, 130, 246, 0.1); }
+.claims-card .kpi-icon { background: rgba(245, 158, 11, 0.1); }
+.coverage-card .kpi-icon { background: rgba(139, 92, 246, 0.1); }
+.settled-card .kpi-icon { background: rgba(16, 185, 129, 0.1); }
+
+.kpi-value {
+    font-size: clamp(1.35rem, 1.1rem + 1vw, 2rem);
+    font-weight: 700;
+    color: var(--text-main);
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    margin-bottom: 0;
+}
+
+.kpi-label {
+    color: #8ea2bc;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    margin-bottom: 6px;
+}
+
+.kpi-meta {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    line-height: 1.4;
+}
+
+.kpi-meta i {
+    font-size: 13px;
+    opacity: 0.85;
+}
+
+.text-success-premium {
+    color: var(--success-green) !important;
+}
+
+/* 📊 Consistency for existing table cards */
+.dashboard-container .card {
+    --section-accent: #3b82f6;
+    background:
+        radial-gradient(circle at top right, rgba(255, 255, 255, 0.08), transparent 38%),
+        linear-gradient(160deg, rgba(15, 23, 42, 0.96) 0%, rgba(15, 23, 42, 0.82) 55%, rgba(30, 41, 59, 0.96) 100%);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(148, 163, 184, 0.16);
+    border-radius: 18px;
+    overflow: hidden;
+    margin-bottom: 30px;
+    box-shadow: 0 14px 32px rgba(2, 6, 23, 0.24);
+    position: relative;
+}
+
+.dashboard-container .card::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--section-accent), rgba(255, 255, 255, 0));
+    opacity: 0.95;
+}
+
+.dashboard-container .card:hover {
+    border-color: color-mix(in srgb, var(--section-accent) 38%, rgba(148, 163, 184, 0.18));
+    box-shadow: 0 18px 38px rgba(2, 6, 23, 0.3);
+}
+
+.dashboard-container .card-header {
+    background: linear-gradient(to right, rgba(255, 255, 255, 0.03), transparent);
+    border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+    padding: 18px 24px;
+}
+
+.dashboard-container .card-header h5 {
+    margin-bottom: 0;
+    color: var(--text-main);
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+
+.dashboard-container .card-body {
+    position: relative;
+    z-index: 1;
+}
+
+.dashboard-container .card-body.p-0 .table-responsive {
+    padding: 10px 12px 14px;
+}
+
+/* 💠 Premium Table Architecture */
+.premium-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 10px;
+}
+
+.premium-table thead th {
+    background: transparent;
+    padding: 4px 18px 8px;
+    color: #7f91ab;
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    border-bottom: 0;
+}
+
+.premium-table tbody td {
+    padding: 16px 18px;
+    color: #cbd5e1;
+    font-size: 0.85rem;
+    vertical-align: middle;
+    background: rgba(8, 15, 30, 0.62);
+    border-top: 1px solid rgba(148, 163, 184, 0.08);
+    border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+}
+
+.premium-table tbody td:first-child {
+    border-left: 1px solid rgba(148, 163, 184, 0.08);
+    border-radius: 14px 0 0 14px;
+}
+
+.premium-table tbody td:last-child {
+    border-right: 1px solid rgba(148, 163, 184, 0.08);
+    border-radius: 0 14px 14px 0;
+}
+
+.premium-table tbody tr {
+    transition: all 0.2s ease;
+}
+
+.premium-table tbody tr:hover td {
+    background: rgba(15, 23, 42, 0.92);
+    border-color: rgba(59, 130, 246, 0.18);
+}
+
+.premium-table tbody tr.table-empty-row:hover td {
+    background: rgba(8, 15, 30, 0.62);
+    border-color: rgba(148, 163, 184, 0.08);
+}
+
+.premium-table tbody tr.table-empty-row td {
+    text-align: center;
+    color: #94a3b8;
+    padding: 34px 18px;
+}
+
+.premium-table tbody tr.table-empty-row td:first-child,
+.premium-table tbody tr.table-empty-row td:last-child {
+    border-radius: 16px;
+}
+
+/* 🏷️ Custom Badges */
+.badge-neon {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.badge-active { background: rgba(0, 198, 100, 0.1); color: #00c664; border: 1px solid rgba(0, 198, 100, 0.2); }
+.badge-expired { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
+.badge-pending { background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.2); }
+
+.text-info-premium { color: #6fa3f5 !important; }
+.text-success-premium { color: #00c664 !important; }
+
+.truncate-cell { max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.policies-section { --section-accent: #3b82f6; }
+.telemetry-section { --section-accent: #8b5cf6; }
+.claims-section { --section-accent: #f59e0b; }
+.billing-section { --section-accent: #06b6d4; }
+.settlement-section { --section-accent: #10b981; }
+
+.section-link-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 14px;
+    border-radius: 10px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    text-decoration: none;
+    color: #60a5fa;
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.22);
+    transition: all 0.25s ease;
+}
+
+.section-link-btn:hover {
+    color: #fff;
+    background: #1a6ef5;
+    transform: translateY(-1px);
+    box-shadow: 0 10px 20px rgba(26, 110, 245, 0.18);
+}
+
+.table-icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    color: #60a5fa;
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.22);
+    text-decoration: none;
+    transition: all 0.25s ease;
+}
+
+.table-icon-btn:hover {
+    color: #fff;
+    background: #1a6ef5;
+    transform: translateY(-1px);
+}
+
+.summary-stat {
+    padding: 16px 18px;
+    border-radius: 16px;
+    border: 1px solid rgba(148, 163, 184, 0.14);
+    background: rgba(255, 255, 255, 0.04);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.summary-stat.is-success {
+    background: rgba(16, 185, 129, 0.08);
+    border-color: rgba(16, 185, 129, 0.18);
+}
+
+.summary-stat.is-warning {
+    background: rgba(245, 158, 11, 0.08);
+    border-color: rgba(245, 158, 11, 0.18);
+}
+
+.section-subtitle {
+    color: #94a3b8;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+}
+
+.premium-pay-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    text-decoration: none;
+    color: #67e8f9;
+    background: rgba(6, 182, 212, 0.12);
+    border: 1px solid rgba(6, 182, 212, 0.2);
+    transition: all 0.25s ease;
+}
+
+.premium-pay-btn:hover {
+    color: #fff;
+    background: rgba(6, 182, 212, 0.22);
+    transform: translateY(-1px);
+}
+
+.premium-pay-btn.is-overdue {
+    color: #fca5a5;
+    background: rgba(239, 68, 68, 0.12);
+    border-color: rgba(239, 68, 68, 0.2);
+}
+
+.premium-pay-btn.is-overdue:hover {
+    background: rgba(239, 68, 68, 0.22);
+}
+
+.premium-alert {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(245, 158, 11, 0.05));
+    color: #fde68a;
+    border: 1px solid rgba(245, 158, 11, 0.2);
+    border-radius: 16px;
+    padding: 18px 20px;
+    box-shadow: 0 12px 24px rgba(2, 6, 23, 0.18);
+}
+
+.premium-alert ul {
+    padding-left: 1rem;
+}
+
+.hover-scale {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hover-scale:hover {
+    transform: translateY(-3px) scale(1.01);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+@media (max-width: 767.98px) {
+    .hero-title {
+        font-size: 2rem;
+    }
+
+    .kpi-card {
+        min-height: 112px;
+        padding: 16px;
+        border-radius: 16px;
+    }
+
+    .kpi-icon {
+        width: 38px;
+        height: 38px;
+    }
+
+    .dashboard-container .card-body.p-0 .table-responsive {
+        padding: 8px 8px 12px;
+    }
+
+    .premium-table {
+        border-spacing: 0 8px;
+    }
+
+    .premium-table thead th,
+    .premium-table tbody td {
+        padding-left: 14px;
+        padding-right: 14px;
+    }
+}
+
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+
+    <!-- 🏰 HERO HEADER -->
+    <div class="hero-section d-flex flex-column flex-md-row justify-content-between align-items-md-center container" data-aos="fade-down">
+        <div class="mb-4 mb-md-0">
+            <h1 class="hero-title">Welcome back, {{ request.user.username }}</h1>
+            <p class="hero-subtitle">You have <span class="text-white fw-bold">{{ kpi.active_policies }}</span> active policies under your protection.</p>
+        </div>
+        <a href="{% url 'claim:create' %}" class="btn-file-claim hover-scale">
+            <i class="bi bi-plus-lg"></i> File New Claim
+        </a>
+    </div>
+
+    <div class="container pb-5">
+        
+        <!-- 🃏 KPI GRID -->
+        <div class="row g-4 mb-5">
+            
+            <!-- My Policies -->
+            <div class="col-md-6 col-lg-3">
+                <div class="kpi-card policies-card hover-scale" data-aos="zoom-in" data-aos-delay="100">
+                    <div class="kpi-icon">
+                        <i class="bi bi-file-earmark-check"></i>
+                    </div>
+                    <div class="kpi-label">My Policies</div>
+                    <div class="kpi-value">{{ kpi.total_policies }}</div>
+                    <div class="kpi-meta">
+                        <i class="bi bi-shield-check text-success-premium"></i> {{ kpi.active_policies }} Active
+                    </div>
+                </div>
+            </div>
+
+            <!-- Total Claims -->
+            <div class="col-md-6 col-lg-3">
+                <div class="kpi-card claims-card hover-scale" data-aos="zoom-in" data-aos-delay="200">
+                    <div class="kpi-icon">
+                        <i class="bi bi-lightning-charge"></i>
+                    </div>
+                    <div class="kpi-label">Total Claims</div>
+                    <div class="kpi-value">{{ kpi.total_claims }}</div>
+                    <div class="kpi-meta">
+                        <i class="bi bi-clock-history text-warning"></i> {{ kpi.open_claims }} In Progress
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sum Insured -->
+            <div class="col-md-6 col-lg-3">
+                <div class="kpi-card coverage-card hover-scale" data-aos="zoom-in" data-aos-delay="300">
+                    <div class="kpi-icon">
+                        <i class="bi bi-currency-rupee"></i>
+                    </div>
+                    <div class="kpi-label">Sum Insured</div>
+                    <div class="kpi-value">₹{{ kpi.total_sum_insured|default:0|intcomma }}</div>
+                    <div class="kpi-meta">
+                        <i class="bi bi-check-circle"></i> Total Coverage
+                    </div>
+                </div>
+            </div>
+
+            <!-- Total Settled -->
+            <div class="col-md-6 col-lg-3">
+                <div class="kpi-card settled-card hover-scale" data-aos="zoom-in" data-aos-delay="400">
+                    <div class="kpi-icon">
+                        <i class="bi bi-check2-circle"></i>
+                    </div>
+                    <div class="kpi-label">Total Settled</div>
+                    <div class="kpi-value text-success-premium">₹{{ kpi.total_settled|default:0|intcomma }}</div>
+                    <div class="kpi-meta">
+                        <i class="bi bi-wallet2"></i> Claim Payouts
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+
+<!-- EXPIRING POLICY ALERT -->
+
+{% if expiring_policies %}
+<div class="premium-alert mb-4" data-aos="fade-up">
+<strong>Expiring Soon</strong>
+<ul class="mb-0">
+{% for up in expiring_policies %}
+<li>
+  Policy <strong>{{ up.policy.policy_number }}</strong> ({{ up.certificate_number }}) expires in <strong>{{ up.days_left }} day{{ up.days_left|pluralize }}</strong>
+</li>
+{% endfor %}
+</ul>
+</div>
+{% endif %}
+
+
+<!-- POLICIES TABLE -->
+<div class="card shadow-sm mb-5 policies-section hover-scale" data-aos="fade-up">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="bi bi-shield-check me-2 text-primary"></i>My Active Protection Plans</h5>
+        <a href="{% url 'policy:list' %}" class="section-link-btn hover-scale">Browse Full Catalog</a>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="premium-table">
+                <thead>
+                    <tr>
+                        <th class="ps-4">Certificate & Plan</th>
+                        <th>Coverage Type</th>
+                        <th>Sum Insured</th>
+                        <th>Premium</th>
+                        <th>Expiry Date</th>
+                        <th class="pe-4 text-end">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for up in policies %}
+                    <tr>
+                        <td class="ps-4">
+                            <div class="fw-bold text-white">{{ up.policy.policy_number }}</div>
+                            <div class="x-small text-muted">CERT: <span class="text-info-premium">{{ up.certificate_number }}</span></div>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="x-small text-muted">{{ up.policy.policy_type|default:"General"|upper }}</span>
+                            </div>
+                        </td>
+                        <td><span class="fw-bold text-success-premium">₹{{ up.policy.sum_insured|default:0|intcomma }}</span></td>
+                        <td>
+                            <div class="text-white fw-bold">
+                                {% if up.premium_schedule %}
+                                    ₹{{ up.premium_schedule.gross_premium|default:0|intcomma }}
+                                {% elif up.policy.premium_schedules.exists %}
+                                    ₹{{ up.policy.premium_schedules.first.gross_premium|default:0|intcomma }}
+                                {% else %}
+                                    <span class="opacity-25">—</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td>
+                            <div class="text-white small">{% if up.end_date %}{{ up.end_date|date:"D, d M Y" }}{% else %}-{% endif %}</div>
+                        </td>
+                        <td class="pe-4 text-end">
+                            <span class="badge-neon {% if up.status == 'active' %}badge-active{% elif up.status == 'expired' %}badge-expired{% else %}badge-pending{% endif %}">
+                                {{ up.get_status_display }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr class="table-empty-row">
+                        <td colspan="6" class="text-center py-5 text-muted">
+                            <i class="bi bi-folder-x fs-2 d-block mb-2"></i>
+                            No active policies found. <a href="{% url 'policy:browse' %}" class="text-primary fw-bold">Discover new protection plans</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+<!-- CLAIM STATUS TELEMETRY -->
+<div class="card shadow-sm mb-5 telemetry-section hover-scale" data-aos="fade-up">
+    <div class="card-header">
+        <h5><i class="bi bi-bar-chart-alt me-2 text-info"></i>Claim Processing Lifecycle</h5>
+    </div>
+    <div class="card-body p-4">
+        <div class="row">
+            {% for item in claim_status_summary %}
+            <div class="col-md-6 mb-4">
+                <div class="d-flex justify-content-between align-items-end mb-2">
+                    <div>
+                        <span class="text-white small fw-bold text-uppercase tracking-wider">{{ item.label }}</span>
+                        <div class="x-small text-muted">{{ item.count }} Incident{{ item.count|pluralize }}</div>
+                    </div>
+                    <span class="text-info-premium fw-bold">{{ item.percentage|floatformat:0 }}%</span>
+                </div>
+                <div class="progress-premium" style="height: 8px;">
+                    <div class="progress-bar {{ item.bar_class }}" role="progressbar" 
+                         style="width: {{ item.percentage|default:0 }}%; opacity: 0.8;"></div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 py-3 text-center text-muted small">No claim lifecycle data currently available.</div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+
+<!-- RECENT CLAIMS -->
+<div class="card shadow-sm mb-5 claims-section hover-scale" data-aos="fade-up">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="bi bi-clock-history me-2 text-warning"></i>Recent Incident Reports</h5>
+        <a href="{% url 'claim:list' %}" class="section-link-btn hover-scale">Claim History</a>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="premium-table">
+                <thead>
+                    <tr>
+                        <th class="ps-4">Claim ID</th>
+                        <th>Policy Reference</th>
+                        <th>Type</th>
+                        <th>Requested</th>
+                        <th>Payout</th>
+                        <th class="text-center">AI Processing</th>
+                        <th>Reported Date</th>
+                        <th class="pe-4 text-end">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for claim in recent_claims %}
+                    <tr>
+                        <td class="ps-4">
+                            <div class="fw-bold text-white">{{ claim.claim_number }}</div>
+                            <span class="badge-neon {% if claim.status == 'submitted' %}badge-pending{% elif claim.status == 'approved' or claim.status == 'settled' %}badge-active{% elif claim.status == 'rejected' %}badge-expired{% else %}badge-pending{% endif %}">
+                                {{ claim.get_status_display }}
+                            </span>
+                        </td>
+                        <td><div class="text-white small">{{ claim.policy.policy_number }}</div></td>
+                        <td><span class="x-small text-muted">{{ claim.claim_type|upper }}</span></td>
+                        <td><div class="text-white">₹{{ claim.claimed_amount|default:0|intcomma }}</div></td>
+                        <td>
+                            <div class="fw-bold text-success-premium">
+                                {% if claim.status == 'settled' %}
+                                    ₹{{ claim.settled_amount|default:claim.approved_amount|default:0|intcomma }}
+                                {% elif claim.approved_amount %}
+                                    ₹{{ claim.approved_amount|intcomma }}
+                                {% else %}
+                                    <span class="opacity-25">—</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td class="text-center">
+                            <span class="badge-neon {% if claim.confidence_score > 85 %}badge-active{% elif claim.confidence_score > 50 %}badge-pending{% else %}badge-expired{% endif %}">
+                                {{ claim.confidence_score|default:0|floatformat:1 }}% CONFIDENCE
+                            </span>
+                        </td>
+                        <td><div class="text-muted small">{{ claim.reported_date|date:"d M, Y" }}</div></td>
+                        <td class="pe-4 text-end">
+                            <a href="{% url 'claim:detail' claim.pk %}" class="table-icon-btn hover-scale">
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr class="table-empty-row">
+                        <td colspan="8" class="text-center py-5 text-muted small">No recent incident reports filed.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- BILLING SECTION -->
+<div class="card shadow-sm mb-5 billing-section hover-scale" data-aos="fade-up">
+    <div class="card-header">
+        <h5><i class="bi bi-receipt me-2 text-primary"></i>Premium & Billing Overview</h5>
+    </div>
+    <div class="card-body p-4">
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="summary-stat is-success">
+                    <div class="text-muted small text-uppercase tracking-wider font-weight-bold mb-1">Total Contributions</div>
+                    <div class="h3 fw-bold text-success-premium mb-0">₹{{ premium_summary.total_paid|default:0|intcomma }}</div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="summary-stat is-warning">
+                    <div class="text-muted small text-uppercase tracking-wider font-weight-bold mb-1">Outstanding Commitment</div>
+                    <div class="h3 fw-bold text-warning mb-0">₹{{ premium_summary.total_pending|default:0|intcomma }}</div>
+                </div>
+            </div>
+        </div>
+
+        <h6 class="section-subtitle">Upcoming Installments</h6>
+        <div class="table-responsive mb-5">
+            <table class="premium-table">
+                <thead>
+                    <tr>
+                        <th>Policy</th>
+                        <th>Installment</th>
+                        <th>Payable Date</th>
+                        <th>Amount</th>
+                        <th class="pe-4 text-end">Action</th>
+                    </tr>
+                </thead>
+                <tbody class="stagger-container">
+                    {% for payment in pending_payments %}
+                    <tr>
+                        <td><div class="text-white fw-bold">{{ payment.schedule.policy.policy_number }}</div></td>
+                        <td><span class="text-info-premium">#{{ payment.installment_number }}</span></td>
+                        <td><div class="text-white">{{ payment.due_date|date:"d M Y" }}</div></td>
+                        <td><div class="fw-bold">₹{{ payment.amount|default:0|intcomma }}</div></td>
+                        <td class="pe-4 text-end">
+                            <a href="{% url 'premiums:pay' payment.id %}" class="premium-pay-btn {% if payment.status == 'overdue' %}is-overdue{% endif %}">
+                                <i class="bi bi-wallet2 me-2"></i>
+                                {% if payment.status == 'overdue' %}PAY OVERDUE{% else %}PAY NOW{% endif %}
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr class="table-empty-row"><td colspan="5" class="text-center py-4 text-muted small">No pending premium dues.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <h6 class="section-subtitle">Historical Contributions (Completed)</h6>
+        <div class="table-responsive">
+            <table class="premium-table">
+                <thead>
+                    <tr>
+                        <th>Policy</th>
+                        <th>Installment</th>
+                        <th>Completion Date</th>
+                        <th>Paid Amount</th>
+                        <th class="pe-4 text-end">Receipt Status</th>
+                    </tr>
+                </thead>
+                <tbody class="stagger-container">
+                    {% for payment in payment_history %}
+                    <tr>
+                        <td><div class="text-white fw-bold">{{ payment.schedule.policy.policy_number }}</div></td>
+                        <td><span class="text-success-premium">#{{ payment.installment_number }}</span></td>
+                        <td><div class="text-white small">{% if payment.paid_date %}{{ payment.paid_date|date:"d M Y" }}{% else %}-{% endif %}</div></td>
+                        <td><div class="fw-bold text-success-premium">₹{{ payment.amount|default:0|intcomma }}</div></td>
+                        <td class="pe-4 text-end">
+                            <span class="badge-neon badge-active"><i class="bi bi-check-circle-fill me-1"></i> COMPLETED</span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr class="table-empty-row"><td colspan="5" class="text-center py-4 text-muted small">No historical transactions successfully logged.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<!-- POLICY APPLICATIONS & UNDERWRITING DOSSIER -->
+<div class="card shadow-sm mb-5 applications-section hover-scale" data-aos="fade-up">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="bi bi-file-earmark-medical me-2 text-info"></i>Open Applications & Underwriting Dossier</h5>
+        <a href="{% url 'policy:my_applications' %}" class="section-link-btn hover-scale">Application History</a>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="premium-table">
+                <thead>
+                    <tr>
+                        <th class="ps-4">Application ID</th>
+                        <th>Plan Selected</th>
+                        <th>Submission Date</th>
+                        <th>Current Stage</th>
+                        <th class="pe-4 text-end">Action</th>
+                    </tr>
+                </thead>
+                <tbody class="stagger-container">
+                    {% for app in policy_applications %}
+                    <tr>
+                        <td class="ps-4">
+                            <div class="fw-bold text-white small">APP-{{ app.id|stringformat:"05d" }}</div>
+                        </td>
+                        <td>
+                            <div class="text-white fw-bold">{{ app.policy.policy_number }}</div>
+                            <div class="x-small text-muted">{{ app.policy.name }}</div>
+                        </td>
+                        <td><div class="text-muted small">{{ app.created_at|date:"d M, Y"|default:"-" }}</div></td>
+                        <td>
+                            <span class="badge-neon {% if app.status == 'pending' %}badge-pending{% elif app.status == 'approved' %}badge-active{% else %}badge-expired{% endif %}">
+                                {{ app.get_status_display|upper }}
+                            </span>
+                        </td>
+                        <td class="pe-4 text-end">
+                            <a href="{% url 'policy:my_applications' %}" class="table-icon-btn hover-scale">
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr class="table-empty-row">
+                        <td colspan="5" class="text-center py-5 text-muted small">
+                            <i class="bi bi-journal-x d-block fs-3 mb-2"></i>
+                            No active policy applications pending review.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- SETTLEMENT HISTORY -->
+<div class="card shadow-sm mb-5 settlement-section hover-scale" data-aos="fade-up">
+    <div class="card-header">
+        <h5><i class="bi bi-safe2 me-2 text-success"></i>Payout & Settlement History</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="premium-table">
+                <thead>
+                    <tr>
+                        <th class="ps-4">Claim Dossier</th>
+                        <th>Policy Reference</th>
+                        <th>Approved Benefit</th>
+                        <th>Settled Amount</th>
+                        <th class="pe-4 text-end">Completion Date</th>
+                    </tr>
+                </thead>
+                <tbody class="stagger-container">
+                    {% for claim in settled_claims %}
+                    <tr>
+                        <td class="ps-4">
+                            <div class="text-white fw-bold">{{ claim.claim_number }}</div>
+                            <div class="x-small text-muted">CLAIMED: ₹{{ claim.claimed_amount|default:0|intcomma }}</div>
+                        </td>
+                        <td><div class="text-white small">{{ claim.policy.policy_number }}</div></td>
+                        <td><div class="text-white">₹{{ claim.approved_amount|default:0|intcomma }}</div></td>
+                        <td><div class="fw-bold text-success-premium">₹{{ claim.settlement.settled_amount|intcomma }}</div></td>
+                        <td class="pe-4 text-end">
+                            <div class="text-muted small">{{ claim.settlement.settlement_date|date:"d M, Y" }}</div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr class="table-empty-row"><td colspan="5" class="text-center py-5 text-muted small">No settled payouts recorded in this period.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}

@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Review Application: {{ policy.policy_number }}{% endblock %}
+
+{% block breadcrumb %}Review Application{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-9">
+        <div class="card shadow-lg border-0">
+            <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                <h4 class="mb-0"><i class="fas fa-file-alt me-2"></i>Review Policy Application</h4>
+                <span class="badge bg-warning text-dark px-3 py-2 fs-6">Pending Review</span>
+            </div>
+            
+            <div class="card-body p-4">
+                <div class="row mb-5 pb-3 border-bottom">
+                    <div class="col-md-6 border-end">
+                        <h5 class="text-primary mb-3">Policy Details</h5>
+                        <p class="mb-2"><span class="text-muted fw-bold min-w-100">Number:</span> <span class="fw-bold">{{ policy.policy_number }}</span></p>
+                        <p class="mb-2"><span class="text-muted fw-bold min-w-100">Plan:</span> <span class="fw-bold">{{ policy.plan.name }}</span></p>
+                        <p class="mb-2"><span class="text-muted fw-bold min-w-100">Type:</span> <span class="fw-bold">{{ policy.policy_type }}</span></p>
+                        <p class="mb-2"><span class="text-muted fw-bold min-w-100">Sum Insured:</span> <span class="fw-bold">₹{{ policy.sum_insured|intcomma }}</span></p>
+                    </div>
+                    <div class="col-md-6 ps-md-4">
+                        <style>
+                            .applicant-centered-card {
+                                text-align: center;
+                                padding: 1.5rem;
+                                border-radius: 16px;
+                                background: rgba(0, 0, 0, 0.02);
+                                border: 1px solid rgba(0, 0, 0, 0.05);
+                            }
+                            .applicant-centered-card .avatar {
+                                width: 64px;
+                                height: 64px;
+                                background: #1a6ef5;
+                                color: white;
+                                border-radius: 50%;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                font-size: 24px;
+                                margin: 0 auto 1rem;
+                            }
+                            .applicant-centered-card .field-label {
+                                font-size: 10px;
+                                text-transform: uppercase;
+                                letter-spacing: 0.5px;
+                                color: #64748b;
+                                margin-bottom: 2px;
+                            }
+                            .applicant-centered-card .field-value {
+                                font-weight: 700;
+                                margin-bottom: 1rem;
+                            }
+                        </style>
+
+                        <div class="applicant-centered-card">
+                            {% with applicant=policy.purchases.first.user %}
+                            <div class="avatar">
+                                {{ applicant.username|slice:":1"|upper }}
+                            </div>
+                            <h5 class="text-primary mb-3">Applicant Information</h5>
+                            
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="field-label">Full Name</div>
+                                    <div class="field-value">{{ applicant.full_name|default:applicant.username }}</div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="field-label">Username</div>
+                                    <div class="field-value">@{{ applicant.username }}</div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="field-label">Email Address</div>
+                                    <div class="field-value small">{{ applicant.email }}</div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="field-label">Phone</div>
+                                    <div class="field-value">{{ applicant.phone|default:"—" }}</div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="field-label">KYC Aadhaar</div>
+                                    <div class="field-value"><code>{{ applicant.aadhaar_masked }}</code></div>
+                                </div>
+                                <div class="col-12 mt-2">
+                                    <div class="field-label">Permanent Address</div>
+                                    <div class="small text-muted">{{ applicant.address|default:"Not recorded" }}</div>
+                                </div>
+                            </div>
+                            {% endwith %}
+                        </div>
+                    </div>
+                </div>
+
+                {% if policy.vehicle_number or policy.rc_upload %}
+                <div class="bg-light p-4 rounded mb-5 border-start border-4 border-info shadow-sm">
+                    <h5 class="text-info mb-4"><i class="fas fa-car me-2"></i>Motor Verification Documents</h5>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p class="mb-4">
+                                <span class="text-muted d-block small mb-1">Vehicle Registration Number:</span>
+                                <span class="fs-4 fw-bold p-2 bg-white border rounded d-inline-block">{{ policy.vehicle_number }}</span>
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            {% if policy.rc_upload %}
+                            <p class="mb-1 text-muted small">Registration Certificate (RC):</p>
+                            <a href="{{ policy.rc_upload.url }}" target="_blank" class="btn btn-outline-info w-100 py-3 mt-1 shadow-sm">
+                                <i class="fas fa-expand me-2"></i> View Uploaded RC
+                            </a>
+                            <div class="form-text mt-2"><i class="fas fa-info-circle me-1"></i> Click to open RC in a new tab for verification.</div>
+                            {% else %}
+                            <div class="alert alert-danger mb-0"><i class="fas fa-exclamation-triangle me-2"></i> RC Document Missing!</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="card p-4 bg-white border shadow-sm">
+                    <h5 class="mb-4 text-center">Admin Verdict</h5>
+                    
+                    <form method="POST" class="d-flex justify-content-center gap-4">
+                        {% csrf_token %}
+                        
+                        <button type="submit" name="action" value="reject" class="btn btn-danger btn-lg px-5 shadow-sm" onclick="return confirm('Are you sure you want to reject this policy?')">
+                            <i class="fas fa-times me-2"></i> Reject Application
+                        </button>
+
+                        <button type="submit" name="action" value="approve" class="btn btn-success btn-lg px-5 shadow-sm" onclick="return confirm('Are you sure you want to approve and activate this policy?')">
+                            <i class="fas fa-check-double me-2"></i> Approve & Activate
+                        </button>
+                    </form>
+                    
+                    <div class="text-center mt-4 pt-3 border-top">
+                        <a href="{% url 'policy:admin_list' %}" class="btn btn-link text-muted"><i class="fas fa-arrow-left me-1"></i> Back to All Policies</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

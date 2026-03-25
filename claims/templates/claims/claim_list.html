@@ -1,0 +1,297 @@
+{% extends "base.html" %}
+
+{% load humanize file_filters %}
+
+{% block title %}Claims Management{% endblock %}
+
+{% block extra_css %}
+<style>
+    .tracking-wider { letter-spacing: 0.05em; }
+    
+    /* Premium Table System (Standalone) */
+    .premium-card {
+        --section-accent: #f59e0b;
+        background:
+            radial-gradient(circle at top right, rgba(255, 255, 255, 0.08), transparent 38%),
+            linear-gradient(160deg, rgba(15, 23, 42, 0.96) 0%, rgba(15, 23, 42, 0.82) 55%, rgba(30, 41, 59, 0.96) 100%);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(148, 163, 184, 0.16);
+        border-radius: 18px;
+        box-shadow: 0 14px 32px rgba(2, 6, 23, 0.24);
+        margin-bottom: 30px;
+        overflow: hidden;
+        position: relative;
+    }
+    .premium-card::before {
+        content: "";
+        position: absolute;
+        inset: 0 0 auto 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--section-accent), rgba(255, 255, 255, 0));
+        opacity: 0.95;
+    }
+    .premium-card-header {
+        padding: 20px 24px;
+        background: linear-gradient(to right, rgba(255, 255, 255, 0.03), transparent);
+        border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .premium-card-header h5 { margin-bottom: 0; color: #f1f5f9; font-weight: 700; font-size: 1rem; letter-spacing: 0.02em; }
+    
+    .premium-table-container { overflow-x: auto; padding: 10px 12px 14px; }
+    .premium-table { width: 100%; border-collapse: separate; border-spacing: 0 10px; }
+    .premium-table thead th {
+        background: transparent;
+        color: #7f91ab;
+        font-weight: 700;
+        font-size: 0.68rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        padding: 4px 18px 8px;
+        border-bottom: 0;
+    }
+    .premium-table tbody td {
+        padding: 16px 18px;
+        vertical-align: middle;
+        color: #cbd5e1;
+        font-size: 13px;
+        background: rgba(8, 15, 30, 0.62);
+        border-top: 1px solid rgba(148, 163, 184, 0.08);
+        border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+    }
+    .premium-table tbody td:first-child {
+        border-left: 1px solid rgba(148, 163, 184, 0.08);
+        border-radius: 14px 0 0 14px;
+    }
+    .premium-table tbody td:last-child {
+        border-right: 1px solid rgba(148, 163, 184, 0.08);
+        border-radius: 0 14px 14px 0;
+    }
+    .premium-table tbody tr:hover td { background: rgba(15, 23, 42, 0.92); border-color: rgba(59, 130, 246, 0.18); }
+    .premium-table tbody tr.table-empty-row:hover td { background: rgba(8, 15, 30, 0.62); border-color: rgba(148, 163, 184, 0.08); }
+
+    /* Badges */
+    .badge {
+        font-size: 9px; padding: 4px 10px; border-radius: 20px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .badge.submitted, .badge.pending { background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.2); }
+    .badge.under_review { background: rgba(59, 130, 246, 0.1); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.2); }
+    .badge.approved, .badge.active, .badge.completed, .badge.settled { background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); }
+    .badge.rejected, .badge.failed, .badge.expired { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
+
+    .btn-premium-sm {
+        width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center;
+        border-radius: 10px; background: rgba(59, 130, 246, 0.1); color: #60a5fa !important;
+        transition: all 0.25s ease; border: 1px solid rgba(59, 130, 246, 0.22);
+    }
+    .btn-premium-sm:hover { transform: translateY(-1px); background: #1a6ef5; color: white !important; box-shadow: 0 10px 20px rgba(26, 110, 245, 0.18); }
+
+    /* Form styling overrides */
+    .form-control, .form-select {
+        background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.1); color: white;
+    }
+    .form-control:focus, .form-select:focus { 
+        background: rgba(255, 255, 255, 0.08); border-color: #1a6ef5; color: white; box-shadow: none; 
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-3">
+
+<!-- PAGE HEADER -->
+<div class="d-flex justify-content-between align-items-center mb-4" data-aos="fade-down">
+
+<div>
+<h4 class="mb-0 fw-bold text-white">Claims Management</h4>
+<span class="text-muted small">
+Manage and track your active insurance claims
+</span>
+</div>
+
+{% if request.user.is_superuser or request.user.role == "admin" %}
+<a href="{% url 'accounts:admin_dashboard' %}" class="btn btn-outline-primary btn-sm hover-scale">
+{% elif request.user.role == "staff" %}
+<a href="{% url 'accounts:staff_dashboard' %}" class="btn btn-outline-primary btn-sm hover-scale">
+{% else %}
+<a href="{% url 'accounts:policyholder_dashboard' %}" class="btn btn-outline-primary btn-sm hover-scale">
+{% endif %}
+<i class="bi bi-arrow-left me-1"></i> Dashboard
+</a>
+
+</div>
+
+    <!-- SUMMARY CARDS -->
+    {% if summary %}
+    <div class="row g-4 mb-4" data-aos="fade-up" data-aos-delay="100">
+        <div class="col-6 col-md-2">
+            <div class="premium-card p-3 text-center mb-0 hover-scale">
+                <div class="fs-4 fw-bold text-white">{{ summary.total|default:0 }}</div>
+                <div class="small text-muted text-uppercase tracking-wider">Total</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-2">
+            <div class="premium-card p-3 text-center mb-0 hover-scale" style="border-left: 3px solid #f59e0b;">
+                <div class="fs-4 fw-bold text-warning">{{ summary.under_review|default:0 }}</div>
+                <div class="small text-muted text-uppercase tracking-wider">Review</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-2">
+            <div class="premium-card p-3 text-center mb-0 hover-scale" style="border-left: 3px solid #3b82f6;">
+                <div class="fs-4 fw-bold text-info">{{ summary.investigation|default:0 }}</div>
+                <div class="small text-muted text-uppercase tracking-wider">Investig.</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-2">
+            <div class="premium-card p-3 text-center mb-0 hover-scale" style="border-left: 3px solid #10b981;">
+                <div class="fs-4 fw-bold text-success">{{ summary.approved|default:0 }}</div>
+                <div class="small text-muted text-uppercase tracking-wider">Approved</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-2">
+            <div class="premium-card p-3 text-center mb-0 hover-scale" style="border-left: 3px solid #ef4444;">
+                <div class="fs-4 fw-bold text-danger">{{ summary.rejected|default:0 }}</div>
+                <div class="small text-muted text-uppercase tracking-wider">Rejected</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-2">
+            <div class="premium-card p-3 text-center mb-0 hover-scale" style="border-left: 3px solid #8b5cf6;">
+                <div class="fs-4 fw-bold" style="color: #8b5cf6;">{{ summary.settled|default:0 }}</div>
+                <div class="small text-muted text-uppercase tracking-wider">Settled</div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- FILTER -->
+    {% if filter_form %}
+    <div class="premium-card mb-4" data-aos="fade-up" data-aos-delay="200">
+        <div class="premium-card-header">
+            <h5 class="small text-muted text-uppercase mb-0"><i class="bi bi-filter me-2 text-primary"></i>Filter Dossiers</h5>
+        </div>
+        <div class="p-3">
+            <form method="get" class="row g-3 align-items-end">
+                <div class="col-md-2">
+                    <label class="small text-muted mb-1">Claim ID</label>
+                    {{ filter_form.claim_number }}
+                </div>
+                <div class="col-md-2">
+                    <label class="small text-muted mb-1">Type</label>
+                    {{ filter_form.claim_type }}
+                </div>
+                <div class="col-md-2">
+                    <label class="small text-muted mb-1">Status</label>
+                    {{ filter_form.status }}
+                </div>
+                <div class="col-md-2">
+                    <label class="small text-muted mb-1">From</label>
+                    {{ filter_form.date_from }}
+                </div>
+                <div class="col-md-2">
+                    <label class="small text-muted mb-1">To</label>
+                    {{ filter_form.date_to }}
+                </div>
+                <div class="col-md-1">
+                    <button class="btn btn-primary btn-sm w-100 py-2 hover-scale">Filter</button>
+                </div>
+                <div class="col-md-1">
+                    <a href="{% url 'claim:list' %}" class="btn btn-outline-secondary btn-sm w-100 py-2 hover-scale">Reset</a>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- CLAIM TABLE -->
+    <div class="premium-card" data-aos="fade-up" data-aos-delay="300">
+        <div class="premium-card-header">
+            <h5><i class="bi bi-shield-exclamation me-2 text-warning"></i>Active Claims Ledger</h5>
+            <span class="text-muted small tracking-wider text-uppercase">{{ claims.count }} TOTAL RECORDS</span>
+        </div>
+
+        <div class="premium-table-container">
+            <table class="premium-table">
+                <thead>
+                    <tr>
+                        <th class="ps-4">Claim ID</th>
+                        <th>Policy & Type</th>
+                        <th>Incident Date</th>
+                        <th>Claimed Amount</th>
+                        {% if request.user.role == 'admin' or request.user.is_superuser or request.user.role == 'staff' %}
+                        <th>AI Recommendation</th>
+                        {% endif %}
+                        <th>Status</th>
+                        <th>Assigned Staff</th>
+                        <th class="pe-4 text-end">Action</th>
+                    </tr>
+                </thead>
+                <tbody class="stagger-container">
+                    {% for claim in claims %}
+                    <tr>
+                        <td class="ps-4">
+                            <div class="fw-bold text-white">{{ claim.claim_number }}</div>
+                            <div class="x-small text-muted opacity-50">#{{ claim.pk }}</div>
+                        </td>
+                        <td>
+                            <div class="fw-bold text-info small">{{ claim.policy.policy_number }}</div>
+                            <div class="x-small text-muted text-uppercase">{{ claim.get_claim_type_display }}</div>
+                        </td>
+                        <td class="small">{{ claim.incident_date|date:"d M Y" }}</td>
+                        <td class="fw-bold text-white">₹{{ claim.claimed_amount|default:0|intcomma }}</td>
+                        
+                        {% if request.user.role == 'admin' or request.user.is_superuser or request.user.role == 'staff' %}
+                        <td>
+                            {% if claim.ai_predicted_amount %}
+                                <div class="fw-bold" style="color: #60a5fa;">
+                                    ₹{{ claim.ai_predicted_amount|floatformat:0|intcomma }}
+                                    <i class="bi bi-robot ms-1 small"></i>
+                                </div>
+                                {% if claim.claimed_amount and claim.ai_predicted_amount %}
+                                    {% with diff=claim.claimed_amount|subtract:claim.ai_predicted_amount|abs %}
+                                        {% if diff|floatformat:0 > 5000 %}
+                                            <span class="x-small text-warning"><i class="bi bi-exclamation-triangle me-1"></i>High Variance</span>
+                                        {% endif %}
+                                    {% endwith %}
+                                {% endif %}
+                            {% else %}
+                                <span class="text-muted italic small opacity-50">Calculating...</span>
+                            {% endif %}
+                        </td>
+                        {% endif %}
+
+                        <td>
+                            <span class="badge {{ claim.status }}">
+                                {{ claim.get_status_display }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if claim.assigned_to %}
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="bg-primary rounded-circle text-center" style="width: 24px; height: 24px; font-size: 10px; line-height: 24px; color: white;">{{ claim.assigned_to.username|slice:":1"|upper }}</div>
+                                <span class="small">{{ claim.assigned_to.username }}</span>
+                            </div>
+                            {% else %}
+                            <span class="text-muted small italic opacity-50">UNASSIGNED</span>
+                            {% endif %}
+                        </td>
+                        <td class="pe-4 text-end">
+                            <div class="d-flex justify-content-end gap-2">
+                                <a href="{% url 'claim:detail' claim.pk %}" class="btn-premium-sm hover-scale" title="View Dossier">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr class="table-empty-row"><td colspan="9" class="text-center py-5 text-muted small">No claims match the dynamic filter criteria.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

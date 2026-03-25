@@ -1,0 +1,230 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Browse Policies{% endblock %}
+
+{% block sidebar_items %}
+{% if not request.user.is_superuser and request.user.role == "policyholder" %}
+<a href="{% url 'accounts:policyholder_dashboard' %}">
+    <i class="bi bi-house"></i> Dashboard
+</a>
+<a href="{% url 'policy:list' %}">
+    <i class="bi bi-shield-check"></i> My Policies
+</a>
+<a href="{% url 'policy:my_applications' %}">
+    <i class="bi bi-file-earmark-text"></i> My Applications
+</a>
+<a href="{% url 'policy:browse' %}" class="active">
+    <i class="bi bi-search"></i> Browse Plans
+</a>
+<a href="{% url 'claim:list' %}">
+    <i class="bi bi-shield-exclamation"></i> Claims
+</a>
+<a href="{% url 'accounts:logout' %}" class="sidebar-logout">
+    <i class="bi bi-box-arrow-right"></i> Logout
+</a>
+{% else %}
+{{ block.super }}
+{% endif %}
+{% endblock %}
+
+{% block breadcrumb %}Browse Policy Plans{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ── Policy Plan Cards ───────────────────── */
+    .plan-card {
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.07);
+        border-radius: 16px;
+        overflow: hidden;
+        transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+    .plan-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 16px 40px rgba(0,0,0,0.45);
+        border-color: rgba(26,110,245,0.35);
+    }
+    .plan-card-top {
+        padding: 22px 22px 14px;
+        flex: 1;
+    }
+    .plan-card-footer {
+        padding: 14px 22px 18px;
+        border-top: 1px solid rgba(255,255,255,0.05);
+    }
+    .plan-type-badge {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        padding: 4px 10px;
+        border-radius: 20px;
+        background: rgba(26,110,245,0.15);
+        color: #6fa3f5;
+        text-transform: uppercase;
+    }
+    .plan-insurer {
+        font-size: 12px;
+        color: #7a8ba8;
+        margin-top: 4px;
+    }
+    .plan-sum {
+        font-size: 22px;
+        font-weight: 700;
+        color: #00c664;
+        margin: 10px 0 2px;
+    }
+    .plan-premium { font-size: 13px; color: #7a8ba8; }
+
+    .btn-apply {
+        width: 100%;
+        padding: 10px 18px;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 600;
+        border: none;
+        background: linear-gradient(135deg, #1a6ef5, #0b50d6);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+    .btn-apply:hover { background: linear-gradient(135deg,#2d80ff,#1a6ef5); color:#fff; }
+    .btn-status {
+        width: 100%;
+        padding: 10px 18px;
+        border-radius: 10px;
+        font-size: 13px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        cursor: default;
+        text-decoration: none;
+    }
+    .btn-status.pending  { border:1px solid rgba(255,193,7,0.4); background:rgba(255,193,7,0.1); color:#ffc107; }
+    .btn-status.approved { border:1px solid rgba(0,198,100,0.4); background:rgba(0,198,100,0.1); color:#00c664; }
+    .btn-status.rejected { border:1px solid rgba(244,72,101,0.4); background:rgba(244,72,101,0.1); color:#f44865; }
+</style>
+{% endblock %}
+
+{% block content %}
+{# ── Page Header ──────────────────────────────────────────────────────────── #}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex align-items-center gap-3">
+        <a href="{% url 'accounts:policyholder_dashboard' %}" class="btn btn-outline-secondary btn-sm rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; border-color: rgba(255,255,255,0.15);">
+            <i class="bi bi-arrow-left"></i>
+        </a>
+        <div>
+            <h3 class="mb-1 text-white fw-bold">Browse Policy Plans</h3>
+            <p class="text-muted mb-0">Select a plan to apply — applications are reviewed and approved by our admin team.</p>
+        </div>
+    </div>
+    <a href="{% url 'policy:my_applications' %}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-file-earmark-check me-1"></i>My Applications
+    </a>
+</div>
+
+{# ── Info Banner ──────────────────────────────────────────────────────────── #}
+<div class="mb-4 p-3 rounded d-flex align-items-center gap-3"
+     style="background: rgba(26,110,245,0.08); border: 1px solid rgba(26,110,245,0.2);">
+    <i class="bi bi-info-circle-fill text-primary fs-5"></i>
+    <div>
+        <strong class="text-white small">How the Approval Process Works</strong>
+        <p class="mb-0 text-muted" style="font-size: 13px;">
+            Browse plans → click <strong>Apply Now</strong> → your application enters <em>Pending Review</em> →
+            admin approves/rejects → approved plans appear in your <strong>My Policies</strong> section.
+        </p>
+    </div>
+</div>
+
+{# ── Policy Plan Grid ─────────────────────────────────────────────────────── #}
+{% if policies %}
+<div class="row g-4">
+    {% for policy in policies %}
+
+    {# Determine application status for this policy #}
+    {% with app_status="" %}
+    {% for pid, app_obj in user_applications.items %}{% if pid == policy.id %}{% with app_status=app_obj.status %}{% endwith %}{% endif %}{% endfor %}
+
+    <div class="col-md-4 col-sm-6">
+        <div class="plan-card">
+            <div class="plan-card-top">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <span class="plan-type-badge">{{ policy.policy_type|default:"Insurance" }}</span>
+                    <span class="text-muted" style="font-size: 11px;">{{ policy.policy_number }}</span>
+                </div>
+                <div class="plan-insurer"><i class="bi bi-building me-1"></i>{{ policy.insurer_name|default:"Standard Insurer" }}</div>
+                <div class="plan-sum">₹{{ policy.sum_insured|intcomma }}</div>
+                <div class="plan-premium">
+                    <i class="bi bi-calendar-check me-1"></i>
+                    {% with sched=policy.premium_schedule %}
+                    {% if sched %}Premium: ₹{{ sched.gross_premium|intcomma }} / yr{% else %}Premium calculated upon review{% endif %}
+                    {% endwith %}
+                </div>
+                {% if policy.deductible %}
+                <div class="mt-3 d-flex gap-3">
+                    <div style="flex:1; padding:8px; background:rgba(255,255,255,0.03); border-radius:8px; border:1px solid rgba(255,255,255,0.05); text-align:center;">
+                        <div class="text-muted" style="font-size:10px; text-transform:uppercase; letter-spacing:0.05em;">Deductible</div>
+                        <div class="text-white fw-bold small">₹{{ policy.deductible|intcomma }}</div>
+                    </div>
+                    <div style="flex:1; padding:8px; background:rgba(255,255,255,0.03); border-radius:8px; border:1px solid rgba(255,255,255,0.05); text-align:center;">
+                        <div class="text-muted" style="font-size:10px; text-transform:uppercase; letter-spacing:0.05em;">Coverage</div>
+                        <div class="text-success fw-bold small">{{ policy.coverage_percentage }}%</div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            {# ── Action Button based on application status ───────────────── #}
+            <div class="plan-card-footer">
+                {% if policy.id in user_applications %}
+                    {% with existing=user_applications|dictsort:"0" %}
+                    {# Fall back: check app status via the user_applications dict lookup #}
+                    {% endwith %}
+
+                    {# Use a simple loop lookup to find the status #}
+                    {% for app_id, app_obj in user_applications.items %}
+                        {% if app_id == policy.id %}
+                            {% if app_obj.status == "pending" %}
+                            <div class="btn-status pending">
+                                <i class="bi bi-hourglass-split"></i> Application Pending Review
+                            </div>
+                            {% elif app_obj.status == "approved" %}
+                            <a href="{% url 'policy:list' %}" class="btn-status approved">
+                                <i class="bi bi-shield-check"></i> Already Approved — View Policy
+                            </a>
+                            {% elif app_obj.status == "rejected" %}
+                            <div class="btn-status rejected">
+                                <i class="bi bi-x-circle"></i> Application Rejected
+                            </div>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                {% else %}
+                <a href="{% url 'policy:apply' policy.id %}" class="btn-apply">
+                    <i class="bi bi-file-earmark-plus"></i> Apply Now
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endwith %}
+    {% endfor %}
+</div>
+
+{% else %}
+<div class="text-center py-5" style="background:rgba(255,255,255,0.02); border:1px dashed rgba(255,255,255,0.1); border-radius:16px;">
+    <i class="bi bi-search fs-1 d-block mb-3 opacity-25"></i>
+    <h5 class="text-white mb-2">No Plans Available</h5>
+    <p class="text-muted">No insurance plans are currently listed. Check back soon!</p>
+</div>
+{% endif %}
+{% endblock %}

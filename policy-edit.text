@@ -1,0 +1,485 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Edit Policy — InsureAI Portal</title>
+
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Serif+Display&display=swap" rel="stylesheet"/>
+
+<style>
+
+body {
+    font-family: 'DM Sans', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f8f9fa;
+}
+
+.app {
+    display: flex;
+    min-height: 100vh;
+}
+
+.sidebar {
+    width: 250px;
+    background-color: #ffffff;
+    border-right: 1px solid #e9ecef;
+    padding: 20px;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+}
+
+.sidebar-logo {
+    display: block;
+    text-decoration: none;
+    color: #007bff;
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 30px;
+}
+
+.logo-icon {
+    display: inline-block;
+    margin-right: 10px;
+}
+
+.nav-lbl {
+    font-size: 12px;
+    text-transform: uppercase;
+    color: #6c757d;
+    margin-bottom: 10px;
+    margin-top: 20px;
+}
+
+.nav-item {
+    display: block;
+    padding: 10px 15px;
+    text-decoration: none;
+    color: #495057;
+    border-radius: 5px;
+    margin-bottom: 5px;
+    transition: background-color 0.3s;
+}
+
+.nav-item:hover {
+    background-color: #f8f9fa;
+}
+
+.nav-item.active {
+    background-color: #007bff;
+    color: white;
+}
+
+.nav-icon {
+    margin-right: 10px;
+}
+
+.sidebar-footer {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    right: 20px;
+}
+
+.user-chip {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    background-color: #007bff;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    margin-right: 10px;
+}
+
+.user-info p {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.user-info span {
+    font-size: 12px;
+    color: #6c757d;
+}
+
+.main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.topbar {
+    background-color: #ffffff;
+    border-bottom: 1px solid #e9ecef;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.topbar-left {
+    display: flex;
+    align-items: center;
+}
+
+.back-btn {
+    text-decoration: none;
+    color: #007bff;
+    margin-right: 20px;
+    font-weight: 500;
+}
+
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+}
+
+.breadcrumb a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.bc-sep {
+    margin: 0 10px;
+    color: #6c757d;
+}
+
+.bc-cur {
+    color: #495057;
+}
+
+.topbar-right {
+    display: flex;
+    gap: 10px;
+}
+
+.btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    color: white;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+}
+
+.content {
+    flex: 1;
+    padding: 20px;
+}
+
+.form-area {
+    max-width: 800px;
+}
+
+.card {
+    background-color: #ffffff;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.card-header {
+    padding: 20px;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.card-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #495057;
+}
+
+.fg {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    padding: 20px;
+}
+
+.fg-2 .field {
+    flex: 1 1 calc(50% - 20px);
+}
+
+.field {
+    margin-bottom: 20px;
+}
+
+.field label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: #495057;
+}
+
+.field input, .field select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+.field input[readonly] {
+    background-color: #e9ecef;
+    cursor: not-allowed;
+}
+
+.nav-btns {
+    padding: 20px;
+    text-align: right;
+    border-top: 1px solid #e9ecef;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="app">
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+
+<a class="sidebar-logo" href="{% url 'accounts:login' %}">
+<div class="logo-icon">&#128737;</div>
+InsureAI
+</a>
+
+<div class="nav-lbl">Overview</div>
+
+<a class="nav-item" href="{% url 'accounts:admin_dashboard' %}">Dashboard</a>
+
+<a class="nav-item active" href="{% url 'policy:list' %}">
+<span class="nav-icon">&#128196;</span>
+My Policies
+</a>
+
+<a class="nav-item" href="{% url 'policy:create' %}">
+<span class="nav-icon">&#43;&#128196;</span>
+Create Policy
+</a>
+
+<a class="nav-item" href="{% url 'claim:list' %}">
+<span class="nav-icon">&#128203;</span>
+Claims
+</a>
+
+<a class="nav-item" href="#">
+<span class="nav-icon">&#128200;</span>
+Analytics
+</a>
+
+<div class="nav-lbl" style="margin-top:.75rem">Account</div>
+
+<a class="nav-item" href="#">
+<span class="nav-icon">&#128276;</span>
+Notifications
+</a>
+
+<a class="nav-item" href="#">
+<span class="nav-icon">&#128196;</span>
+Documents
+</a>
+
+<a class="nav-item" href="#">
+<span class="nav-icon">&#9881;</span>
+Settings
+</a>
+
+<a class="nav-item" href="{% url 'accounts:logout' %}">
+<span class="nav-icon">&#128682;</span>
+Sign out
+</a>
+
+<div class="sidebar-footer">
+
+<div class="user-chip">
+
+<div class="user-avatar">
+{{ request.user.first_name|slice:":1" }}{{ request.user.last_name|slice:":1" }}
+</div>
+
+<div class="user-info">
+<p>{{ request.user.first_name }} {{ request.user.last_name }}</p>
+<span>{{ request.user.role }}</span>
+</div>
+
+</div>
+
+</div>
+
+</nav>
+
+
+<!-- MAIN -->
+<div class="main">
+
+<!-- TOPBAR -->
+<div class="topbar">
+
+<div class="topbar-left">
+
+<a class="back-btn" href="{% url 'policy:list' %}">
+&#8592; Back
+</a>
+
+<div class="breadcrumb">
+
+<a href="{% url 'policy:list' %}">Policies</a>
+
+<span class="bc-sep">&#8250;</span>
+
+<a href="{% url 'policy:detail' policy.id %}">
+{{ policy.policy_number }}
+</a>
+
+<span class="bc-sep">&#8250;</span>
+
+<span class="bc-cur">Edit Policy</span>
+
+</div>
+
+</div>
+
+<div class="topbar-right">
+
+<button class="btn btn-secondary">
+Discard
+</button>
+
+<button class="btn btn-primary">
+Save Changes
+</button>
+
+</div>
+
+</div>
+
+
+<!-- CONTENT -->
+<div class="content">
+
+<div class="form-area">
+
+<form method="POST">
+
+{% csrf_token %}
+
+<div class="card">
+
+<div class="card-header">
+
+<div class="card-title-wrap">
+
+<div class="card-title">
+Policy Information
+</div>
+
+</div>
+
+</div>
+
+
+<div class="fg fg-2">
+
+<div class="field">
+<label>Policy Number</label>
+<input type="text" value="{{ policy.policy_number }}" readonly>
+</div>
+
+<div class="field">
+<label>Insurance Type</label>
+<input type="text" value="{{ policy.policy_type }}" readonly>
+</div>
+
+<div class="field">
+<label>Insurer</label>
+<input type="text" name="insurer_name" value="{{ policy.insurer_name }}">
+</div>
+
+<div class="field">
+<label>Start Date</label>
+<input type="date" name="start_date" value="{{ policy.start_date|date:'Y-m-d' }}">
+</div>
+
+<div class="field">
+<label>End Date</label>
+<input type="date" name="end_date" value="{{ policy.end_date|date:'Y-m-d' }}">
+</div>
+
+<div class="field">
+<label>Sum Insured</label>
+<input type="number" name="sum_insured" value="{{ policy.sum_insured }}">
+</div>
+
+<div class="field">
+<label>Premium</label>
+<input type="number" name="premium" value="{{ policy.premium }}">
+</div>
+
+<div class="field">
+<label>Deductible Amount</label>
+<input type="number" name="deductible_amount" value="{{ policy.deductible_amount|default:0 }}" step="0.01">
+</div>
+
+<div class="field">
+<label>Status</label>
+<select name="status">
+<option value="draft" {% if policy.status == 'draft' %}selected{% endif %}>Draft</option>
+<option value="active" {% if policy.status == 'active' %}selected{% endif %}>Active</option>
+<option value="expired" {% if policy.status == 'expired' %}selected{% endif %}>Expired</option>
+<option value="cancelled" {% if policy.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+</select>
+</div>
+
+</div>
+
+
+<div class="nav-btns">
+
+<button type="submit" class="btn btn-primary">
+Update Policy
+</button>
+
+</div>
+
+</form>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</body>
+</html>

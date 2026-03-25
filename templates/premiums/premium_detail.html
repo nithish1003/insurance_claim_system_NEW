@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Premium Schedule{% endblock %}
+
+{% block breadcrumb %}Premium Schedule{% endblock %}
+
+{% block extra_css %}
+<style>
+    .premium-card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+    .premium-card-header {
+        padding: 1.25rem 1.5rem;
+        background: rgba(255, 255, 255, 0.02);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .premium-card-header h5 {
+        margin: 0;
+        font-weight: 700;
+        color: #f1f5f9;
+        font-size: 1.1rem;
+    }
+    .premium-table-container {
+        overflow-x: auto;
+    }
+    .premium-table {
+        width: 100%;
+        border-collapse: collapse;
+        color: #e2e8f0;
+        font-size: 0.9rem;
+    }
+    .premium-table thead th {
+        background: rgba(0, 0, 0, 0.2);
+        padding: 1rem 1.5rem;
+        text-align: left;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-size: 0.75rem;
+        color: #94a3b8;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .premium-table tbody tr {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        transition: background 0.2s;
+    }
+    .premium-table tbody tr:hover {
+        background: rgba(255, 255, 255, 0.02);
+    }
+    .premium-table td {
+        padding: 1.25rem 1.5rem;
+        vertical-align: middle;
+    }
+    
+    /* Status Badges */
+    .badge.paid { background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .badge.pending { background: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .badge.overdue { background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+    
+    .btn-premium-sm {
+        background: #1a6ef5;
+        color: white;
+        border: none;
+        padding: 6px 16px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    .btn-premium-sm:hover {
+        background: #3b82f6;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(26, 110, 245, 0.3);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="mb-1 text-white fw-bold">Schedule Breakdown</h3>
+        <p class="text-muted mb-0">Policy: <span class="text-info fw-semibold">{{ schedule.policy.policy_number }}</span></p>
+    </div>
+    <a href="{% url 'premiums:list' %}" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-2">
+        <i class="bi bi-arrow-left"></i> Back to List
+    </a>
+</div>
+
+<div class="premium-card mb-4">
+    <div class="premium-card-header">
+        <h5><i class="bi bi-receipt me-2"></i>Financial Summary</h5>
+        <span class="text-muted small tracking-wider text-uppercase">{{ schedule.get_payment_frequency_display }} PAYMENTS</span>
+    </div>
+    <div class="p-4">
+        <div class="row g-4 d-flex align-items-center">
+            <div class="col-md-3 border-start border-secondary border-opacity-25 ps-4">
+                <div class="text-muted small text-uppercase mb-1" style="letter-spacing: 1px;">Base Premium</div>
+                <div class="fs-4 fw-bold text-white">₹{{ schedule.base_premium|intcomma }}</div>
+            </div>
+            <div class="col-md-3 border-start border-secondary border-opacity-25 ps-4">
+                <div class="text-muted small text-uppercase mb-1" style="letter-spacing: 1px;">Tax (GST)</div>
+                <div class="fs-4 fw-bold text-info">₹{{ schedule.gst_amount|intcomma }} <span class="fs-6 opacity-50 fw-normal">({{ schedule.gst_percentage }}%)</span></div>
+            </div>
+            <div class="col-md-3 border-start border-secondary border-opacity-25 ps-4">
+                <div class="text-muted small text-uppercase mb-1" style="letter-spacing: 1px;">Gross Total</div>
+                <div class="fs-4 fw-bold text-success">₹{{ schedule.gross_premium|intcomma }}</div>
+            </div>
+            <div class="col-md-3 border-start border-secondary border-opacity-25 ps-4">
+                <div class="text-muted small text-uppercase mb-1" style="letter-spacing: 1px;">Per Installment</div>
+                <div class="fs-4 fw-bold text-primary">₹{{ schedule.installment_amount|intcomma }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="premium-card">
+    <div class="premium-card-header">
+        <h5><i class="bi bi-calendar-check me-2"></i>Installment Timeline</h5>
+        <span class="text-muted small tracking-wider text-uppercase">{{ payments.count }} PHASES</span>
+    </div>
+    <div class="premium-table-container">
+        <table class="premium-table">
+            <thead>
+                <tr>
+                    <th class="ps-4"># No</th>
+                    <th>Due Date</th>
+                    <th>Installment Amount</th>
+                    <th>Current Status</th>
+                    <th>Completion Date</th>
+                    <th>Transaction Reference</th>
+                    <th class="pe-4 text-end">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for payment in payments %}
+                <tr>
+                    <td class="ps-4"><span class="text-muted small">Phase </span><span class="fw-bold">{{ payment.installment_number }}</span></td>
+                    <td><span class="text-white">{{ payment.due_date|date:"M d, Y" }}</span></td>
+                    <td class="fw-bold">₹{{ payment.amount|intcomma }}</td>
+                    <td>
+                        <span class="badge {{ payment.status }}">
+                            {{ payment.get_status_display }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if payment.paid_date %}
+                        <span class="small text-muted">{{ payment.paid_date|date:"M d, Y" }}</span>
+                        {% else %}
+                        <span class="opacity-25 small">--</span>
+                        {% endif %}
+                    </td>
+                    <td><span class="small text-muted">{{ payment.transaction_reference|default:"<span class='opacity-25'>--</span>"|safe }}</span></td>
+                    <td class="pe-4 text-end">
+                        <div class="d-flex justify-content-end gap-2">
+                        {% if payment.status != 'paid' %}
+                        <form method="post" action="{% url 'premiums:pay' payment.id %}">
+                            {% csrf_token %}
+                            {% if request.user.is_superuser or request.user.role == "admin" or request.user.role == "staff" %}
+                            <button type="submit" class="btn-premium-sm" style="background: #10b981;">
+                                <i class="bi bi-check-lg me-1"></i> Mark as Paid
+                            </button>
+                            {% else %}
+                            <button type="submit" class="btn-premium-sm">
+                                <i class="bi bi-credit-card me-1"></i> Pay Now
+                            </button>
+                            {% endif %}
+                        </form>
+                        {% else %}
+                        <span class="text-success small"><i class="bi bi-shield-check me-1"></i> Verified</span>
+                        {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="empty-state py-5 text-center">
+                        <i class="bi bi-hourglass fs-2 mb-3 d-block opacity-25"></i>
+                        {% if request.user.is_superuser or request.user.role == "admin" or request.user.role == "staff" %}
+                        No installment records found for this schedule.
+                        {% else %}
+                        No upcoming installments are currently scheduled.
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

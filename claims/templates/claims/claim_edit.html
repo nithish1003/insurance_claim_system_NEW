@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Edit Claim{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid px-4 py-3">
+
+<div class="card shadow-sm">
+
+<div class="card-header bg-dark text-white">
+Edit Claim - {{ claim.claim_number }}
+</div>
+
+<div class="card-body">
+
+<form method="POST">
+
+{% csrf_token %}
+
+<!-- Policy (readonly) -->
+<div class="mb-3">
+
+<label class="form-label">Policy</label>
+
+<input type="text" class="form-control" value="{{ claim.policy.policy_number }}" readonly>
+
+</div>
+
+<!-- Claim Type (readonly) -->
+<div class="mb-3">
+
+<label class="form-label">Claim Type</label>
+
+<input type="text" class="form-control" value="{{ claim.get_claim_type_display }}" readonly>
+
+</div>
+
+<!-- Incident Date (readonly) -->
+<div class="mb-3">
+
+<label class="form-label">Incident Date</label>
+
+<input type="date" class="form-control" value="{{ claim.incident_date|date:'Y-m-d' }}" readonly>
+
+</div>
+
+<!-- Description -->
+<div class="mb-3">
+
+<label class="form-label">Description</label>
+
+<textarea name="description"
+class="form-control"
+rows="4"
+required>{{ claim.description }}</textarea>
+
+</div>
+
+<!-- Claim Amount -->
+<div class="mb-3">
+
+<label class="form-label">Claim Amount</label>
+
+<input type="number"
+name="claimed_amount"
+class="form-control"
+step="0.01"
+value="{{ claim.claimed_amount }}"
+required>
+
+</div>
+
+<!-- Deductible Amount -->
+<div class="mb-3">
+
+<label class="form-label">Deductible Amount</label>
+
+<input type="number"
+name="deductible_amount"
+class="form-control"
+step="0.01"
+value="{{ claim.deductible_amount }}">
+
+</div>
+
+<!-- Submit -->
+<div class="d-flex justify-content-between">
+
+<a href="{% url 'claim:detail' claim.id %}" class="btn btn-secondary">Cancel</a>
+
+<button type="submit" class="btn btn-primary">Update Claim</button>
+
+</div>
+
+</form>
+
+</div>
+
+</div>
+
+</div>
+
+{% endblock %}

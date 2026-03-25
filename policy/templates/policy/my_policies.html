@@ -1,0 +1,264 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}My Policies{% endblock %}
+
+{% block sidebar_items %}
+{% if not request.user.is_superuser and request.user.role == "policyholder" %}
+<a href="{% url 'accounts:policyholder_dashboard' %}">
+    <i class="bi bi-house"></i> Dashboard
+</a>
+<a href="{% url 'policy:list' %}" class="active">
+    <i class="bi bi-shield-check"></i> My Policies
+</a>
+<a href="{% url 'policy:my_applications' %}">
+    <i class="bi bi-file-earmark-text"></i> My Applications
+</a>
+<a href="{% url 'policy:browse' %}">
+    <i class="bi bi-search"></i> Browse Plans
+</a>
+<a href="{% url 'claim:list' %}">
+    <i class="bi bi-shield-exclamation"></i> Claims
+</a>
+<a href="{% url 'claim:create' %}">
+    <i class="bi bi-plus-circle"></i> File Claim
+</a>
+<a href="{% url 'accounts:logout' %}" class="sidebar-logout">
+    <i class="bi bi-box-arrow-right"></i> Logout
+</a>
+{% else %}
+{{ block.super }}
+{% endif %}
+{% endblock %}
+
+{% block breadcrumb %}My Policies{% endblock %}
+
+{% block extra_css %}
+<style>
+    .tracking-wider { letter-spacing: 0.05em; }
+    .cert-badge {
+        font-size: 11px;
+        color: #7a8ba8;
+        font-family: monospace;
+        background: rgba(26,110,245,0.08);
+        border: 1px solid rgba(26,110,245,0.15);
+        border-radius: 6px;
+        padding: 2px 8px;
+    }
+    
+    /* 💠 Premium Table Architecture */
+    .premium-card {
+        --section-accent: #3b82f6;
+        background:
+            radial-gradient(circle at top right, rgba(255, 255, 255, 0.08), transparent 38%),
+            linear-gradient(160deg, rgba(15, 23, 42, 0.96) 0%, rgba(15, 23, 42, 0.82) 55%, rgba(30, 41, 59, 0.96) 100%);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(148, 163, 184, 0.16);
+        border-radius: 18px;
+        overflow: hidden;
+        margin-bottom: 30px;
+        box-shadow: 0 14px 32px rgba(2, 6, 23, 0.24);
+        position: relative;
+    }
+    .premium-card::before {
+        content: "";
+        position: absolute;
+        inset: 0 0 auto 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--section-accent), rgba(255, 255, 255, 0));
+        opacity: 0.95;
+    }
+    .premium-card-header {
+        background: linear-gradient(to right, rgba(255, 255, 255, 0.03), transparent);
+        border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+        padding: 18px 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .premium-card-header h5 {
+        margin-bottom: 0;
+        color: white;
+        font-size: 1rem;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+    }
+    .premium-table-container { padding: 10px 12px 14px; overflow-x: auto; }
+    .premium-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 10px;
+    }
+    .premium-table thead th {
+        background: transparent;
+        padding: 4px 18px 8px;
+        color: #7f91ab;
+        font-size: 0.68rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        border-bottom: 0;
+    }
+    .premium-table tbody td {
+        padding: 16px 18px;
+        color: #cbd5e1;
+        font-size: 0.85rem;
+        vertical-align: middle;
+        background: rgba(8, 15, 30, 0.62);
+        border-top: 1px solid rgba(148, 163, 184, 0.08);
+        border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+    }
+    .premium-table tbody td:first-child {
+        border-left: 1px solid rgba(148, 163, 184, 0.08);
+        border-radius: 14px 0 0 14px;
+    }
+    .premium-table tbody td:last-child {
+        border-right: 1px solid rgba(148, 163, 184, 0.08);
+        border-radius: 0 14px 14px 0;
+    }
+    .premium-table tbody tr:hover td {
+        background: rgba(15, 23, 42, 0.92);
+        border-color: rgba(59, 130, 246, 0.18);
+    }
+    .premium-table tbody tr.table-empty-row:hover td {
+        background: rgba(8, 15, 30, 0.62);
+        border-color: rgba(148, 163, 184, 0.08);
+    }
+    .badge-neon {
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.65rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .badge-active { background: rgba(0, 198, 100, 0.1); color: #00c664; border: 1px solid rgba(0, 198, 100, 0.2); }
+    .badge-warning-premium { background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.2); }
+    .badge-lapsed { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
+    .badge-expired { background: rgba(108, 117, 125, 0.1); color: #94a3b8; border: 1px solid rgba(108, 117, 125, 0.2); }
+    .badge-pending { background: rgba(59, 130, 246, 0.1); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.2); }
+
+    .btn-premium-sm {
+        background: rgba(59, 130, 246, 0.1);
+        color: #60a5fa;
+        border: 1px solid rgba(59, 130, 246, 0.22);
+        padding: 7px 14px;
+        border-radius: 10px;
+        font-size: 0.68rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        text-decoration: none;
+        transition: all 0.25s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .btn-premium-sm:hover {
+        background: #1a6ef5;
+        color: white;
+        border-color: #1a6ef5;
+        transform: translateY(-1px);
+        box-shadow: 0 10px 20px rgba(26, 110, 245, 0.18);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4" data-aos="fade-down">
+    <div>
+        <h3 class="mb-1 text-white fw-bold">My Coverage Portfolio</h3>
+        <p class="text-muted mb-0">Review your active and approved insurance policies.</p>
+    </div>
+    <div class="d-flex gap-2">
+        {% if request.user.role == "admin" %}
+        <a href="{% url 'accounts:admin_dashboard' %}" class="btn btn-outline-secondary btn-sm hover-scale">Back to Dashboard</a>
+        {% elif request.user.role == "staff" %}
+        <a href="{% url 'accounts:staff_dashboard' %}" class="btn btn-outline-secondary btn-sm hover-scale">Back to Dashboard</a>
+        {% else %}
+        <a href="{% url 'accounts:policyholder_dashboard' %}" class="btn btn-outline-secondary btn-sm hover-scale">Dashboard</a>
+        <a href="{% url 'policy:browse' %}" class="btn btn-primary btn-sm px-3 hover-scale">Browse New Plans</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="premium-card" data-aos="fade-up" data-aos-delay="100">
+    <div class="premium-card-header">
+        <h5><i class="bi bi-shield-check me-2 text-primary"></i>Insurance Policies</h5>
+        <span class="text-muted small tracking-wider">{{ user_policies|length }} ACTIVE CONTRACT{{ user_policies|length|pluralize }}</span>
+    </div>
+
+    <div class="premium-table-container">
+        <table class="premium-table">
+            <thead>
+                <tr>
+                    <th class="ps-4">Certificate No.</th>
+                    <th>Plan / Policy No.</th>
+                    <th>Type</th>
+                    <th>Insurer</th>
+                    <th>Coverage Period</th>
+                    <th>Sum Insured</th>
+                    <th>Premium</th>
+                    <th>Status</th>
+                    <th class="pe-4 text-end">Action</th>
+                </tr>
+            </thead>
+            <tbody class="stagger-container">
+                {% for up in user_policies %}
+                <tr>
+                    <td class="ps-4">
+                        <span class="cert-badge">{{ up.certificate_number }}</span>
+                    </td>
+                    <td class="fw-bold text-white">{{ up.policy.policy_number }}</td>
+                    <td><span class="badge bg-secondary opacity-75">{{ up.policy.policy_type|default:"General" }}</span></td>
+                    <td>
+                        <span class="text-muted px-2 py-1 rounded small" style="background: rgba(255,255,255,0.03);">
+                            {{ up.policy.insurer_name|default:"—" }}
+                        </span>
+                    </td>
+                    <td class="small">
+                        {% if up.start_date and up.end_date %}
+                        <span class="text-muted">{{ up.start_date|date:"M d, Y" }}</span>
+                        <i class="bi bi-arrow-right mx-1 opacity-25"></i>
+                        <span class="text-muted">{{ up.end_date|date:"M d, Y" }}</span>
+                        {% else %}
+                        <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td class="fw-bold">₹{{ up.policy.sum_insured|default:0|floatformat:0|intcomma }}</td>
+                    <td class="text-info">
+                        {% with schedule=up.policy.premium_schedule %}
+                        {% if schedule %}
+                        ₹{{ schedule.gross_premium|default:0|floatformat:2|intcomma }}
+                        {% else %}
+                        <span class="text-muted small">N/A</span>
+                        {% endif %}
+                        {% endwith %}
+                    </td>
+                    <td>
+                        <span class="badge-neon {% if up.status == 'active' %}badge-active{% elif up.status == 'grace' %}badge-warning-premium{% elif up.status == 'lapsed' %}badge-lapsed{% elif up.status == 'expired' %}badge-expired{% else %}badge-pending{% endif %}">
+                            {{ up.get_status_display }}
+                        </span>
+                    </td>
+                    <td class="pe-4 text-end">
+                        <a href="{% url 'policy:detail' up.policy.id %}" class="btn-premium-sm hover-scale">
+                            Manage <i class="bi bi-chevron-right ms-1"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr class="table-empty-row">
+                    <td colspan="9" class="empty-state py-5 text-center">
+                        <i class="bi bi-file-earmark-lock fs-2 mb-3 d-block opacity-25"></i>
+                        You do not have any approved policies yet.<br>
+                        {% if request.user.role == "policyholder" %}
+                        <a href="{% url 'policy:browse' %}" class="btn btn-link text-info mt-2">Browse Available Plans</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

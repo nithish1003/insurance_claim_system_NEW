@@ -1,0 +1,14 @@
+id
+policy_number
+policy_type_id
+status
+insurer_name
+start_date
+end_date
+sum_insured
+premium
+created_at
+holder_id
+deductible
+insurer_id
+policy_type

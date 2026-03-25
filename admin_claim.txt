@@ -1,0 +1,297 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Claims{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-3">
+
+<!-- PAGE HEADER -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+
+<div>
+<h4 class="mb-0">Claims</h4>
+<span class="text-muted small">
+Manage and track all insurance claims
+</span>
+</div>
+
+<a href="{% url 'accounts:admin_dashboard' %}" class="btn btn-outline-primary btn-sm">
+<i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+</a>
+
+</div>
+
+
+<!-- SUMMARY CARDS -->
+{% if summary %}
+
+<div class="row g-3 mb-4">
+
+<div class="col-md-2">
+<div class="card text-center shadow-sm border-0 py-3">
+<div class="fs-5 fw-bold">{{ summary.total|default:0 }}</div>
+<div class="small text-muted">Total</div>
+</div>
+</div>
+
+<div class="col-md-2">
+<div class="card text-center shadow-sm border-0 py-3">
+<div class="fs-5 fw-bold text-warning">
+{{ summary.under_review|default:0 }}
+</div>
+<div class="small text-muted">Under Review</div>
+</div>
+</div>
+
+<div class="col-md-2">
+<div class="card text-center shadow-sm border-0 py-3">
+<div class="fs-5 fw-bold text-info">
+{{ summary.investigation|default:0 }}
+</div>
+<div class="small text-muted">Investigation</div>
+</div>
+</div>
+
+<div class="col-md-2">
+<div class="card text-center shadow-sm border-0 py-3">
+<div class="fs-5 fw-bold text-success">
+{{ summary.approved|default:0 }}
+</div>
+<div class="small text-muted">Approved</div>
+</div>
+</div>
+
+<div class="col-md-2">
+<div class="card text-center shadow-sm border-0 py-3">
+<div class="fs-5 fw-bold text-danger">
+{{ summary.rejected|default:0 }}
+</div>
+<div class="small text-muted">Rejected</div>
+</div>
+</div>
+
+<div class="col-md-2">
+<div class="card text-center shadow-sm border-0 py-3">
+<div class="fs-5 fw-bold text-primary">
+{{ summary.settled|default:0 }}
+</div>
+<div class="small text-muted">Settled</div>
+</div>
+</div>
+
+</div>
+
+{% endif %}
+
+
+
+<!-- FILTER -->
+{% if filter_form %}
+
+<div class="card border-0 shadow-sm mb-4">
+
+<div class="card-body">
+
+<form method="get" class="row g-2">
+
+<div class="col-md-2">
+<label class="small text-muted">Claim Number</label>
+{{ filter_form.claim_number }}
+</div>
+
+<div class="col-md-2">
+<label class="small text-muted">Type</label>
+{{ filter_form.claim_type }}
+</div>
+
+<div class="col-md-2">
+<label class="small text-muted">Status</label>
+{{ filter_form.status }}
+</div>
+
+<div class="col-md-2">
+<label class="small text-muted">From</label>
+{{ filter_form.date_from }}
+</div>
+
+<div class="col-md-2">
+<label class="small text-muted">To</label>
+{{ filter_form.date_to }}
+</div>
+
+<div class="col-md-1">
+<button class="btn btn-secondary btn-sm w-100">
+Filter
+</button>
+</div>
+
+<div class="col-md-1">
+<a href="{% url 'claim:list' %}"
+class="btn btn-outline-secondary btn-sm w-100">
+Reset
+</a>
+</div>
+
+</form>
+
+</div>
+</div>
+
+{% endif %}
+
+
+
+<!-- CLAIM TABLE -->
+
+<div class="card shadow-sm border-0">
+
+<div class="card-header bg-dark text-white py-2">
+Claims List
+</div>
+
+<div class="table-responsive">
+
+<table class="table table-hover mb-0">
+
+<thead class="table-light">
+
+<tr>
+
+<th>#</th>
+<th>Claim</th>
+<th>Policy</th>
+<th>Type</th>
+<th>Incident</th>
+<th>Claimed</th>
+<th>Status</th>
+<th>Assigned</th>
+<th>Actions</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+{% for claim in claims %}
+
+<tr>
+
+<td>{{ forloop.counter }}</td>
+
+<td>
+<a href="{% url 'claim:detail' claim.pk %}">
+{{ claim.claim_number }}
+</a>
+</td>
+
+<td>{{ claim.policy.policy_number }}</td>
+
+<td>{{ claim.get_claim_type_display }}</td>
+
+<td>{{ claim.incident_date|date:"d M Y" }}</td>
+
+<td>
+₹{{ claim.claimed_amount|default:0|intcomma }}
+</td>
+
+<td>
+
+<span class="badge
+{% if claim.status == 'submitted' %}bg-primary
+{% elif claim.status == 'under_review' %}bg-warning text-dark
+{% elif claim.status == 'investigation' %}bg-info
+{% elif claim.status == 'approved' %}bg-success
+{% elif claim.status == 'rejected' %}bg-danger
+{% elif claim.status == 'settled' %}bg-dark
+{% else %}bg-secondary{% endif %}">
+
+{{ claim.get_status_display }}
+
+</span>
+
+</td>
+
+<td>
+
+{% if claim.assigned_to %}
+
+{{ claim.assigned_to.username }}
+
+{% else %}
+
+<span class="text-muted">Unassigned</span>
+
+{% endif %}
+
+</td>
+
+<td>
+
+<a href="{% url 'claim:detail' claim.pk %}"
+class="btn btn-sm btn-outline-secondary">
+<i class="bi bi-eye"></i>
+</a>
+
+<a href="{% url 'claim:edit' claim.pk %}"
+class="btn btn-sm btn-outline-primary">
+<i class="bi bi-pencil"></i>
+</a>
+
+{% if request.user.is_admin %}
+<form method="post" action="{% url 'claim:update_status' claim.pk %}" style="display:inline;">
+{% csrf_token %}
+<input type="hidden" name="status" value="approved">
+<button type="submit" class="btn btn-sm btn-success">Approve</button>
+</form>
+
+<form method="post" action="{% url 'claim:update_status' claim.pk %}" style="display:inline;">
+{% csrf_token %}
+<input type="hidden" name="status" value="rejected">
+<button type="submit" class="btn btn-sm btn-danger">Reject</button>
+</form>
+
+<form method="post" action="{% url 'claim:update_status' claim.pk %}" style="display:inline;">
+{% csrf_token %}
+<input type="hidden" name="status" value="under_review">
+<button type="submit" class="btn btn-sm btn-warning">Pending</button>
+</form>
+{% elif request.user.role == 'staff' %}
+<form method="post" action="{% url 'claim:update_status' claim.pk %}" style="display:inline;">
+{% csrf_token %}
+<input type="hidden" name="status" value="under_review">
+<button type="submit" class="btn btn-sm btn-info">Review</button>
+</form>
+{% endif %}
+
+</td>
+
+</tr>
+
+{% empty %}
+
+<tr>
+
+<td colspan="9"
+class="text-center text-muted py-5">
+
+No claims found
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</div>
+
+{% endblock %}

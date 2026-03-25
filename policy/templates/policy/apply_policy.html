@@ -1,0 +1,244 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Apply for Policy{% endblock %}
+
+{% block breadcrumb %}Apply for {{ plan.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Ensure consistent form styling across all policy templates */
+.form-control, .form-select {
+    background-color: #1e293b !important;
+    border: 1px solid rgba(255,255,255,0.2) !important;
+    color: #ffffff !important;
+    border-radius: 8px;
+    padding: 12px 15px;
+    font-size: 14px;
+    line-height: 1.5;
+    position: relative;
+    z-index: 2;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+
+.form-control::placeholder, .form-select::placeholder {
+    color: #94a3b8 !important;
+    opacity: 1 !important;
+}
+
+.form-control:focus, .form-select:focus {
+    background-color: #1e293b !important;
+    border-color: #1a6ef5 !important;
+    color: #ffffff !important;
+    box-shadow: 0 0 0 3px rgba(26, 110, 245, 0.25) !important;
+    outline: none;
+    z-index: 10;
+}
+
+.form-control:hover, .form-select:hover {
+    border-color: rgba(255,255,255,0.4) !important;
+    background-color: #1e293b !important;
+}
+
+.form-control[readonly], .form-control[disabled], .form-select[readonly], .form-select[disabled] {
+    background-color: #1e293b !important;
+    color: #ffffff !important;
+    opacity: 1 !important;
+    cursor: not-allowed;
+    border-color: rgba(255,255,255,0.2) !important;
+}
+
+.form-label {
+    color: #9fb3d1 !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    margin-bottom: 8px !important;
+    display: block !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+}
+
+/* Fix any potential overlapping issues with Bootstrap components */
+.card .form-control, .card .form-select {
+    background-color: #1e293b !important;
+    color: #ffffff !important;
+}
+
+/* Ensure text is always visible and properly positioned */
+.form-control, .form-select {
+    text-align: left !important;
+    vertical-align: middle !important;
+}
+
+/* Custom checkbox styling for consistency */
+.custom-checkbox .form-check-input {
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    border: 2px solid rgba(255,255,255,0.3);
+    background-color: #1e293b;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.custom-checkbox .form-check-input:checked {
+    background-color: #1a6ef5;
+    border-color: #1a6ef5;
+    cursor: pointer;
+}
+
+.custom-checkbox .form-check-label {
+    color: #e2e8f0 !important;
+    font-size: 14px !important;
+    cursor: pointer;
+}
+
+.custom-checkbox .form-check-label a {
+    color: #1a6ef5 !important;
+    text-decoration: none !important;
+}
+
+.custom-checkbox .form-check-label a:hover {
+    text-decoration: underline !important;
+    color: #3d8bff !important;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        
+        <!-- Step Progress Indicator -->
+        <div class="card shadow-sm mb-4 border-0">
+            <div class="card-body py-3">
+                <div class="d-flex justify-content-between position-relative">
+                    <div class="progress position-absolute top-50 start-0 w-100 translate-middle-y" style="height: 3px; z-index: 0;">
+                        <div class="progress-bar bg-primary" role="progressbar" style="width: 33%;"></div>
+                    </div>
+                    
+                    <div class="text-center position-relative" style="z-index: 1;">
+                        <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center mb-1 mx-auto" style="width: 32px; height: 32px;">1</div>
+                        <small class="fw-bold text-primary">Applied</small>
+                    </div>
+                    <div class="text-center position-relative" style="z-index: 1;">
+                        <div class="rounded-circle bg-light border border-secondary text-secondary d-flex align-items-center justify-content-center mb-1 mx-auto" style="width: 32px; height: 32px;">2</div>
+                        <small class="text-muted">Under Review</small>
+                    </div>
+                    <div class="text-center position-relative" style="z-index: 1;">
+                        <div class="rounded-circle bg-light border border-secondary text-secondary d-flex align-items-center justify-content-center mb-1 mx-auto" style="width: 32px; height: 32px;">3</div>
+                        <small class="text-muted">Approved</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-lg border-0">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center py-3">
+                <h5 class="mb-0"><i class="fas fa-file-signature me-2"></i>Policy Application</h5>
+            </div>
+            <div class="card-body p-4">
+
+                <form method="POST" enctype="multipart/form-data" id="applicationForm">
+                    {% csrf_token %}
+                    
+                    <!-- Section: Verification -->
+                    <h6 class="text-primary text-uppercase mb-3"><i class="fas fa-user-shield me-2"></i>1. Identity Verification</h6>
+                    <div class="bg-white p-3 rounded mb-4 d-flex justify-content-between align-items-center border-start border-4 border-info">
+                        <div>
+                            <p class="mb-1 text-dark small fw-bold">Verified Aadhaar Identity</p>
+                            <h6 class="mb-0 fw-bold text-dark">XXXX-XXXX-{{ profile.aadhaar_number|slice:"-4:" }}</h6>
+                        </div>
+                        <div>
+                            <p class="mb-1 text-dark small fw-bold">ID Proof Status</p>
+                            <span class="badge bg-success text-white"><i class="fas fa-check-circle me-1"></i>Uploaded</span>
+                        </div>
+                        <div>
+                            <a href="{% url 'accounts:edit_profile' %}" class="btn btn-sm btn-outline-secondary">
+                                <i class="fas fa-edit me-1"></i>Update Docs
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Section: Policy Details -->
+                    <h6 class="text-primary text-uppercase mb-3"><i class="fas fa-clipboard-list me-2"></i>2. Policy Summary</h6>
+                    <div class="row mb-4">
+                        <div class="col-md-6 mb-3 mb-md-0">
+                            <label class="form-label text-muted small fw-bold">Selected Plan</label>
+                            <input type="text" class="form-control" value="{{ plan.policy_number }} - {{ plan.get_policy_type_display }}" readonly>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small fw-bold">Coverage (Sum Insured)</label>
+                            <input type="text" class="form-control" value="₹{{ plan.sum_insured|intcomma }}" readonly>
+                        </div>
+                    </div>
+
+                    <!-- Section: Premium Breakdown -->
+                    <h6 class="text-primary text-uppercase mb-3"><i class="fas fa-money-bill-wave me-2"></i>3. Premium Breakdown</h6>
+                    <div class="card bg-white border-0 mb-4 p-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-dark fw-bold">Base Premium</span>
+                            <span class="fw-bold text-dark">₹{{ base_prem|floatformat:2|intcomma }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2 border-bottom pb-2">
+                            <span class="text-dark fw-bold">Taxes (GST {{ gst_pct|floatformat:1 }}%)</span>
+                            <span class="fw-bold text-dark">₹{{ gst_amt|floatformat:2|intcomma }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mt-2 align-items-center">
+                            <span class="fw-bold text-dark fs-5">Estimated Total Premium</span>
+                            <span class="fw-bold text-primary fs-4">₹{{ total_prem|floatformat:2|intcomma }}</span>
+                        </div>
+                        <small class="text-dark mt-2 fst-italic float-end">*Final premium schedule will be dispatched upon administrative approval.</small>
+                    </div>
+
+                    <!-- Section: Motor Specific -->
+                    {% if is_motor %}
+                    <h6 class="text-primary text-uppercase mb-3"><i class="fas fa-car me-2"></i>4. Motor Details</h6>
+                    <div class="bg-white p-3 rounded mb-4 border border-light">
+                        <div class="mb-3">
+                            <label for="vehicle_number" class="form-label fw-bold">Vehicle Registration Number <span class="text-danger">*</span></label>
+                            <input type="text" name="vehicle_number" id="vehicle_number" class="form-control" placeholder="e.g. MH 12 AB 1234" required>
+                        </div>
+                        <div class="mb-0">
+                            <label for="rc_upload" class="form-label fw-bold">Upload RC (Registration Certificate) <span class="text-danger">*</span></label>
+                            <input type="file" name="rc_upload" id="rc_upload" class="form-control" accept="image/*,.pdf" required>
+                            <div class="form-text text-muted"><i class="fas fa-info-circle me-1"></i>Please upload a clear photo or PDF of your vehicle's RC.</div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Section: Consents -->
+                    <h6 class="text-primary text-uppercase mb-3"><i class="fas fa-tasks me-2"></i>{% if is_motor %}5{% else %}4{% endif %}. Understand & Confirm</h6>
+                    <div class="bg-white p-3 rounded mb-4 border border-light">
+                        <div class="form-check mb-4 custom-checkbox">
+                            <input class="form-check-input" type="checkbox" id="confirm_details" name="confirm_details" required>
+                            <label class="form-check-label ms-3" for="confirm_details">
+                                <span class="text-dark fw-bold d-block mb-1">Identity Verification Confirmation</span>
+                                <span class="text-dark small">I confirm that my demographic details and identity documents tied to my User Profile are accurate and legally verified.</span>
+                            </label>
+                        </div>
+                        <div class="form-check custom-checkbox">
+                            <input class="form-check-input" type="checkbox" id="confirm_terms" name="confirm_terms" required>
+                            <label class="form-check-label ms-3" for="confirm_terms">
+                                <span class="text-dark fw-bold d-block mb-1">Terms & Conditions</span>
+                                <span class="text-dark small">I agree to the <a href="#" class="text-primary fw-bold text-decoration-none">Terms & Conditions</a> and acknowledge that this is an application pending administrative approval.</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="d-flex justify-content-between mt-5 pt-3 border-top">
+                        <a href="{% url 'policy:browse' %}" class="btn btn-outline-secondary px-4 py-2">
+                            <i class="fas fa-arrow-left me-2"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-success px-5 py-2 fw-bold" id="submitBtn">
+                            Submit Application <i class="fas fa-paper-plane ms-2"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

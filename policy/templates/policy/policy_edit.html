@@ -1,0 +1,629 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Edit Policy — InsureAI Portal</title>
+
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Serif+Display&display=swap" rel="stylesheet"/>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+
+<style>
+
+body {
+    font-family: 'DM Sans', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #0a1628;
+    color: white;
+}
+
+.app {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* SIDEBAR MATCHING BASE.HTML */
+.sidebar{
+width:240px;
+background:#111c35;
+min-height:100vh;
+position:fixed;
+left:0;
+top:0;
+color:white;
+padding: 0 !important;
+border-right: 1px solid #1f335c;
+}
+
+.sidebar-header{
+padding: 20px;
+border-bottom: 1px solid #1f335c;
+text-align: center;
+}
+
+.sidebar-logo{
+font-family:'DM Serif Display',serif;
+font-size:20px;
+color:white;
+text-decoration:none;
+display: block;
+}
+
+.sidebar a{
+color:#9fb3d1;
+text-decoration:none;
+display:flex;
+align-items:center;
+gap: 12px;
+padding:12px 18px;
+transition: all 0.3s ease;
+border-left: 3px solid transparent;
+font-size: 14px;
+}
+
+.sidebar a i {
+font-size: 18px;
+transition: transform 0.3s ease;
+}
+
+.sidebar a:hover{
+background:rgba(26, 110, 245, 0.1);
+color:white;
+padding-left: 24px;
+border-left-color: #1a6ef5;
+}
+
+.sidebar a.active{
+background:rgba(26, 110, 245, 0.15);
+color:white;
+border-left-color: #1a6ef5;
+}
+
+.sidebar a:hover i {
+transform: scale(1.15);
+color: #1a6ef5;
+}
+
+.sidebar-logout {
+border-top: 1px solid #1f335c;
+margin-top: auto;
+}
+
+.nav-lbl {
+    font-size: 11px;
+    text-transform: uppercase;
+    color: #4c5d7a;
+    padding: 15px 18px 5px;
+    letter-spacing: 1px;
+}
+
+.nav-icon {
+    margin-right: 10px;
+}
+
+.sidebar-footer {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    right: 20px;
+}
+
+.user-chip {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    background-color: rgba(255,255,255,0.05);
+    border-radius: 8px;
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    background-color: #1a6ef5;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    margin-right: 10px;
+}
+
+.user-info p {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.user-info span {
+    font-size: 12px;
+    color: #9fb3d1;
+}
+
+.main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    margin-left: 240px;
+}
+
+.topbar {
+    background-color: #0f1b33;
+    border-bottom: 1px solid #1f335c;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.topbar-left {
+    display: flex;
+    align-items: center;
+}
+
+.btn-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #9fb3d1 !important;
+    text-decoration: none !important;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    margin-right: 20px;
+}
+
+.btn-back:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: white !important;
+    transform: translateX(-4px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.btn-back .back-icon {
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.btn-back:hover .back-icon {
+    transform: translateX(-3px) scale(1.2);
+}
+
+.btn-back::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transform: skewX(-20deg);
+}
+
+.btn-back:hover::after {
+    animation: shimmer-btn 1.5s infinite;
+}
+
+@keyframes shimmer-btn {
+    0% { left: -100%; }
+    100% { left: 200%; }
+}
+
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+}
+
+.breadcrumb a {
+    color: #9fb3d1;
+    text-decoration: none;
+}
+
+.bc-sep {
+    margin: 0 10px;
+    color: #6c757d;
+}
+
+.bc-cur {
+    color: white;
+}
+
+.topbar-right {
+    display: flex;
+    gap: 10px;
+}
+
+.btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+}
+
+.btn-primary {
+    background-color: #1a6ef5;
+    color: white;
+}
+
+.btn-secondary {
+    background-color: #374151;
+    color: white;
+}
+
+.content {
+    flex: 1;
+    padding: 20px;
+}
+
+.form-area {
+    max-width: 800px;
+}
+
+.card {
+    background-color: #111c35;
+    border: 1px solid #1f335c;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+}
+
+.card-header {
+    padding: 20px;
+    border-bottom: 1px solid #1f335c;
+}
+
+.card-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: white;
+    font-family: 'DM Serif Display', serif;
+}
+
+.fg {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    padding: 20px;
+}
+
+.fg-2 .field {
+    flex: 1 1 calc(50% - 20px);
+}
+
+.field {
+    margin-bottom: 20px;
+}
+
+.field label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: #9fb3d1;
+    font-size: 13px;
+}
+
+.field input, .field select {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid rgba(255,255,255,0.2);
+    background-color: #1e293b;
+    color: #ffffff;
+    border-radius: 8px;
+    font-size: 14px;
+    box-sizing: border-box;
+    line-height: 1.5;
+    position: relative;
+    z-index: 2;
+    transition: all 0.3s ease;
+}
+
+.field input::placeholder, .field select::placeholder {
+    color: #94a3b8;
+    opacity: 1;
+}
+
+.field input[readonly], .field select[readonly] {
+    background-color: #1e293b;
+    color: #ffffff;
+    cursor: not-allowed;
+    opacity: 1;
+    border-color: rgba(255,255,255,0.2);
+}
+
+.field input:hover, .field select:hover {
+    border-color: rgba(255,255,255,0.4);
+    background-color: #1e293b;
+}
+
+.field input:focus, .field select:focus {
+    background-color: #1e293b;
+    border-color: #1a6ef5;
+    color: #ffffff;
+    box-shadow: 0 0 0 3px rgba(26, 110, 245, 0.25);
+    outline: none;
+    z-index: 10;
+}
+
+.field select {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 15px center;
+    background-size: 12px 12px;
+}
+
+.field select option {
+    background-color: #111c35;
+    color: #ffffff;
+}
+
+.nav-btns {
+    padding: 20px;
+    text-align: right;
+    border-top: 1px solid #1f335c;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="app">
+
+<!-- SIDEBAR -->
+<nav class="sidebar shadow">
+    <div class="sidebar-header">
+        <a class="sidebar-logo" href="/">
+            InsureCRM
+        </a>
+    </div>
+
+    <div class="py-2">
+        <div class="nav-lbl">Overview</div>
+        
+        {% if request.user.is_superuser or request.user.role == "admin" %}
+        <a href="{% url 'accounts:admin_dashboard' %}">
+            <i class="bi bi-speedometer2"></i> Dashboard
+        </a>
+        {% endif %}
+
+        {% if request.user.role == "staff" %}
+        <a href="{% url 'accounts:staff_dashboard' %}">
+            <i class="bi bi-speedometer2"></i> Staff Dashboard
+        </a>
+        {% endif %}
+
+        {% if not request.user.is_superuser and request.user.role == "policyholder" %}
+        <a href="{% url 'accounts:policyholder_dashboard' %}">
+            <i class="bi bi-house"></i> Dashboard
+        </a>
+        {% endif %}
+
+        <a href="{% url 'policy:list' %}" class="active">
+            <i class="bi bi-file-earmark-text"></i> Policies
+        </a>
+
+        <a href="{% url 'claim:list' %}">
+            <i class="bi bi-shield-exclamation"></i> Claims
+        </a>
+
+        <a href="{% url 'claim:create' %}">
+            <i class="bi bi-plus-circle"></i> File Claim
+        </a>
+
+        <div class="nav-lbl">Account</div>
+
+        <a href="{% url 'accounts:profile' %}">
+            <i class="bi bi-person"></i> My Profile
+        </a>
+
+        <div style="margin-top: 40px;">
+            <a href="{% url 'accounts:logout' %}" style="color: #ff6b81;">
+                <i class="bi bi-box-arrow-right"></i> Logout
+            </a>
+        </div>
+    </div>
+    
+    <div class="sidebar-footer" style="padding: 20px; border-top: 1px solid #1f335c;">
+        <div class="user-chip">
+            <div class="user-avatar">
+                {{ request.user.first_name|slice:":1" }}{{ request.user.last_name|slice:":1" }}
+            </div>
+            <div class="user-info">
+                <p>{{ request.user.first_name }} {{ request.user.last_name }}</p>
+                <span>{{ request.user.role }}</span>
+            </div>
+        </div>
+    </div>
+</nav>
+
+
+<!-- MAIN -->
+<div class="main">
+
+<!-- TOPBAR -->
+<div class="topbar">
+
+<div class="topbar-left d-flex align-items-center">
+    <a class="btn-back" href="{% url 'policy:list' %}">
+        <span class="back-icon">←</span> Back to List
+    </a>
+
+    <div class="breadcrumb mb-0 ms-2">
+        <a href="{% url 'policy:list' %}">Policies</a>
+        <span class="bc-sep">&#8250;</span>
+        <a href="{% url 'policy:detail' policy.id %}">{{ policy.policy_number }}</a>
+        <span class="bc-sep">&#8250;</span>
+        <span class="bc-cur">Edit Policy</span>
+    </div>
+</div>
+
+<div class="topbar-right">
+
+<a href="{% url 'policy:detail' policy.id %}" class="btn btn-secondary">
+Discard
+</a>
+
+<button type="submit" form="edit-form" class="btn btn-primary">
+Save Changes
+</button>
+
+</div>
+
+</div>
+
+
+<!-- CONTENT -->
+<div class="content">
+
+<div class="form-area">
+
+<form id="edit-form" method="POST">
+
+{% csrf_token %}
+
+<div class="card">
+
+<div class="card-header">
+
+<div class="card-title-wrap">
+
+<div class="card-title">
+Policy Information
+</div>
+
+</div>
+
+</div>
+
+
+<div class="fg fg-2">
+
+<div class="field">
+<label>Policy Number</label>
+<input type="text" value="{{ policy.policy_number }}" readonly>
+</div>
+
+<div class="field">
+<label>Insurance Type</label>
+<select name="policy_type">
+    {% for type in policy_types %}
+        <option value="{{ type.code }}" {% if policy.policy_type == type.code %}selected{% endif %}>{{ type.name }}</option>
+    {% endfor %}
+    {% if not policy_types %}
+        <option value="health" {% if policy.policy_type == "health" %}selected{% endif %}>Health Insurance</option>
+        <option value="motor" {% if policy.policy_type == "motor" %}selected{% endif %}>Motor Insurance</option>
+        <option value="life" {% if policy.policy_type == "life" %}selected{% endif %}>Life Insurance</option>
+        <option value="home" {% if policy.policy_type == "home" %}selected{% endif %}>Home Insurance</option>
+    {% endif %}
+</select>
+</div>
+
+<div class="field">
+<label>Insurer</label>
+<select name="insurer_name">
+    {% for insurer in insurers %}
+        <option value="{{ insurer.name }}" {% if policy.insurer_name == insurer.name %}selected{% endif %}>{{ insurer.name }}</option>
+    {% endfor %}
+    {% if not insurers %}
+        <option value="Bajaj" {% if policy.insurer_name == "Bajaj" %}selected{% endif %}>Bajaj</option>
+        <option value="Tata" {% if policy.insurer_name == "Tata" %}selected{% endif %}>Tata</option>
+        <option value="Birla" {% if policy.insurer_name == "Birla" %}selected{% endif %}>Birla</option>
+        <option value="Acko" {% if policy.insurer_name == "Acko" %}selected{% endif %}>Acko</option>
+    {% endif %}
+</select>
+</div>
+
+<div class="field">
+<label>Start Date</label>
+<input type="date" name="start_date" value="{{ policy.start_date|date:'Y-m-d' }}">
+</div>
+
+<div class="field">
+<label>End Date</label>
+<input type="date" name="end_date" value="{{ policy.end_date|date:'Y-m-d' }}">
+</div>
+
+<div class="field">
+<label>Sum Insured</label>
+<input type="number" name="sum_insured" id="id_sum_insured" value="{{ policy.sum_insured }}">
+</div>
+
+<div class="field">
+<label>Deductible Amount</label>
+<input type="number" name="deductible" id="id_deductible" value="{{ policy.deductible }}" step="0.01" readonly>
+</div>
+
+<div class="field">
+<label>Status</label>
+<select name="status">
+<option value="draft" {% if policy.status == 'draft' %}selected{% endif %}>Draft</option>
+<option value="active" {% if policy.status == 'active' %}selected{% endif %}>Active</option>
+<option value="approved" {% if policy.status == 'approved' %}selected{% endif %}>Approved</option>
+<option value="pending" {% if policy.status == 'pending' %}selected{% endif %}>Pending</option>
+<option value="expired" {% if policy.status == 'expired' %}selected{% endif %}>Expired</option>
+<option value="cancelled" {% if policy.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+</select>
+</div>
+
+</div>
+
+
+<div class="nav-btns">
+
+<button type="submit" class="btn btn-primary">
+Update Policy
+</button>
+
+</div>
+
+</form>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const sumInsuredInput = document.getElementById('id_sum_insured');
+        const deductibleInput = document.getElementById('id_deductible');
+
+        function calculateDeductible() {
+            const sumInsured = parseFloat(sumInsuredInput.value) || 0;
+            
+            if (sumInsured > 0) {
+                let deductible = sumInsured * 0.03;
+                if (deductible < 5000) deductible = 5000;
+                if (deductible > 25000) deductible = 25000;
+                deductibleInput.value = deductible.toFixed(2);
+            } else {
+                deductibleInput.value = "0.00";
+            }
+        }
+
+        sumInsuredInput.addEventListener('input', calculateDeductible);
+        
+        // Initial calculation to ensure consistency
+        calculateDeductible();
+    });
+</script>
+</body>
+</html>

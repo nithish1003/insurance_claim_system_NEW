@@ -1,0 +1,539 @@
+{% extends "base.html" %}
+{% load humanize file_filters %}
+
+{% block title %}Admin Reports Dashboard{% endblock %}
+
+{% block breadcrumb %}Reports & Analytics{% endblock %}
+
+{% block extra_css %}
+<style>
+    .report-card {
+        background: rgba(30, 41, 59, 0.4);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 16px;
+        padding: 24px;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 4px 24px -2px rgba(0, 0, 0, 0.2);
+    }
+    .report-card::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0; right: 0; height: 100%;
+        background: radial-gradient(circle at top left, rgba(255,255,255,0.03), transparent);
+        pointer-events: none;
+    }
+    .report-card:hover {
+        transform: translateY(-8px);
+        border-color: rgba(255, 255, 255, 0.2);
+        box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.4);
+        background: rgba(30, 41, 59, 0.6);
+    }
+    .stat-val {
+        font-size: 32px;
+        font-weight: 800;
+        margin-bottom: 8px;
+        letter-spacing: -1px;
+    }
+    .stat-label {
+        font-size: 11px;
+        color: rgba(148, 163, 184, 0.8);
+        text-transform: uppercase;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+        margin-bottom: 4px;
+    }
+    .skp-accent {
+        position: absolute;
+        bottom: 0; left: 24px; right: 24px;
+        height: 3px;
+        border-radius: 2px 2px 0 0;
+        background: #1a6ef5;
+        box-shadow: 0 0 12px rgba(26, 110, 245, 0.4);
+    }
+    .timeline-item {
+        border-left: 2px solid #1a6ef5;
+        padding-left: 20px;
+        position: relative;
+        padding-bottom: 20px;
+    }
+    .timeline-item::before {
+        content: '';
+        width: 12px;
+        height: 12px;
+        background: #1a6ef5;
+        border-radius: 50%;
+        position: absolute;
+        left: -7px;
+        top: 0;
+    }
+    
+    /* Activity Log Enhancements */
+    .activity-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        flex-shrink: 0;
+    }
+    .status-success { background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); }
+    .status-error { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
+    .status-warning { background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.2); }
+    .status-info { background: rgba(59, 130, 246, 0.1); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.2); }
+    
+    .cursor-pointer { cursor: pointer; }
+    .activity-filters .btn { border-radius: 20px; font-size: 11px; padding: 4px 12px; }
+    .activity-filters .btn.active { background: #1a6ef5; color: white; border-color: #1a6ef5; }
+    
+    .timeline-item.activity-item {
+        border-left: none;
+        padding-left: 0;
+        margin-bottom: 24px;
+    }
+    .timeline-item.activity-item::before { display: none; }
+
+    /* Fraud Alert Enhancements */
+    @keyframes alert-pulse {
+        0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+        70% { transform: scale(1.02); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+        100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    }
+    .alert-card-header {
+        position: relative;
+    }
+    .alert-badge-count {
+        position: absolute;
+        top: -10px;
+        right: -10px;
+        background: #ef4444;
+        color: white;
+        border-radius: 50%;
+        width: 22px;
+        height: 22px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        font-weight: bold;
+        box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+        border: 2px solid #0f172a;
+    }
+    .fraud-alert-container.has-critical {
+        animation: alert-pulse 2s infinite;
+        border-color: #ef4444 !important;
+    }
+    .fraud-alert-item {
+        transition: all 0.2s ease;
+        cursor: pointer;
+        text-decoration: none;
+        display: block;
+        border-left: 4px solid #ef4444;
+    }
+    .fraud-alert-item:hover {
+        transform: translateX(5px);
+        background: rgba(239, 68, 68, 0.15);
+    }
+    .fraud-alert-item.warning {
+        border-left-color: #f59e0b;
+    }
+    .fraud-alert-item.critical {
+        border-left-color: #ef4444;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row g-4 mb-4" data-aos="fade-up">
+    <!-- Claims Summary -->
+    <div class="col-md-3">
+        <div class="report-card hover-scale" data-aos="zoom-in" data-aos-delay="100">
+            <div class="stat-label">Total Claims</div>
+            <div class="stat-val text-white">{{ total_claims_count }}</div>
+            <div class="skp-accent bg-primary"></div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="report-card hover-scale" data-aos="zoom-in" data-aos-delay="200">
+            <div class="stat-label">Approved Amount</div>
+            <div class="stat-val text-success">₹{{ financials.total_approved|default:0|intcomma }}</div>
+            <div class="skp-accent bg-success"></div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="report-card hover-scale" data-aos="zoom-in" data-aos-delay="300">
+            <div class="stat-label">Claimed Volume</div>
+            <div class="stat-val text-info">₹{{ financials.total_claimed|default:0|intcomma }}</div>
+            <div class="skp-accent bg-info"></div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="report-card hover-scale" data-aos="zoom-in" data-aos-delay="400">
+            <div class="stat-label">Rejected Volume</div>
+            <div class="stat-val text-danger">₹{{ financials.total_rejected|default:0|intcomma }}</div>
+            <div class="skp-accent bg-danger"></div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4" data-aos="fade-up" data-aos-delay="200">
+    <!-- Chart Section -->
+    <div class="col-md-8">
+        <div class="report-card h-100 hover-scale">
+            <h6 class="mb-4">Monthly Claim Distribution</h6>
+            <canvas id="monthlyChart" height="150"></canvas>
+        </div>
+    </div>
+    <!-- Status Breakdown -->
+    <div class="col-md-4">
+        <div class="report-card h-100 hover-scale">
+            <h6 class="mb-4">Claims by Status</h6>
+            <div class="d-flex flex-column gap-3 stagger-container">
+                {% for status in status_counts %}
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="text-muted small text-capitalize">{{ status.status|replace:"_, " }}</span>
+                    <span class="badge bg-dark border border-secondary">{{ status.total }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4" data-aos="fade-up" data-aos-delay="300">
+    <!-- Staff Performance Table -->
+    <div class="col-md-8">
+        <div class="report-card">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h6 class="mb-0">AUDITOR PERFORMANCE METRICS</h6>
+                <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-2 py-1 small">Staff Roster Analytics</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-dark table-hover small align-middle">
+                    <thead>
+                        <tr class="text-muted border-bottom border-secondary">
+                            <th class="ps-3 py-3">Auditor Name</th>
+                            <th class="py-3">Volume Audited</th>
+                            <th class="py-3">Financial Throughput</th>
+                            <th class="py-3">Decision Accuracy</th>
+                            <th class="py-3 text-end pe-3">Processing SLA</th>
+                        </tr>
+                    </thead>
+                    <tbody class="stagger-container">
+                        {% for s in staff_performance %}
+                        <tr class="border-bottom border-secondary border-opacity-25">
+                            <td class="ps-3 py-3">
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="bg-primary rounded-circle text-center d-inline-block" style="width: 24px; height: 24px; line-height: 24px; font-size: 10px; font-weight: bold;">
+                                        {{ s.name|slice:":1"|upper }}
+                                    </div>
+                                    <span class="fw-bold">{{ s.name }}</span>
+                                </div>
+                            </td>
+                            <td class="py-3">{{ s.handled }} <small class="text-muted">Claims</small></td>
+                            <td class="py-3">
+                                <div class="fw-bold text-info">₹{{ s.total_audited|intcomma }}</div>
+                                <div class="x-small text-muted">Avg: ₹{{ s.avg_rec|intcomma }}</div>
+                            </td>
+                            <td class="py-3">
+                                <div class="d-flex align-items-center gap-2" style="width: 120px;">
+                                    <div class="progress flex-grow-1" style="height: 4px; background: rgba(255,255,255,0.05);">
+                                        <div class="progress-bar {% if s.accuracy > 80 %}bg-success{% elif s.accuracy > 50 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                             style="width: {{ s.accuracy }}%"></div>
+                                    </div>
+                                    <span class="x-small fw-bold">{{ s.accuracy }}%</span>
+                                </div>
+                            </td>
+                            <td class="py-3 text-end pe-3">
+                                <span class="badge {% if 'N/A' in s.avg_time %}bg-secondary{% else %}bg-dark border border-secondary{% endif %} opacity-75">
+                                    {{ s.avg_time }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <!-- Alerts / Fraud Section -->
+    <div class="col-md-4">
+        <div id="fraud-alerts-section" class="report-card hover-scale fraud-alert-container">
+            <div class="alert-card-header d-flex justify-content-between align-items-center mb-3">
+                <h6 class="mb-0 text-warning"><i class="bi bi-exclamation-triangle me-2"></i>Fraud & Risk Alerts</h6>
+                <div id="alert-badge" class="alert-badge-count" style="display:none;">0</div>
+            </div>
+            
+            <div id="dynamic-alerts-list" class="stagger-container">
+                <div class="text-center py-4 text-muted small opacity-50">
+                    <span class="spinner-border spinner-border-sm me-2"></span> Analyzing risks...
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4" data-aos="fade-up" data-aos-delay="400">
+    <!-- Activity Timeline -->
+    <div class="col-md-12">
+        <div class="report-card">
+            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+                <h6 class="mb-0"><i class="bi bi-activity me-2"></i>Recent System Activity</h6>
+                
+                <div class="d-flex gap-3 align-items-center flex-wrap">
+                    <!-- Search Input -->
+                    <div class="input-group input-group-sm hover-scale" style="max-width: 200px;">
+                        <span class="input-group-text bg-transparent border-secondary text-muted"><i class="bi bi-search"></i></span>
+                        <input type="text" id="activity-search" class="form-control bg-transparent border-secondary text-white" 
+                               placeholder="Search logs..." oninput="debounceSearch(this.value)">
+                    </div>
+
+                    <!-- Filter Tabs -->
+                    <div class="btn-group btn-group-sm activity-filters">
+                        <button type="button" class="btn btn-outline-secondary active" onclick="filterLogs('all', this)">All</button>
+                        <button type="button" class="btn btn-outline-secondary" onclick="filterLogs('claim', this)">Claims</button>
+                        <button type="button" class="btn btn-outline-secondary" onclick="filterLogs('payment', this)">Payments</button>
+                        <button type="button" class="btn btn-outline-secondary" onclick="filterLogs('error', this)">Errors</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="activity-timeline" class="timeline mt-3 stagger-container">
+                {% for act in recent_activity %}
+                <div class="timeline-item activity-item" data-type="{{ act.log_type }}">
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="activity-icon status-{{ act.status }}">
+                            {% if act.log_type == 'claim' %}<i class="bi bi-clipboard-check"></i>
+                            {% elif act.log_type == 'payment' %}<i class="bi bi-credit-card"></i>
+                            {% elif act.log_type == 'error' %}<i class="bi bi-x-circle"></i>
+                            {% else %}<i class="bi bi-cpu"></i>{% endif %}
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="fw-bold {% if act.status == 'error' %}text-danger cursor-pointer{% endif %}" 
+                                      {% if act.status == 'error' %}onclick="alert('Error Details: {{ act.description|escapejs }}')"{% endif %}>
+                                    {{ act.title }}
+                                </span>
+                                <small class="text-muted">{{ act.created_at|naturaltime }}</small>
+                            </div>
+                            <div class="text-muted small mt-1">
+                                {{ act.description|truncatechars:100 }}
+                                {% if act.claim %}<span class="badge bg-dark border border-secondary ms-1">{{ act.claim.claim_number }}</span>{% endif %}
+                                {% if act.user %}<span class="ms-1 text-info-premium x-small">By: {{ act.user.username }}</span>{% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div id="no-logs" class="text-center py-5 text-muted opacity-50">
+                    <i class="bi bi-inbox fs-2 d-block mb-2"></i> No system activity recorded.
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Load More Section -->
+            <div id="load-more-container" class="text-center mt-4" {% if not recent_activity %}style="display:none;"{% endif %}>
+                <button id="btn-load-more" class="btn btn-sm btn-outline-primary px-4 py-2" onclick="loadMoreLogs()">
+                    <span id="load-more-text">Load More Activity</span>
+                    <span id="load-more-spinner" class="spinner-border spinner-border-sm ms-2" style="display: none;"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<!-- Chart Data -->
+{{ monthly_data|json_script:"monthly-data" }}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const monthlyDataContent = JSON.parse(document.getElementById('monthly-data').textContent);
+    const labels = monthlyDataContent.map(d => d.label);
+    const chartData = monthlyDataContent.map(d => d.count);
+
+    const ctx = document.getElementById('monthlyChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Claims Submitted',
+                data: chartData,
+                backgroundColor: 'rgba(26, 110, 245, 0.5)',
+                borderColor: '#1a6ef5',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#7a8ba8' } },
+                x: { grid: { display: false }, ticks: { color: '#7a8ba8' } }
+            },
+            plugins: { legend: { display: false } }
+        }
+    });
+
+    // 2. Activity Log Pagination, Filtering & Search
+    let currentPage = 1;
+    let currentFilter = 'all';
+    let currentSearch = '';
+    let searchTimer;
+
+    function debounceSearch(q) {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(() => searchLogs(q), 500);
+    }
+
+    async function searchLogs(q) {
+        currentSearch = q;
+        currentPage = 1;
+        document.getElementById('activity-timeline').innerHTML = '';
+        await fetchLogs();
+    }
+
+    async function filterLogs(type, btn) {
+        document.querySelectorAll('.activity-filters .btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentFilter = type;
+        currentPage = 1;
+        document.getElementById('activity-timeline').innerHTML = '';
+        await fetchLogs();
+    }
+
+    async function loadMoreLogs() {
+        currentPage++;
+        await fetchLogs();
+    }
+
+    async function fetchLogs() {
+        const btn = document.getElementById('btn-load-more');
+        const spinner = document.getElementById('load-more-spinner');
+        const text = document.getElementById('load-more-text');
+        
+        btn.disabled = true;
+        spinner.style.display = 'inline-block';
+        text.innerText = 'Loading...';
+
+        try {
+            const response = await fetch(`/reports/api/activity/?page=${currentPage}&type=${currentFilter}&q=${encodeURIComponent(currentSearch)}`);
+            const result = await response.json();
+            
+            if (result.data && result.data.length > 0) {
+                appendLogs(result.data);
+                document.getElementById('no-logs')?.remove();
+            } else if (currentPage === 1) {
+                document.getElementById('activity-timeline').innerHTML = `
+                    <div id="no-logs" class="text-center py-5 text-muted opacity-50">
+                        <i class="bi bi-inbox fs-2 d-block mb-2"></i> No system activity matches your query.
+                    </div>
+                `;
+            }
+
+            document.getElementById('load-more-container').style.display = result.has_more ? 'block' : 'none';
+        } catch (error) {
+            console.error('Error:', error);
+        } finally {
+            btn.disabled = false;
+            spinner.style.display = 'none';
+            text.innerText = 'Load More Activity';
+        }
+    }
+
+    function appendLogs(logs) {
+        const container = document.getElementById('activity-timeline');
+        logs.forEach(act => {
+            const iconClass = act.type === 'claim' ? 'bi-clipboard-check' : 
+                             act.type === 'payment' ? 'bi-credit-card' : 
+                             act.type === 'error' ? 'bi-x-circle' : 'bi-cpu';
+            
+            const html = `
+                <div class="timeline-item activity-item animate-fadeIn">
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="activity-icon status-${act.status}">
+                            <i class="bi ${iconClass}"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="fw-bold ${act.status === 'error' ? 'text-danger cursor-pointer' : ''}" 
+                                      ${act.status === 'error' ? 'onclick="alert(\'Error Details: ' + act.description.replace(/'/g, "\\'") + '\')"' : ''}>
+                                    ${act.title}
+                                </span>
+                                <small class="text-muted">${act.time_ago}</small>
+                            </div>
+                            <div class="text-muted small mt-1">
+                                ${act.description}
+                                ${act.claim_number ? `<span class="badge bg-dark border border-secondary ms-1">${act.claim_number}</span>` : ''}
+                                <span class="ms-1 text-info-premium x-small">By: ${act.user}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', html);
+        });
+    }
+
+    // 3. Fraud & Risk Alerts Dynamic Loading
+    async function loadAlerts() {
+        const container = document.getElementById('dynamic-alerts-list');
+        const badge = document.getElementById('alert-badge');
+        const section = document.getElementById('fraud-alerts-section');
+        
+        try {
+            const response = await fetch('/reports/api/alerts/');
+            if (!response.ok) throw new Error('Alert fetch failed');
+            const data = await response.json();
+            
+            if (data.count > 0) {
+                badge.innerText = data.count;
+                badge.style.display = 'flex';
+                
+                // Show pulse if critical alerts exist
+                const hasCritical = data.alerts.some(a => a.status === 'critical');
+                if (hasCritical) {
+                    section.classList.add('has-critical');
+                } else {
+                    section.classList.remove('has-critical');
+                }
+                
+                let html = '';
+                data.alerts.forEach(alert => {
+                    const icon = alert.status === 'critical' ? 'bi-exclamation-octagon' : 'bi-exclamation-triangle';
+                    const bgColor = alert.status === 'critical' ? 'bg-danger bg-opacity-10' : 'bg-warning bg-opacity-10';
+                    const textColor = alert.status === 'critical' ? 'text-danger' : 'text-warning';
+                    
+                    html += `
+                        <a href="/claims/${alert.id}/" class="fraud-alert-item ${alert.status} p-2 mb-2 rounded ${bgColor} small animate-fadeIn">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <span class="${textColor} fw-bold"><i class="bi ${icon} me-1"></i>${alert.claim_number}</span>
+                                <span class="badge bg-dark border border-secondary x-small mt-1">Review</span>
+                            </div>
+                            <div class="text-white opacity-75 mt-1">${alert.message}</div>
+                        </a>
+                    `;
+                });
+                container.innerHTML = html;
+            } else {
+                badge.style.display = 'none';
+                section.classList.remove('has-critical');
+                container.innerHTML = '<div class="text-center py-4 text-muted small opacity-50">No active risk alerts.</div>';
+            }
+        } catch (error) {
+            console.error('Alert Error:', error);
+        }
+    }
+
+    // Initialize and set interval
+    loadAlerts();
+    setInterval(loadAlerts, 30000); // Refresh every 30 seconds
+</script>
+{% endblock %}

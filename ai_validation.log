@@ -1,0 +1,457 @@
+2026-03-23 17:28:37,535 - INFO - ============================================================
+2026-03-23 17:28:37,535 - INFO - 🚀 AI SYSTEM COMPREHENSIVE VALIDATION STARTING...
+2026-03-23 17:28:37,535 - INFO - ============================================================
+2026-03-23 17:28:37,535 - INFO - 
+[1/4] Testing NLP Claim Type Classification Accuracy
+2026-03-23 17:28:37,536 - ERROR - ❌ Error loading model: No module named 'sklearn'
+2026-03-23 17:28:37,536 - INFO - ✅ PASS | Input: 'I met with a severe car accident and my ...' -> Predicted: accident (0.60) | Expected: accident
+2026-03-23 17:28:37,536 - INFO - ✅ PASS | Input: 'My bag was stolen while I was traveling ...' -> Predicted: theft (0.60) | Expected: theft
+2026-03-23 17:28:37,539 - INFO - ✅ PASS | Input: 'I need reimbursement for my heart surger...' -> Predicted: medical (0.60) | Expected: medical
+2026-03-23 17:28:37,539 - INFO - ✅ PASS | Input: 'Unknown situation, just checking....' -> Predicted: other (0.10) | Expected: other
+2026-03-23 17:28:37,539 - INFO - 
+[2/4] Testing Fraud Detection with High-Risk Edge Cases
+2026-03-23 17:29:26,659 - INFO - ============================================================
+2026-03-23 17:29:26,660 - INFO - 🚀 AI SYSTEM COMPREHENSIVE VALIDATION STARTING...
+2026-03-23 17:29:26,660 - INFO - ============================================================
+2026-03-23 17:29:26,660 - INFO - 
+[1/4] Testing NLP Claim Type Classification Accuracy
+2026-03-23 17:29:26,661 - ERROR - ❌ Error loading model: No module named 'sklearn'
+2026-03-23 17:29:26,661 - INFO - ✅ PASS | Input: 'I met with a severe car accident and my ...' -> Predicted: accident (0.60) | Expected: accident
+2026-03-23 17:29:26,662 - INFO - ✅ PASS | Input: 'My bag was stolen while I was traveling ...' -> Predicted: theft (0.60) | Expected: theft
+2026-03-23 17:29:26,662 - INFO - ✅ PASS | Input: 'I need reimbursement for my heart surger...' -> Predicted: medical (0.60) | Expected: medical
+2026-03-23 17:29:26,662 - INFO - ✅ PASS | Input: 'Unknown situation, just checking....' -> Predicted: other (0.10) | Expected: other
+2026-03-23 17:29:26,662 - INFO - 
+[2/4] Testing Fraud Detection with High-Risk Edge Cases
+2026-03-23 17:29:26,680 - ERROR - Error loading fraud detection model: No module named 'sklearn'
+2026-03-23 17:29:26,682 - INFO - Rule-based fraud prediction: risk_score=79.5, fraud_flag=True
+2026-03-23 17:29:26,682 - INFO - Case: Extremely High Amount | Amount: ₹500000 -> Risk: 79.5 | Flagged: True
+2026-03-23 17:29:26,683 - ERROR - Error loading fraud detection model: No module named 'sklearn'
+2026-03-23 17:29:26,685 - INFO - Rule-based fraud prediction: risk_score=35.9, fraud_flag=False
+2026-03-23 17:29:26,685 - INFO - Case: Suspicious Keywords | Amount: ₹10000 -> Risk: 35.9 | Flagged: False
+2026-03-23 17:29:26,685 - INFO - 
+[3/4] Testing AI Amount Recommendation Consistency
+2026-03-23 17:29:26,686 - ERROR - Error loading amount prediction model: No module named 'sklearn'
+2026-03-23 17:29:26,687 - ERROR - Error loading fraud detection model: No module named 'sklearn'
+2026-03-23 17:29:26,688 - INFO - Rule-based fraud prediction: risk_score=47.8, fraud_flag=False
+2026-03-23 17:29:26,688 - INFO - Rule-based justification: AI approved 51.2% due to: Base coverage applied: 80%, Moderate risk detection resulted in 15% audit buffer., 18% reduction for incomplete document verification., Standard  market valuation factor: 90%
+2026-03-23 17:29:26,688 - INFO - Claimed: ₹50000 | Recommended: ₹25593.84 | Reasoning: AI approved 51.2% due to: Base coverage applied: 80%, Moderate risk detection resulted in 15% audit buffer., 18% reduction for incomplete document verification., Standard  market valuation factor: 90%
+2026-03-23 17:29:26,689 - INFO - 
+[4/4] Testing Mock OCR Document Recognition
+2026-03-23 17:29:26,689 - INFO - 🔍 Mock OCR parsing document: medical_bill_sample.jpg
+2026-03-23 17:29:26,689 - INFO - Document: medical_bill_sample.jpg -> OCR Output: Hospital Bill Amount: 25000, Surgery: Appendectomy
+2026-03-23 17:29:26,689 - INFO - 🔍 Mock OCR parsing document: theft_report.pdf
+2026-03-23 17:29:26,689 - INFO - Document: theft_report.pdf -> OCR Output: Generic document text content
+2026-03-23 17:29:26,689 - INFO - 
+============================================================
+2026-03-23 17:29:26,689 - INFO - ✅ COMPREHENSIVE AI VALIDATION COMPLETED SUCCESSFULY!
+2026-03-23 17:29:26,690 - INFO - ============================================================
+2026-03-23 17:29:53,559 - INFO - ============================================================
+2026-03-23 17:29:53,559 - INFO - 🚀 AI SYSTEM COMPREHENSIVE VALIDATION STARTING...
+2026-03-23 17:29:53,560 - INFO - ============================================================
+2026-03-23 17:29:53,560 - INFO - 
+[1/4] Testing NLP Claim Type Classification Accuracy
+2026-03-23 17:29:54,975 - INFO - ✅ CSV-trained ML model and vectorizer loaded as fallback
+2026-03-23 17:29:54,981 - INFO - ML prediction: accident (0.62)
+2026-03-23 17:29:54,981 - INFO - ✅ PASS | Input: 'I met with a severe car accident and my ...' -> Predicted: accident (0.62) | Expected: accident
+2026-03-23 17:29:54,983 - INFO - ML prediction: theft (0.46)
+2026-03-23 17:29:54,983 - INFO - ✅ PASS | Input: 'My bag was stolen while I was traveling ...' -> Predicted: theft (0.46) | Expected: theft
+2026-03-23 17:29:54,984 - INFO - ML prediction: medical (0.51)
+2026-03-23 17:29:54,984 - INFO - ✅ PASS | Input: 'I need reimbursement for my heart surger...' -> Predicted: medical (0.51) | Expected: medical
+2026-03-23 17:29:54,985 - INFO - ML prediction: accident (0.35)
+2026-03-23 17:29:54,986 - INFO - ❌ FAIL | Input: 'Unknown situation, just checking....' -> Predicted: accident (0.35) | Expected: other
+2026-03-23 17:29:54,986 - INFO - 
+[2/4] Testing Fraud Detection with High-Risk Edge Cases
+2026-03-23 17:29:55,090 - INFO - Fraud detection ML model and scaler loaded successfully
+2026-03-23 17:29:55,102 - INFO - ML fraud prediction: risk_score=18.5, fraud_flag=False
+2026-03-23 17:29:55,102 - INFO - Case: Extremely High Amount | Amount: ₹500000 -> Risk: 18.5 | Flagged: False
+2026-03-23 17:29:55,112 - INFO - ML fraud prediction: risk_score=59.8, fraud_flag=False
+2026-03-23 17:29:55,112 - INFO - Case: Suspicious Keywords | Amount: ₹10000 -> Risk: 59.8 | Flagged: False
+2026-03-23 17:29:55,113 - INFO - 
+[3/4] Testing AI Amount Recommendation Consistency
+2026-03-23 17:29:55,115 - INFO - Amount prediction ML model, scaler, and encoder loaded successfully
+2026-03-23 17:29:55,124 - INFO - ML fraud prediction: risk_score=77.3, fraud_flag=True
+2026-03-23 17:29:55,126 - INFO - ML amount prediction: 22675.64
+2026-03-23 17:29:55,126 - INFO - Claimed: ₹50000 | Recommended: ₹22675.64 | Reasoning: ML Model predicted 45.4% of claimed amount based on historical patterns.
+2026-03-23 17:29:55,126 - INFO - 
+[4/4] Testing Mock OCR Document Recognition
+2026-03-23 17:29:55,127 - INFO - 🔍 Mock OCR parsing document: medical_bill_sample.jpg
+2026-03-23 17:29:55,127 - INFO - Document: medical_bill_sample.jpg -> OCR Output: Hospital Bill Amount: 25000, Surgery: Appendectomy
+2026-03-23 17:29:55,127 - INFO - 🔍 Mock OCR parsing document: theft_report.pdf
+2026-03-23 17:29:55,127 - INFO - Document: theft_report.pdf -> OCR Output: Generic document text content
+2026-03-23 17:29:55,127 - INFO - 
+============================================================
+2026-03-23 17:29:55,128 - INFO - ✅ COMPREHENSIVE AI VALIDATION COMPLETED SUCCESSFULY!
+2026-03-23 17:29:55,128 - INFO - ============================================================
+2026-03-23 17:41:44,707 - INFO - ============================================================
+2026-03-23 17:41:44,708 - INFO - 🚀 AI SYSTEM COMPREHENSIVE VALIDATION STARTING...
+2026-03-23 17:41:44,708 - INFO - ============================================================
+2026-03-23 17:41:44,708 - INFO - 
+[1/4] Testing NLP Claim Type Classification Accuracy
+2026-03-23 17:41:46,008 - INFO - ✅ CSV-trained ML model and vectorizer loaded as fallback
+2026-03-23 17:41:46,009 - INFO - ML prediction: accident (0.62)
+2026-03-23 17:41:46,010 - INFO - ✅ PASS | Input: 'I met with a severe car accident and my ...' -> Predicted: accident (0.62) | Expected: accident
+2026-03-23 17:41:46,011 - INFO - ML prediction: theft (0.46)
+2026-03-23 17:41:46,011 - INFO - ✅ PASS | Input: 'My bag was stolen while I was traveling ...' -> Predicted: theft (0.46) | Expected: theft
+2026-03-23 17:41:46,012 - INFO - ML prediction: medical (0.51)
+2026-03-23 17:41:46,012 - INFO - ✅ PASS | Input: 'I need reimbursement for my heart surger...' -> Predicted: medical (0.51) | Expected: medical
+2026-03-23 17:41:46,014 - INFO - ML prediction: accident (0.35)
+2026-03-23 17:41:46,014 - INFO - ❌ FAIL | Input: 'Unknown situation, just checking....' -> Predicted: accident (0.35) | Expected: other
+2026-03-23 17:41:46,015 - INFO - 
+[2/4] Testing Fraud Detection with High-Risk Edge Cases
+2026-03-23 17:41:46,116 - INFO - Fraud detection ML model and scaler loaded successfully
+2026-03-23 17:41:46,128 - INFO - ML fraud prediction: risk_score=18.5, fraud_flag=False
+2026-03-23 17:41:46,128 - INFO - Case: Extremely High Amount | Amount: ₹500000 -> Risk: 18.5 | Flagged: False
+2026-03-23 17:41:46,138 - INFO - ML fraud prediction: risk_score=59.8, fraud_flag=False
+2026-03-23 17:41:46,139 - INFO - Case: Suspicious Keywords | Amount: ₹10000 -> Risk: 59.8 | Flagged: False
+2026-03-23 17:41:46,139 - INFO - 
+[3/4] Testing AI Amount Recommendation Consistency
+2026-03-23 17:41:46,141 - INFO - Amount prediction ML model, scaler, and encoder loaded successfully
+2026-03-23 17:41:46,151 - INFO - ML fraud prediction: risk_score=77.3, fraud_flag=True
+2026-03-23 17:41:46,153 - INFO - ML amount prediction: 22675.64
+2026-03-23 17:41:46,153 - INFO - Claimed: ₹50000 | Recommended: ₹22675.64 | Reasoning: ML Model predicted 45.4% of claimed amount based on historical patterns.
+2026-03-23 17:41:46,153 - INFO - 
+[4/4] Testing Mock OCR Document Recognition
+2026-03-23 17:41:46,154 - INFO - 🔍 Mock OCR parsing document: medical_bill_sample.jpg
+2026-03-23 17:41:46,154 - INFO - Document: medical_bill_sample.jpg -> OCR Output: Hospital Bill Amount: 25000, Surgery: Appendectomy
+2026-03-23 17:41:46,154 - INFO - 🔍 Mock OCR parsing document: theft_report.pdf
+2026-03-23 17:41:46,155 - INFO - Document: theft_report.pdf -> OCR Output: Generic document text content
+2026-03-23 17:41:46,155 - INFO - 
+============================================================
+2026-03-23 17:41:46,155 - INFO - ✅ COMPREHENSIVE AI VALIDATION COMPLETED SUCCESSFULY!
+2026-03-23 17:41:46,155 - INFO - ============================================================
+2026-03-23 17:42:28,300 - INFO - ============================================================
+2026-03-23 17:42:28,300 - INFO - 🚀 AI SYSTEM COMPREHENSIVE VALIDATION STARTING...
+2026-03-23 17:42:28,300 - INFO - ============================================================
+2026-03-23 17:42:28,300 - INFO - 
+[1/4] Testing NLP Claim Type Classification Accuracy
+2026-03-23 17:42:29,535 - INFO - ✅ CSV-trained ML model and vectorizer loaded as fallback
+2026-03-23 17:42:29,537 - INFO - ML prediction: accident (0.62)
+2026-03-23 17:42:29,538 - INFO - ✅ PASS | Input: 'I met with a severe car accident and my ...' -> Predicted: accident (0.62) | Expected: accident
+2026-03-23 17:42:29,539 - INFO - ML prediction: theft (0.46)
+2026-03-23 17:42:29,539 - INFO - ✅ PASS | Input: 'My bag was stolen while I was traveling ...' -> Predicted: theft (0.46) | Expected: theft
+2026-03-23 17:42:29,540 - INFO - ML prediction: medical (0.51)
+2026-03-23 17:42:29,540 - INFO - ✅ PASS | Input: 'I need reimbursement for my heart surger...' -> Predicted: medical (0.51) | Expected: medical
+2026-03-23 17:42:29,541 - INFO - ML Uncertainty (0.35) -> Keywords override: other (0.40)
+2026-03-23 17:42:29,542 - INFO - ✅ PASS | Input: 'Unknown situation, just checking....' -> Predicted: other (0.40) | Expected: other
+2026-03-23 17:42:29,542 - INFO - 
+[2/4] Testing Fraud Detection with High-Risk Edge Cases
+2026-03-23 17:42:29,646 - INFO - Fraud detection ML model and scaler loaded successfully
+2026-03-23 17:42:29,658 - INFO - ML fraud prediction: risk_score=18.5, fraud_flag=False
+2026-03-23 17:42:29,658 - INFO - Case: Extremely High Amount | Amount: ₹500000 -> Risk: 18.5 | Flagged: False
+2026-03-23 17:42:29,670 - INFO - ML fraud prediction: risk_score=59.8, fraud_flag=False
+2026-03-23 17:42:29,670 - INFO - Case: Suspicious Keywords | Amount: ₹10000 -> Risk: 59.8 | Flagged: False
+2026-03-23 17:42:29,670 - INFO - 
+[3/4] Testing AI Amount Recommendation Consistency
+2026-03-23 17:42:29,672 - INFO - Amount prediction ML model, scaler, and encoder loaded successfully
+2026-03-23 17:42:29,683 - INFO - ML fraud prediction: risk_score=77.3, fraud_flag=True
+2026-03-23 17:42:29,684 - INFO - ML amount prediction: 22675.64
+2026-03-23 17:42:29,684 - INFO - Claimed: ₹50000 | Recommended: ₹22675.64 | Reasoning: ML Model predicted 45.4% of claimed amount based on historical patterns.
+2026-03-23 17:42:29,684 - INFO - 
+[4/4] Testing Mock OCR Document Recognition
+2026-03-23 17:42:29,684 - INFO - 🔍 Mock OCR parsing document: medical_bill_sample.jpg
+2026-03-23 17:42:29,684 - INFO - Document: medical_bill_sample.jpg -> OCR Output: Hospital Bill Amount: 25000, Surgery: Appendectomy
+2026-03-23 17:42:29,685 - INFO - 🔍 Mock OCR parsing document: theft_report.pdf
+2026-03-23 17:42:29,685 - INFO - Document: theft_report.pdf -> OCR Output: Generic document text content
+2026-03-23 17:42:29,685 - INFO - 
+============================================================
+2026-03-23 17:42:29,685 - INFO - ✅ COMPREHENSIVE AI VALIDATION COMPLETED SUCCESSFULY!
+2026-03-23 17:42:29,685 - INFO - ============================================================
+2026-03-23 17:50:58,472 - INFO - ============================================================
+2026-03-23 17:50:58,472 - INFO - 🚀 AI SYSTEM COMPREHENSIVE VALIDATION STARTING...
+2026-03-23 17:50:58,473 - INFO - ============================================================
+2026-03-23 17:50:58,473 - INFO - 
+[1/4] Testing NLP Claim Type Classification Accuracy
+2026-03-23 17:50:59,648 - INFO - ✅ CSV-trained ML model and vectorizer loaded as fallback
+2026-03-23 17:50:59,649 - INFO - ML prediction: accident (0.62)
+2026-03-23 17:50:59,649 - INFO - ✅ PASS | Input: 'I met with a severe car accident and my ...' -> Predicted: accident (0.62) | Expected: accident
+2026-03-23 17:50:59,650 - INFO - ML prediction: theft (0.46)
+2026-03-23 17:50:59,650 - INFO - ✅ PASS | Input: 'My bag was stolen while I was traveling ...' -> Predicted: theft (0.46) | Expected: theft
+2026-03-23 17:50:59,651 - INFO - ML prediction: medical (0.51)
+2026-03-23 17:50:59,652 - INFO - ✅ PASS | Input: 'I need reimbursement for my heart surger...' -> Predicted: medical (0.51) | Expected: medical
+2026-03-23 17:50:59,652 - INFO - ML Uncertainty (0.35) -> Keywords override: other (0.40)
+2026-03-23 17:50:59,653 - INFO - ✅ PASS | Input: 'Unknown situation, just checking....' -> Predicted: other (0.40) | Expected: other
+2026-03-23 17:50:59,653 - INFO - 
+[2/4] Testing Fraud Detection with High-Risk Edge Cases
+2026-03-23 17:50:59,796 - INFO - Fraud detection ML model and scaler loaded successfully
+2026-03-23 17:50:59,809 - INFO - ML fraud prediction: risk_score=18.5, fraud_flag=False
+2026-03-23 17:50:59,809 - INFO - Case: Extremely High Amount | Amount: ₹500000 -> Risk: 18.5 | Flagged: False
+2026-03-23 17:50:59,822 - INFO - ML fraud prediction: risk_score=59.8, fraud_flag=False
+2026-03-23 17:50:59,824 - INFO - Case: Suspicious Keywords | Amount: ₹10000 -> Risk: 59.8 | Flagged: False
+2026-03-23 17:50:59,826 - INFO - 
+[3/4] Testing AI Amount Recommendation Consistency
+2026-03-23 17:50:59,829 - INFO - ✅ Regularized Amount Prediction model (Ridge) loaded successfully
+2026-03-23 17:50:59,844 - INFO - ML fraud prediction: risk_score=77.3, fraud_flag=True
+2026-03-23 17:50:59,845 - ERROR - ML Inference Failed: X has 7 features, but StandardScaler is expecting 5 features as input.
+2026-03-23 17:50:59,845 - INFO - Claimed: ₹50000 | Recommended: ₹18345.60 | Reasoning: Base calculation (Claim - Deductible=1000.0) * 80% coverage | High risk penalty (-35%) | Missing documentation (-20%) | Market adjustment for other (-10%)
+2026-03-23 17:50:59,846 - INFO - 
+[4/4] Testing Mock OCR Document Recognition
+2026-03-23 17:50:59,846 - INFO - 🔍 Mock OCR parsing document: medical_bill_sample.jpg
+2026-03-23 17:50:59,846 - INFO - Document: medical_bill_sample.jpg -> OCR Output: Hospital Bill Amount: 25000, Surgery: Appendectomy
+2026-03-23 17:50:59,846 - INFO - 🔍 Mock OCR parsing document: theft_report.pdf
+2026-03-23 17:50:59,846 - INFO - Document: theft_report.pdf -> OCR Output: Generic document text content
+2026-03-23 17:50:59,847 - INFO - 
+============================================================
+2026-03-23 17:50:59,847 - INFO - ✅ COMPREHENSIVE AI VALIDATION COMPLETED SUCCESSFULY!
+2026-03-23 17:50:59,847 - INFO - ============================================================
+2026-03-23 17:51:37,924 - INFO - ============================================================
+2026-03-23 17:51:37,924 - INFO - 🚀 AI SYSTEM COMPREHENSIVE VALIDATION STARTING...
+2026-03-23 17:51:37,925 - INFO - ============================================================
+2026-03-23 17:51:37,925 - INFO - 
+[1/4] Testing NLP Claim Type Classification Accuracy
+2026-03-23 17:51:39,087 - INFO - ✅ CSV-trained ML model and vectorizer loaded as fallback
+2026-03-23 17:51:39,089 - INFO - ML prediction: accident (0.62)
+2026-03-23 17:51:39,089 - INFO - ✅ PASS | Input: 'I met with a severe car accident and my ...' -> Predicted: accident (0.62) | Expected: accident
+2026-03-23 17:51:39,090 - INFO - ML prediction: theft (0.46)
+2026-03-23 17:51:39,090 - INFO - ✅ PASS | Input: 'My bag was stolen while I was traveling ...' -> Predicted: theft (0.46) | Expected: theft
+2026-03-23 17:51:39,091 - INFO - ML prediction: medical (0.51)
+2026-03-23 17:51:39,092 - INFO - ✅ PASS | Input: 'I need reimbursement for my heart surger...' -> Predicted: medical (0.51) | Expected: medical
+2026-03-23 17:51:39,093 - INFO - ML Uncertainty (0.35) -> Keywords override: other (0.40)
+2026-03-23 17:51:39,093 - INFO - ✅ PASS | Input: 'Unknown situation, just checking....' -> Predicted: other (0.40) | Expected: other
+2026-03-23 17:51:39,093 - INFO - 
+[2/4] Testing Fraud Detection with High-Risk Edge Cases
+2026-03-23 17:51:39,190 - INFO - Fraud detection ML model and scaler loaded successfully
+2026-03-23 17:51:39,203 - INFO - ML fraud prediction: risk_score=18.5, fraud_flag=False
+2026-03-23 17:51:39,204 - INFO - Case: Extremely High Amount | Amount: ₹500000 -> Risk: 18.5 | Flagged: False
+2026-03-23 17:51:39,218 - INFO - ML fraud prediction: risk_score=59.8, fraud_flag=False
+2026-03-23 17:51:39,218 - INFO - Case: Suspicious Keywords | Amount: ₹10000 -> Risk: 59.8 | Flagged: False
+2026-03-23 17:51:39,219 - INFO - 
+[3/4] Testing AI Amount Recommendation Consistency
+2026-03-23 17:51:39,224 - INFO - ✅ Regularized Amount Prediction model (Ridge) loaded successfully
+2026-03-23 17:51:39,236 - INFO - ML fraud prediction: risk_score=77.3, fraud_flag=True
+2026-03-23 17:51:39,237 - INFO - ML Recommendation: ₹28092.05
+2026-03-23 17:51:39,237 - INFO - Claimed: ₹50000 | Recommended: ₹28092.05 | Reasoning: AI Regularized Model suggested 56.2% based on financial history.
+2026-03-23 17:51:39,238 - INFO - 
+[4/4] Testing Mock OCR Document Recognition
+2026-03-23 17:51:39,238 - INFO - 🔍 Mock OCR parsing document: medical_bill_sample.jpg
+2026-03-23 17:51:39,238 - INFO - Document: medical_bill_sample.jpg -> OCR Output: Hospital Bill Amount: 25000, Surgery: Appendectomy
+2026-03-23 17:51:39,239 - INFO - 🔍 Mock OCR parsing document: theft_report.pdf
+2026-03-23 17:51:39,239 - INFO - Document: theft_report.pdf -> OCR Output: Generic document text content
+2026-03-23 17:51:39,239 - INFO - 
+============================================================
+2026-03-23 17:51:39,239 - INFO - ✅ COMPREHENSIVE AI VALIDATION COMPLETED SUCCESSFULY!
+2026-03-23 17:51:39,240 - INFO - ============================================================
+2026-03-23 17:58:01,636 - INFO - ============================================================
+2026-03-23 17:58:01,637 - INFO - 🚀 AI SYSTEM COMPREHENSIVE VALIDATION STARTING...
+2026-03-23 17:58:01,637 - INFO - ============================================================
+2026-03-23 17:58:01,637 - INFO - 
+[1/4] Testing NLP Claim Type Classification Accuracy
+2026-03-23 17:58:02,787 - INFO - ✅ CSV-trained ML model and vectorizer loaded as fallback
+2026-03-23 17:58:02,788 - INFO - ML prediction: accident (0.62)
+2026-03-23 17:58:02,788 - INFO - ✅ PASS | Input: 'I met with a severe car accident and my ...' -> Predicted: accident (0.62) | Expected: accident
+2026-03-23 17:58:02,789 - INFO - ML prediction: theft (0.46)
+2026-03-23 17:58:02,790 - INFO - ✅ PASS | Input: 'My bag was stolen while I was traveling ...' -> Predicted: theft (0.46) | Expected: theft
+2026-03-23 17:58:02,791 - INFO - ML prediction: medical (0.51)
+2026-03-23 17:58:02,791 - INFO - ✅ PASS | Input: 'I need reimbursement for my heart surger...' -> Predicted: medical (0.51) | Expected: medical
+2026-03-23 17:58:02,792 - INFO - ML Uncertainty (0.35) -> Keywords override: other (0.40)
+2026-03-23 17:58:02,792 - INFO - ✅ PASS | Input: 'Unknown situation, just checking....' -> Predicted: other (0.40) | Expected: other
+2026-03-23 17:58:02,792 - INFO - 
+[2/4] Testing Fraud Detection with High-Risk Edge Cases
+2026-03-23 17:58:02,921 - INFO - ✅ Fraud detection ML model (RandomForest) loaded successfully
+2026-03-23 17:58:02,934 - INFO - ML fraud prediction: risk_score=87.1, fraud_flag=True
+2026-03-23 17:58:02,934 - INFO - Case: Extremely High Amount | Amount: ₹500000 -> Risk: 87.1 | Flagged: True
+2026-03-23 17:58:02,947 - INFO - ML fraud prediction: risk_score=49.7, fraud_flag=False
+2026-03-23 17:58:02,947 - INFO - Case: Suspicious Keywords | Amount: ₹10000 -> Risk: 49.7 | Flagged: False
+2026-03-23 17:58:02,947 - INFO - 
+[3/4] Testing AI Amount Recommendation Consistency
+2026-03-23 17:58:02,949 - INFO - ✅ Regularized Amount Prediction model (Ridge) loaded successfully
+2026-03-23 17:58:02,964 - INFO - ML fraud prediction: risk_score=69.1, fraud_flag=True
+2026-03-23 17:58:02,965 - INFO - ML Recommendation: ₹28959.58
+2026-03-23 17:58:02,965 - INFO - Claimed: ₹50000 | Recommended: ₹28959.58 | Reasoning: AI Regularized Model suggested 57.9% based on financial history.
+2026-03-23 17:58:02,965 - INFO - 
+[4/4] Testing Mock OCR Document Recognition
+2026-03-23 17:58:02,966 - INFO - 🔍 Mock OCR parsing document: medical_bill_sample.jpg
+2026-03-23 17:58:02,966 - INFO - Document: medical_bill_sample.jpg -> OCR Output: Hospital Bill Amount: 25000, Surgery: Appendectomy
+2026-03-23 17:58:02,966 - INFO - 🔍 Mock OCR parsing document: theft_report.pdf
+2026-03-23 17:58:02,966 - INFO - Document: theft_report.pdf -> OCR Output: Generic document text content
+2026-03-23 17:58:02,966 - INFO - 
+============================================================
+2026-03-23 17:58:02,967 - INFO - ✅ COMPREHENSIVE AI VALIDATION COMPLETED SUCCESSFULY!
+2026-03-23 17:58:02,967 - INFO - ============================================================
+2026-03-23 18:09:41,292 - INFO - ============================================================
+2026-03-23 18:09:41,292 - INFO - 🚀 AI SYSTEM COMPREHENSIVE VALIDATION STARTING...
+2026-03-23 18:09:41,293 - INFO - ============================================================
+2026-03-23 18:09:41,293 - INFO - 
+[1/4] Testing NLP Claim Type Classification Accuracy
+2026-03-23 18:09:42,201 - INFO - ✅ CSV-trained ML model and vectorizer loaded as fallback
+2026-03-23 18:09:42,203 - INFO - ML prediction: accident (0.62)
+2026-03-23 18:09:42,203 - INFO - ✅ PASS | Input: 'I met with a severe car accident and my ...' -> Predicted: accident (0.62) | Expected: accident
+2026-03-23 18:09:42,204 - INFO - ML prediction: theft (0.46)
+2026-03-23 18:09:42,204 - INFO - ✅ PASS | Input: 'My bag was stolen while I was traveling ...' -> Predicted: theft (0.46) | Expected: theft
+2026-03-23 18:09:42,205 - INFO - ML prediction: medical (0.51)
+2026-03-23 18:09:42,205 - INFO - ✅ PASS | Input: 'I need reimbursement for my heart surger...' -> Predicted: medical (0.51) | Expected: medical
+2026-03-23 18:09:42,206 - INFO - ML Uncertainty (0.35) -> Keywords override: other (0.40)
+2026-03-23 18:09:42,207 - INFO - ✅ PASS | Input: 'Unknown situation, just checking....' -> Predicted: other (0.40) | Expected: other
+2026-03-23 18:09:42,207 - INFO - 
+[2/4] Testing Fraud Detection with High-Risk Edge Cases
+2026-03-23 18:09:42,318 - INFO - ✅ Fraud detection ML model (RandomForest) loaded successfully
+2026-03-23 18:09:42,332 - INFO - ML fraud prediction: risk_score=87.1, fraud_flag=True
+2026-03-23 18:09:42,332 - INFO - Case: Extremely High Amount | Amount: ₹500000 -> Risk: 87.1 | Flagged: True
+2026-03-23 18:09:42,344 - INFO - ML fraud prediction: risk_score=49.7, fraud_flag=False
+2026-03-23 18:09:42,345 - INFO - Case: Suspicious Keywords | Amount: ₹10000 -> Risk: 49.7 | Flagged: False
+2026-03-23 18:09:42,345 - INFO - 
+[3/4] Testing AI Amount Recommendation Consistency
+2026-03-23 18:09:42,347 - INFO - ✅ Regularized Amount Prediction model (Ridge) loaded successfully
+2026-03-23 18:09:42,360 - INFO - ML fraud prediction: risk_score=69.1, fraud_flag=True
+2026-03-23 18:09:42,361 - INFO - ML Recommendation: ₹28959.58
+2026-03-23 18:09:42,361 - INFO - Claimed: ₹50000 | Recommended: ₹28959.58 | Reasoning: AI Regularized Model suggested 57.9% based on financial history.
+2026-03-23 18:09:42,362 - INFO - 
+[4/4] Testing Real OCR Document Recognition
+2026-03-23 18:09:42,362 - ERROR - OCR Error: File not found at medical_bill_sample.jpg
+2026-03-23 18:09:42,362 - WARNING - Document: medical_bill_sample.jpg -> OCR Output: No text extracted (File may be missing or unreadable)
+2026-03-23 18:09:42,362 - ERROR - OCR Error: File not found at theft_report.pdf
+2026-03-23 18:09:42,362 - WARNING - Document: theft_report.pdf -> OCR Output: No text extracted (File may be missing or unreadable)
+2026-03-23 18:09:42,363 - INFO - 
+============================================================
+2026-03-23 18:09:42,363 - INFO - ✅ COMPREHENSIVE AI VALIDATION COMPLETED SUCCESSFULY!
+2026-03-23 18:09:42,363 - INFO - ============================================================
+2026-03-23 18:27:22,428 - INFO - ============================================================
+2026-03-23 18:27:22,428 - INFO - 🚀 AI SYSTEM COMPREHENSIVE VALIDATION STARTING...
+2026-03-23 18:27:22,428 - INFO - ============================================================
+2026-03-23 18:27:22,429 - INFO - 
+[1/4] Testing NLP Claim Type Classification Accuracy
+2026-03-23 18:27:23,465 - INFO - ✅ CSV-trained ML model and vectorizer loaded as fallback
+2026-03-23 18:27:23,467 - INFO - ML prediction: accident (0.62)
+2026-03-23 18:27:23,467 - INFO - ✅ PASS | Input: 'I met with a severe car accident and my ...' -> Predicted: accident (0.62) | Expected: accident
+2026-03-23 18:27:23,468 - INFO - ML prediction: theft (0.46)
+2026-03-23 18:27:23,468 - INFO - ✅ PASS | Input: 'My bag was stolen while I was traveling ...' -> Predicted: theft (0.46) | Expected: theft
+2026-03-23 18:27:23,469 - INFO - ML prediction: medical (0.51)
+2026-03-23 18:27:23,469 - INFO - ✅ PASS | Input: 'I need reimbursement for my heart surger...' -> Predicted: medical (0.51) | Expected: medical
+2026-03-23 18:27:23,470 - INFO - ML Uncertainty (0.35) -> Keywords override: other (0.40)
+2026-03-23 18:27:23,470 - INFO - ✅ PASS | Input: 'Unknown situation, just checking....' -> Predicted: other (0.40) | Expected: other
+2026-03-23 18:27:23,471 - INFO - 
+[2/4] Testing Fraud Detection with High-Risk Edge Cases
+2026-03-23 18:27:23,607 - INFO - ✅ Fraud detection ML model (RandomForest) loaded successfully
+2026-03-23 18:27:23,624 - INFO - ML fraud prediction: risk_score=87.1, fraud_flag=True
+2026-03-23 18:27:23,625 - INFO - Case: Extremely High Amount | Amount: ₹500000 -> Risk: 87.1 | Flagged: True
+2026-03-23 18:27:23,638 - INFO - ML fraud prediction: risk_score=49.7, fraud_flag=False
+2026-03-23 18:27:23,639 - INFO - Case: Suspicious Keywords | Amount: ₹10000 -> Risk: 49.7 | Flagged: False
+2026-03-23 18:27:23,640 - INFO - 
+[3/4] Testing AI Amount Recommendation Consistency
+2026-03-23 18:27:23,647 - INFO - ✅ Regularized Amount Prediction model (Ridge) loaded successfully
+2026-03-23 18:27:23,661 - INFO - ML fraud prediction: risk_score=69.1, fraud_flag=True
+2026-03-23 18:27:23,662 - INFO - ML Recommendation: ₹28959.58
+2026-03-23 18:27:23,663 - INFO - Claimed: ₹50000 | Recommended: ₹28959.58 | Reasoning: AI Regularized Model suggested 57.9% based on financial history.
+2026-03-23 18:27:23,663 - INFO - 
+[4/4] Testing Real OCR Document Recognition
+2026-03-23 18:27:23,663 - ERROR - OCR Error: File not found at medical_bill_sample.jpg
+2026-03-23 18:27:23,664 - WARNING - Document: medical_bill_sample.jpg -> OCR Output: No text extracted (File may be missing or unreadable)
+2026-03-23 18:27:23,664 - ERROR - OCR Error: File not found at theft_report.pdf
+2026-03-23 18:27:23,664 - WARNING - Document: theft_report.pdf -> OCR Output: No text extracted (File may be missing or unreadable)
+2026-03-23 18:27:23,665 - INFO - 
+============================================================
+2026-03-23 18:27:23,665 - INFO - ✅ COMPREHENSIVE AI VALIDATION COMPLETED SUCCESSFULY!
+2026-03-23 18:27:23,665 - INFO - ============================================================
+2026-03-23 18:38:57,751 - INFO - ============================================================
+2026-03-23 18:38:57,751 - INFO - 🚀 AI SYSTEM COMPREHENSIVE VALIDATION STARTING...
+2026-03-23 18:38:57,751 - INFO - ============================================================
+2026-03-23 18:38:57,751 - INFO - 
+[1/4] Testing NLP Claim Type Classification Accuracy
+2026-03-23 18:38:58,769 - INFO - ✅ CSV-trained ML model and vectorizer loaded as fallback
+2026-03-23 18:38:58,770 - INFO - ML prediction: accident (0.62)
+2026-03-23 18:38:58,771 - INFO - ✅ PASS | Input: 'I met with a severe car accident and my ...' -> Predicted: accident (0.62) | Expected: accident
+2026-03-23 18:38:58,772 - INFO - ML prediction: theft (0.46)
+2026-03-23 18:38:58,772 - INFO - ✅ PASS | Input: 'My bag was stolen while I was traveling ...' -> Predicted: theft (0.46) | Expected: theft
+2026-03-23 18:38:58,773 - INFO - ML prediction: medical (0.51)
+2026-03-23 18:38:58,773 - INFO - ✅ PASS | Input: 'I need reimbursement for my heart surger...' -> Predicted: medical (0.51) | Expected: medical
+2026-03-23 18:38:58,774 - INFO - ML Uncertainty (0.35) -> Keywords override: other (0.40)
+2026-03-23 18:38:58,774 - INFO - ✅ PASS | Input: 'Unknown situation, just checking....' -> Predicted: other (0.40) | Expected: other
+2026-03-23 18:38:58,775 - INFO - 
+[2/4] Testing Fraud Detection with High-Risk Edge Cases
+2026-03-23 18:38:58,903 - INFO - ✅ Fraud detection ML model (RandomForest) loaded successfully
+2026-03-23 18:38:58,918 - INFO - ML fraud prediction: risk_score=87.1, fraud_flag=True
+2026-03-23 18:38:58,919 - INFO - Case: Extremely High Amount | Amount: ₹500000 -> Risk: 87.1 | Flagged: True
+2026-03-23 18:38:58,919 - INFO -    🔍 AI Reasoning: CRITICAL: Multiple high-risk indicators detected in settlement patterns. | Significant financial exposure (₹500,000) increases risk weight. | Absence of verified supporting documentation is a primary risk driver.
+2026-03-23 18:38:58,931 - INFO - ML fraud prediction: risk_score=49.7, fraud_flag=False
+2026-03-23 18:38:58,932 - INFO - Case: Suspicious Keywords | Amount: ₹10000 -> Risk: 49.7 | Flagged: False
+2026-03-23 18:38:58,932 - INFO -    🔍 AI Reasoning: ADVISORY: Moderate variance from typical claim behavior noticed. | Absence of verified supporting documentation is a primary risk driver.
+2026-03-23 18:38:58,932 - INFO - 
+[3/4] Testing AI Amount Recommendation Consistency
+2026-03-23 18:38:58,935 - INFO - ✅ Regularized Amount Prediction model (Ridge) loaded successfully
+2026-03-23 18:38:58,947 - INFO - ML fraud prediction: risk_score=69.1, fraud_flag=True
+2026-03-23 18:38:58,948 - ERROR - Critical error in Recommended Amount service: too many values to unpack (expected 2, got 3)
+2026-03-23 18:38:58,949 - INFO - Claimed: ₹50000 | Recommended: ₹50000.00 | Reasoning: Critical AI Error: too many values to unpack (expected 2, got 3). Defaulting to 100% payout.
+2026-03-23 18:38:58,949 - INFO - 
+[4/4] Testing Real OCR Document Recognition
+2026-03-23 18:38:58,950 - ERROR - OCR Error: File not found at medical_bill_sample.jpg
+2026-03-23 18:38:58,950 - WARNING - Document: medical_bill_sample.jpg -> OCR Output: No text extracted (File may be missing or unreadable)
+2026-03-23 18:38:58,951 - ERROR - OCR Error: File not found at theft_report.pdf
+2026-03-23 18:38:58,951 - WARNING - Document: theft_report.pdf -> OCR Output: No text extracted (File may be missing or unreadable)
+2026-03-23 18:38:58,951 - INFO - 
+============================================================
+2026-03-23 18:38:58,951 - INFO - ✅ COMPREHENSIVE AI VALIDATION COMPLETED SUCCESSFULY!
+2026-03-23 18:38:58,952 - INFO - ============================================================
+2026-03-23 18:39:56,190 - INFO - ============================================================
+2026-03-23 18:39:56,191 - INFO - 🚀 AI SYSTEM COMPREHENSIVE VALIDATION STARTING...
+2026-03-23 18:39:56,191 - INFO - ============================================================
+2026-03-23 18:39:56,191 - INFO - 
+[1/4] Testing NLP Claim Type Classification Accuracy
+2026-03-23 18:39:57,213 - INFO - ✅ CSV-trained ML model and vectorizer loaded as fallback
+2026-03-23 18:39:57,215 - INFO - ML prediction: accident (0.62)
+2026-03-23 18:39:57,215 - INFO - ✅ PASS | Input: 'I met with a severe car accident and my ...' -> Predicted: accident (0.62) | Expected: accident
+2026-03-23 18:39:57,216 - INFO - ML prediction: theft (0.46)
+2026-03-23 18:39:57,216 - INFO - ✅ PASS | Input: 'My bag was stolen while I was traveling ...' -> Predicted: theft (0.46) | Expected: theft
+2026-03-23 18:39:57,217 - INFO - ML prediction: medical (0.51)
+2026-03-23 18:39:57,218 - INFO - ✅ PASS | Input: 'I need reimbursement for my heart surger...' -> Predicted: medical (0.51) | Expected: medical
+2026-03-23 18:39:57,219 - INFO - ML Uncertainty (0.35) -> Keywords override: other (0.40)
+2026-03-23 18:39:57,219 - INFO - ✅ PASS | Input: 'Unknown situation, just checking....' -> Predicted: other (0.40) | Expected: other
+2026-03-23 18:39:57,219 - INFO - 
+[2/4] Testing Fraud Detection with High-Risk Edge Cases
+2026-03-23 18:39:57,352 - INFO - ✅ Fraud detection ML model (RandomForest) loaded successfully
+2026-03-23 18:39:57,369 - INFO - ML fraud prediction: risk_score=87.1, fraud_flag=True
+2026-03-23 18:39:57,369 - INFO - Case: Extremely High Amount | Amount: ₹500000 -> Risk: 87.1 | Flagged: True
+2026-03-23 18:39:57,370 - INFO -    🔍 AI Reasoning: CRITICAL: Multiple high-risk indicators detected in settlement patterns. | Significant financial exposure (₹500,000) increases risk weight. | Absence of verified supporting documentation is a primary risk driver.
+2026-03-23 18:39:57,384 - INFO - ML fraud prediction: risk_score=49.7, fraud_flag=False
+2026-03-23 18:39:57,384 - INFO - Case: Suspicious Keywords | Amount: ₹10000 -> Risk: 49.7 | Flagged: False
+2026-03-23 18:39:57,384 - INFO -    🔍 AI Reasoning: ADVISORY: Moderate variance from typical claim behavior noticed. | Absence of verified supporting documentation is a primary risk driver.
+2026-03-23 18:39:57,384 - INFO - 
+[3/4] Testing AI Amount Recommendation Consistency
+2026-03-23 18:39:57,386 - INFO - ✅ Regularized Amount Prediction model (Ridge) loaded successfully
+2026-03-23 18:39:57,400 - INFO - ML fraud prediction: risk_score=69.1, fraud_flag=True
+2026-03-23 18:39:57,401 - INFO - ML Recommendation: ₹28959.58
+2026-03-23 18:39:57,402 - INFO - Claimed: ₹50000 | Recommended: ₹28959.58 | Reasoning: AI Regularized Model suggested 57.9% based on financial history.
+2026-03-23 18:39:57,402 - INFO - 
+[4/4] Testing Real OCR Document Recognition
+2026-03-23 18:39:57,402 - ERROR - OCR Error: File not found at medical_bill_sample.jpg
+2026-03-23 18:39:57,403 - WARNING - Document: medical_bill_sample.jpg -> OCR Output: No text extracted (File may be missing or unreadable)
+2026-03-23 18:39:57,403 - ERROR - OCR Error: File not found at theft_report.pdf
+2026-03-23 18:39:57,403 - WARNING - Document: theft_report.pdf -> OCR Output: No text extracted (File may be missing or unreadable)
+2026-03-23 18:39:57,404 - INFO - 
+============================================================
+2026-03-23 18:39:57,404 - INFO - ✅ COMPREHENSIVE AI VALIDATION COMPLETED SUCCESSFULY!
+2026-03-23 18:39:57,404 - INFO - ============================================================
+2026-03-23 20:27:25,262 - INFO - ============================================================
+2026-03-23 20:27:25,263 - INFO - 🚀 AI SYSTEM COMPREHENSIVE VALIDATION STARTING...
+2026-03-23 20:27:25,264 - INFO - ============================================================
+2026-03-23 20:27:25,265 - INFO - 
+[1/4] Testing NLP Claim Type Classification Accuracy
+2026-03-23 20:27:25,266 - ERROR - ❌ Error loading model: No module named 'sklearn'
+2026-03-23 20:27:25,267 - INFO - ✅ PASS | Input: 'I met with a severe car accident and my ...' -> Predicted: accident (0.80) | Expected: accident
+2026-03-23 20:27:25,268 - INFO - ✅ PASS | Input: 'My bag was stolen while I was traveling ...' -> Predicted: theft (0.70) | Expected: theft
+2026-03-23 20:27:25,268 - INFO - ✅ PASS | Input: 'I need reimbursement for my heart surger...' -> Predicted: medical (0.70) | Expected: medical
+2026-03-23 20:27:25,269 - INFO - ✅ PASS | Input: 'Unknown situation, just checking....' -> Predicted: other (0.40) | Expected: other
+2026-03-23 20:27:25,270 - INFO - 
+[2/4] Testing Fraud Detection with High-Risk Edge Cases
+2026-03-23 20:27:25,298 - ERROR - ❌ Error loading fraud detection model: No module named 'sklearn'
+2026-03-23 20:27:25,300 - INFO - Rule-based fraud prediction: score=74.1
+2026-03-23 20:27:25,301 - INFO - Case: Extremely High Amount | Amount: ₹500000 -> Risk: 74.1 | Flagged: True
+2026-03-23 20:27:25,301 - INFO -    🔍 AI Reasoning: FALLBACK ENGINE: Baseline profiling applied. | High-value amount (>₹1L). | Unverified documentation.
+2026-03-23 20:27:25,303 - ERROR - ❌ Error loading fraud detection model: No module named 'sklearn'
+2026-03-23 20:27:25,303 - INFO - Rule-based fraud prediction: score=42.0
+2026-03-23 20:27:25,303 - INFO - Case: Suspicious Keywords | Amount: ₹10000 -> Risk: 42.0 | Flagged: False
+2026-03-23 20:27:25,304 - INFO -    🔍 AI Reasoning: FALLBACK ENGINE: Baseline profiling applied. | Unverified documentation.
+2026-03-23 20:27:25,304 - INFO - 
+[3/4] Testing AI Amount Recommendation Consistency
+2026-03-23 20:27:25,305 - ERROR - ❌ Error loading amount prediction model: No module named 'sklearn'
+2026-03-23 20:27:25,307 - ERROR - ❌ Error loading fraud detection model: No module named 'sklearn'
+2026-03-23 20:27:25,308 - INFO - Rule-based fraud prediction: score=41.1
+2026-03-23 20:27:25,308 - INFO - Claimed: ₹50000 | Recommended: ₹23990.40 | Reasoning: Base calculation (Claim - Deductible=1000.0) * 80% coverage | Moderate risk audit (-15%) | Missing documentation (-20%) | Market adjustment for other (-10%)
+2026-03-23 20:27:25,308 - INFO - 
+[4/4] Testing Real OCR Document Recognition
+2026-03-23 20:27:25,308 - ERROR - OCR Error: File not found at medical_bill_sample.jpg
+2026-03-23 20:27:25,309 - WARNING - Document: medical_bill_sample.jpg -> OCR Output: No text extracted (File may be missing or unreadable)
+2026-03-23 20:27:25,309 - ERROR - OCR Error: File not found at theft_report.pdf
+2026-03-23 20:27:25,309 - WARNING - Document: theft_report.pdf -> OCR Output: No text extracted (File may be missing or unreadable)
+2026-03-23 20:27:25,310 - INFO - 
+============================================================
+2026-03-23 20:27:25,310 - INFO - ✅ COMPREHENSIVE AI VALIDATION COMPLETED SUCCESSFULY!
+2026-03-23 20:27:25,310 - INFO - ============================================================

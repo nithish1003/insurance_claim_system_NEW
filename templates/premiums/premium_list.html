@@ -1,0 +1,285 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Premium Schedules{% endblock %}
+
+{% block breadcrumb %}Premium Schedules{% endblock %}
+
+{% block extra_css %}
+<style>
+    .tracking-wider { letter-spacing: 0.05em; }
+    
+    /* Premium Table System (Standalone) */
+    .premium-card {
+        background: rgba(17, 28, 53, 0.4);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        margin-bottom: 30px;
+        overflow: hidden;
+    }
+    .premium-card-header {
+        padding: 20px 24px;
+        background: rgba(255, 255, 255, 0.02);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .premium-card-header h5 { margin-bottom: 0; color: #f1f5f9; font-weight: 700; font-size: 1rem; }
+    
+    .premium-table-container { overflow-x: auto; }
+    .premium-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+    .premium-table thead th {
+        background: rgba(0, 0, 0, 0.3);
+        color: #94a3b8;
+        font-weight: 700;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        padding: 16px 20px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .premium-table tbody td {
+        padding: 16px 20px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        vertical-align: middle;
+        color: #cbd5e1;
+        font-size: 13px;
+    }
+    .premium-table tbody tr:hover td { background: rgba(26, 110, 245, 0.04); }
+    .premium-table tbody tr:last-child td { border-bottom: none; }
+
+    /* Badges */
+    .badge {
+        font-size: 9px; padding: 4px 10px; border-radius: 20px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .badge.active { background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); }
+    .badge.pending { background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.2); }
+    .badge.expired { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
+
+    .btn-premium-sm {
+        display: inline-flex; align-items: center; justify-content: center;
+        border-radius: 8px; background: rgba(26, 110, 245, 0.15); color: #3b82f6 !important;
+        transition: all 0.3s ease; border: 1px solid rgba(26, 110, 245, 0.2);
+        padding: 6px 14px; font-size: 10px; font-weight: 700;
+    }
+    .btn-premium-sm:hover { transform: translateY(-2px); background: #1a6ef5; color: white !important; }
+
+    .btn-glass-back {
+        background: rgba(255, 255, 255, 0.03);
+        color: #94a3b8;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 8px 18px;
+        border-radius: 50px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        margin-bottom: 20px;
+    }
+    .btn-glass-back:hover {
+        background: rgba(26, 110, 245, 0.1);
+        color: #6fa3f5;
+        border-color: rgba(26, 110, 245, 0.3);
+        transform: translateX(-5px);
+    }
+
+    /* Tabs Styling */
+    .premium-tabs .nav-link {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 10px;
+        color: #94a3b8;
+        padding: 10px 24px;
+        margin-right: 12px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .premium-tabs .nav-link:hover {
+        background: rgba(255, 255, 255, 0.08);
+        color: white;
+        border-color: rgba(255, 255, 255, 0.2);
+    }
+    .premium-tabs .nav-link.active {
+        background: linear-gradient(135deg, #1a6ef5 0%, #0d5ddb 100%);
+        border-color: #1a6ef5;
+        color: white;
+        box-shadow: 0 4px 15px rgba(26, 110, 245, 0.3);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+    {% if request.user.is_superuser or request.user.role == 'admin' %}
+    <a href="{% url 'accounts:admin_dashboard' %}" class="btn-glass-back">
+        <i class="bi bi-arrow-left"></i> Return to Master Control
+    </a>
+    {% else %}
+    <a href="{% url 'accounts:staff_dashboard' %}" class="btn-glass-back">
+        <i class="bi bi-arrow-left"></i> Audit Hub
+    </a>
+    {% endif %}
+    <div class="d-flex justify-content-between align-items-center mb-4" data-aos="fade-down">
+        <div>
+            <h3 class="mb-1 text-white fw-bold">Premium Management</h3>
+            <p class="text-muted mb-0">Monitor and configure revenue schedules for all active policies.</p>
+        </div>
+        {% if request.user.is_superuser or request.user.role == "admin" %}
+        <a href="{% url 'premiums:create' %}" class="btn btn-primary d-flex align-items-center gap-2 hover-scale">
+            <i class="bi bi-plus-circle"></i> Create New Schedule
+        </a>
+        {% endif %}
+    </div>
+
+    {# ── Navigation Tabs ───────────────────────────────────────────────────────── #}
+    <ul class="nav nav-tabs premium-tabs mb-4 px-2 border-0" id="premiumTab" role="tablist" data-aos="fade-up" data-aos-delay="50">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="user-tab" data-bs-toggle="tab" data-bs-target="#user-content" type="button" role="tab">
+                <i class="bi bi-people me-2"></i>Active User Dues
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="master-tab" data-bs-toggle="tab" data-bs-target="#master-content" type="button" role="tab">
+                <i class="bi bi-gear-wide-connected me-2"></i>Master Billing Configs
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="premiumTabContent">
+        {# ── TAB: ACTIVE USER DUES ── #}
+        <div class="tab-pane fade show active" id="user-content" role="tabpanel">
+            <div class="premium-card" data-aos="fade-up" data-aos-delay="100">
+                <div class="premium-card-header">
+                    <h5><i class="bi bi-receipt-cutoff me-2 text-primary"></i>Revenue Streams — Subscriptions</h5>
+                    <span class="text-muted small tracking-wider text-uppercase">AUDITING USER ACCOUNTS</span>
+                </div>
+                <div class="premium-table-container">
+                    <table class="premium-table">
+                        <thead>
+                            <tr>
+                                <th class="ps-4">Policy Number</th>
+                                <th>Premium (₹)</th>
+                                <th>Tax (GST)</th>
+                                <th>Total Pay</th>
+                                <th>Frequency</th>
+                                <th>User Target</th>
+                                <th>Installments</th>
+                                <th>Per Dues</th>
+                                <th>Validity Period</th>
+                                <th class="pe-4 text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="stagger-container">
+                            {% for schedule in schedules %}
+                            {% if schedule.user_policy %}
+                            <tr>
+                                <td class="ps-4 fw-bold text-white">{{ schedule.policy.policy_number }}</td>
+                                <td class="fw-semibold">₹{{ schedule.base_premium|default:0|intcomma }}</td>
+                                <td class="small opacity-75">
+                                    <span class="text-info">₹{{ schedule.gst_amount|default:0|intcomma }}</span>
+                                    <div class="text-muted" style="font-size: 0.65rem;">({{ schedule.gst_percentage }}% GST)</div>
+                                </td>
+                                <td class="text-info fw-bold">₹{{ schedule.gross_premium|default:0|intcomma }}</td>
+                                <td><span class="badge bg-secondary opacity-75">{{ schedule.get_payment_frequency_display }}</span></td>
+                                <td class="small">
+                                    <div class="text-white fw-bold"><i class="bi bi-person-check me-1 text-success"></i>{{ schedule.user_policy.user.username }}</div>
+                                    <div class="text-muted" style="font-size: 0.65rem;">Certificate: {{ schedule.user_policy.certificate_number }}</div>
+                                </td>
+                                <td><span class="px-2 py-1 rounded bg-dark border border-secondary small">{{ schedule.total_installments }}</span></td>
+                                <td class="fw-bold">₹{{ schedule.installment_amount|default:0|intcomma }}</td>
+                                <td class="small text-muted">
+                                    {{ schedule.start_date|date:"M d, Y" }} <i class="bi bi-arrow-right mx-1 opacity-25"></i> {{ schedule.end_date|date:"M d, Y" }}
+                                </td>
+                                <td class="pe-4 text-end">
+                                    <div class="d-flex justify-content-end gap-2">
+                                        <a href="{% url 'premiums:create' %}?policy={{ schedule.policy.id }}" class="btn-premium-sm hover-scale" style="background: rgba(255,255,255,0.1);">
+                                            <i class="bi bi-pencil"></i> Update
+                                        </a>
+                                        <a href="{% url 'premiums:detail' schedule.id %}" class="btn-premium-sm hover-scale">
+                                            <i class="bi bi-eye"></i> View
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endif %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        {# ── TAB: MASTER BILLING CONFIGS ── #}
+        <div class="tab-pane fade" id="master-content" role="tabpanel">
+            <div class="premium-card" data-aos="fade-up" data-aos-delay="100">
+                <div class="premium-card-header">
+                    <h5><i class="bi bi-gear-wide-connected me-2 text-primary"></i>Global Pricing Templates</h5>
+                    <span class="text-muted small tracking-wider text-uppercase">MASTER CONFIGURATION</span>
+                </div>
+                <div class="premium-table-container">
+                    <table class="premium-table">
+                        <thead>
+                            <tr>
+                                <th class="ps-4">Plan Number</th>
+                                <th>Base Premium (₹)</th>
+                                <th>Tax Configuration</th>
+                                <th>Gross Total</th>
+                                <th>Frequency</th>
+                                <th>Installments</th>
+                                <th>Amortization</th>
+                                <th>Period Range</th>
+                                <th>Auto-Debit</th>
+                                <th class="pe-4 text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="stagger-container">
+                            {% for schedule in schedules %}
+                            {% if not schedule.user_policy %}
+                            <tr>
+                                <td class="ps-4 fw-bold text-white">{{ schedule.policy.policy_number }}</td>
+                                <td class="fw-semibold">₹{{ schedule.base_premium|default:0|intcomma }}</td>
+                                <td class="small opacity-75">
+                                    <span class="text-info">₹{{ schedule.gst_amount|default:0|intcomma }}</span>
+                                    <div class="text-muted" style="font-size: 0.65rem;">({{ schedule.gst_percentage }}% GST)</div>
+                                </td>
+                                <td class="text-info fw-bold">₹{{ schedule.gross_premium|default:0|intcomma }}</td>
+                                <td><span class="badge bg-secondary opacity-75">{{ schedule.get_payment_frequency_display }}</span></td>
+                                <td><span class="px-2 py-1 rounded bg-dark border border-secondary small">{{ schedule.total_installments }}</span></td>
+                                <td class="fw-bold">₹{{ schedule.installment_amount|default:0|intcomma }}</td>
+                                <td class="small text-muted">
+                                    {{ schedule.start_date|date:"M d, Y" }} <i class="bi bi-arrow-right mx-1 opacity-25"></i> {{ schedule.end_date|date:"M d, Y" }}
+                                </td>
+                                <td>
+                                    {% if schedule.auto_debit_enabled %}
+                                    <span class="badge bg-success" style="background: #10b981 !important;">Enabled</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">Manual Only</span>
+                                    {% endif %}
+                                </td>
+                                <td class="pe-4 text-end">
+                                    <div class="d-flex justify-content-end gap-2">
+                                        <a href="{% url 'premiums:create' %}?policy={{ schedule.policy.id }}" class="btn-premium-sm hover-scale" style="background: rgba(255,255,255,0.1);">
+                                            <i class="bi bi-pencil"></i> Edit Plan
+                                        </a>
+                                        <a href="{% url 'premiums:detail' schedule.id %}" class="btn-premium-sm hover-scale">
+                                            <i class="bi bi-eye"></i> Audit
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endif %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
