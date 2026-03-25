@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Policies{% endblock %}
+
+{% block breadcrumb %}Policies{% endblock %}
+
+{% block extra_css %}
+<style>
+    .tracking-wider { letter-spacing: 0.05em; }
+    
+    /* Premium Table System (Standalone) */
+    .premium-card {
+        background: rgba(17, 28, 53, 0.4);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        margin-bottom: 30px;
+        overflow: hidden;
+    }
+    .premium-card-header {
+        padding: 20px 24px;
+        background: rgba(255, 255, 255, 0.02);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .premium-card-header h5 { margin-bottom: 0; color: #f1f5f9; font-weight: 700; font-size: 1rem; }
+    
+    .premium-table-container { overflow-x: auto; }
+    .premium-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+    .premium-table thead th {
+        background: rgba(0, 0, 0, 0.3);
+        color: #94a3b8;
+        font-weight: 700;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        padding: 16px 20px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .premium-table tbody td {
+        padding: 16px 20px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        vertical-align: middle;
+        color: #cbd5e1;
+        font-size: 13px;
+    }
+    .premium-table tbody tr:hover td { background: rgba(26, 110, 245, 0.04); }
+    .premium-table tbody tr:last-child td { border-bottom: none; }
+
+    /* Badges */
+    .badge {
+        font-size: 9px; padding: 4px 10px; border-radius: 20px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .badge.active { background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); }
+    .badge.pending { background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.2); }
+    .badge.expired { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
+
+    .btn-premium-sm {
+        width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center;
+        border-radius: 8px; background: rgba(255, 255, 255, 0.05); color: #94bcff !important;
+        transition: all 0.2s ease-in-out; border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .btn-premium-sm:hover { transform: translateY(-2px); border-color: #1a6ef5; background: rgba(26, 110, 245, 0.1); color: white !important; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4" data-aos="fade-down">
+    <div>
+        <h3 class="mb-1 text-white fw-bold">Policy Administration</h3>
+        <p class="text-muted mb-0">Full oversight and lifecycle management for all system contracts.</p>
+    </div>
+    <div class="d-flex gap-2">
+        {% if request.user.role == "admin" %}
+        <a href="{% url 'accounts:admin_dashboard' %}" class="btn btn-outline-secondary btn-sm hover-scale">Back to Dashboard</a>
+        {% elif request.user.role == "staff" %}
+        <a href="{% url 'accounts:staff_dashboard' %}" class="btn btn-outline-secondary btn-sm hover-scale">Back to Dashboard</a>
+        {% endif %}
+        <a href="{% url 'policy:manage_categories' %}" class="btn btn-outline-primary btn-sm px-3 hover-scale" style="border: 1px solid rgba(25, 110, 245, 0.4); background: rgba(25, 110, 245, 0.05);">
+            <i class="bi bi-tag me-1"></i> Manage Categories
+        </a>
+        <a href="{% url 'policy:create' %}" class="btn btn-primary btn-sm px-3 hover-scale">
+            <i class="bi bi-plus-lg me-1"></i> Create New Policy
+        </a>
+    </div>
+</div>
+
+<div class="premium-card" data-aos="fade-up" data-aos-delay="100">
+    <div class="premium-card-header">
+        <h5><i class="bi bi-bookmarks me-2 text-primary"></i>System Policies</h5>
+        <span class="text-muted small tracking-wider">{{ policies|length }} TOTAL CONTRACTS</span>
+    </div>
+
+    <div class="premium-table-container">
+        <table class="premium-table">
+            <thead>
+                <tr>
+                    <th class="ps-4">Policy Number</th>
+                    <th>Type</th>
+                    <th>Insurer</th>
+                    <th>Sum Insured</th>
+                    <th>Premium</th>
+                    <th>End Date</th>
+                    <th>Status</th>
+                    <th class="pe-4 text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="stagger-container">
+                {% for policy in policies %}
+                <tr>
+                    <td class="ps-4 fw-bold text-white">{{ policy.policy_number }}</td>
+                    <td><span class="badge bg-secondary opacity-75">{{ policy.policy_type|default:"General" }}</span></td>
+                    <td><span class="text-muted px-2 py-1 rounded small" style="background: rgba(255,255,255,0.03);">{{ policy.insurer_name|default:"-" }}</span></td>
+                    <td class="fw-bold">₹{{ policy.sum_insured|default:0|floatformat:0|intcomma }}</td>
+                    <td class="text-info">
+                        {% with schedule=policy.premium_schedules.first %}
+                        {% if schedule %}
+                        ₹{{ schedule.gross_premium|default:0|floatformat:2|intcomma }}
+                        {% else %}
+                        <span class="text-muted small italic">N/A</span>
+                        {% endif %}
+                        {% endwith %}
+                    </td>
+                    <td class="small text-muted">{{ policy.end_date|date:"M d, Y" }}</td>
+                    <td>
+                        <span class="badge {{ policy.status }}">{{ policy.get_status_display }}</span>
+                    </td>
+                    <td class="pe-4 text-end">
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="{% url 'policy:detail' policy.id %}" class="btn-premium-sm hover-scale" title="View Details">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            {% if policy.status == 'pending' %}
+                            <a href="{% url 'policy:admin_review' policy.id %}" class="btn-premium-sm hover-scale" style="background: #f59e0b;" title="Review Application">
+                                <i class="bi bi-clipboard-check"></i>
+                            </a>
+                            {% else %}
+                            <a href="{% url 'policy:edit' policy.id %}" class="btn-premium-sm hover-scale" style="background: rgba(255,255,255,0.1); color: white !important;" title="Edit Policy">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="empty-state py-5">
+                        <i class="bi bi-journal-x fs-2 mb-3 d-block opacity-25"></i>
+                        No policies have been created in the system yet.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

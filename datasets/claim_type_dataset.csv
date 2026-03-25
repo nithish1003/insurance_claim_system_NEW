@@ -1,0 +1,101 @@
+description,claim_type
+i was involved in a car accident on the highway,accident
+my vehicle collided with another car at the intersection,accident
+i had a motorcycle accident while riding,accident
+slipped and fell at work causing injury,accident
+workplace accident with machinery,accident
+traffic accident with injuries,accident
+fell down stairs and hurt my back,accident
+sports injury during game,accident
+bicycle accident on road,accident
+hit by falling object at construction site,accident
+hospitalized for heart surgery,medical
+treatment for cancer diagnosis,medical
+medical expenses for diabetes management,medical
+hospital bill for appendectomy,medical
+doctor consultation and medication,medical
+mri scan and specialist consultation,medical
+dental treatment and crowns,medical
+eye surgery for cataract,medical
+physical therapy after injury,medical
+prescription medication costs,medical
+emergency room visit for fever,medical
+regular checkup and blood tests,medical
+mental health therapy sessions,medical
+pregnancy and delivery costs,medical
+chronic illness treatment,medical
+my car was stolen from parking lot,theft
+house burglary with valuable items stolen,theft
+laptop stolen from office desk,theft
+phone snatched while walking,theft
+bicycle stolen from apartment complex,theft
+wallet stolen with credit cards,theft
+jewelry stolen during vacation,theft
+business equipment stolen,theft
+identity theft and fraudulent charges,theft
+package stolen from doorstep,theft
+car breakin with items stolen,theft
+shoplifting incident,theft
+pickpocketing in crowded area,theft
+stolen laptop with important data,theft
+burglary at home during night,theft
+property damage from fire,other
+natural disaster damage to home,other
+third party liability claim,other
+business interruption claim,other
+professional liability claim,other
+product liability claim,other
+travel insurance claim,other
+event cancellation claim,other
+pet insurance claim,other
+home insurance claim,other
+i need to claim for product liability claim,other
+claim submission stolen laptop with important data,theft
+i had a motorcycle accident while riding last week,accident
+emergency slipped and fell at work causing injury situation,accident
+i need to claim for i was involved in a car accident on the highway,accident
+regarding traffic accident with injuries please process,accident
+emergency hospitalized for heart surgery situation,medical
+claim submission i had a motorcycle accident while riding,accident
+regarding i need to claim for i was involved in a car accident on the highway please process,accident
+emergency bicycle accident on road situation,accident
+emergency stolen laptop with important data situation,theft
+bicycle stolen from apartment complex last week,theft
+claim submission product liability claim,other
+regarding my car was stolen from parking lot please process,theft
+claim submission emergency room visit for fever,medical
+regarding home insurance claim please process,other
+hospital bill for appendectomy last week,medical
+regarding burglary at home during night please process,theft
+regarding business equipment stolen please process,theft
+mental health therapy sessions last week,medical
+claim submission i need to claim for product liability claim,other
+emergency mental health therapy sessions last week situation,medical
+eye surgery for cataract last week,medical
+claim submission event cancellation claim,other
+regarding business equipment stolen please process,theft
+claim submission regular checkup and blood tests,medical
+emergency claim submission event cancellation claim situation,other
+emergency physical therapy after injury situation,medical
+bicycle stolen from apartment complex last week last week,theft
+regarding shoplifting incident please process,theft
+bicycle stolen from apartment complex last week,theft
+i need to claim for sports injury during game,accident
+regarding regarding shoplifting incident please process please process,theft
+regarding workplace accident with machinery please process,accident
+i need to claim for claim submission emergency room visit for fever,medical
+my car was stolen from parking lot last week,theft
+laptop stolen from office desk last week,theft
+claim submission fell down stairs and hurt my back,accident
+regarding claim submission emergency room visit for fever please process,medical
+claim submission event cancellation claim,other
+emergency package stolen from doorstep situation,theft
+regarding emergency room visit for fever please process,medical
+emergency laptop stolen from office desk last week situation,theft
+emergency property damage from fire situation,other
+claim submission natural disaster damage to home,other
+i need to claim for identity theft and fraudulent charges,theft
+claim submission dental treatment and crowns,medical
+claim submission eye surgery for cataract,medical
+claim submission hospitalized for heart surgery,medical
+claim submission i need to claim for i was involved in a car accident on the highway,accident

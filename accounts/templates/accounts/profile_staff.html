@@ -1,0 +1,252 @@
+{% extends "base.html" %}
+
+{% block title %}Staff Profile — InsureCRM{% endblock %}
+
+{% block sidebar_items %}
+<a href="{% url 'accounts:staff_dashboard' %}" class="sidebar-link">
+    <i class="bi bi-speedometer2"></i> Dashboard
+</a>
+<a href="{% url 'accounts:staff_dashboard' %}" class="sidebar-link">
+    <i class="bi bi-shield-check"></i> Claims Review
+</a>
+<a href="{% url 'accounts:staff_dashboard' %}" class="sidebar-link">
+    <i class="bi bi-clipboard-pulse"></i> Assessment Details
+</a>
+<a href="{% url 'accounts:staff_dashboard' %}" class="sidebar-link">
+    <i class="bi bi-file-earmark-text"></i> Policy Information
+</a>
+<a href="{% url 'accounts:staff_dashboard' %}" class="sidebar-link">
+    <i class="bi bi-graph-up-arrow"></i> Reports
+</a>
+<hr class="my-3" style="border-color: rgba(255,255,255,0.08);">
+<a href="{% url 'accounts:profile' %}" class="sidebar-link active">
+    <i class="bi bi-person"></i> My Profile
+</a>
+<a href="{% url 'accounts:logout' %}" class="sidebar-logout">
+    <i class="bi bi-box-arrow-right"></i> Logout
+</a>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.profile-container {
+    max-width: 900px;
+    margin: 0 auto;
+}
+.profile-header-card {
+    background: linear-gradient(145deg, #111c35 0%, #0f1b33 100%);
+    border: 1px solid #1f335c;
+    border-radius: 16px;
+    padding: 40px;
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    margin-bottom: 30px;
+    position: relative;
+    overflow: hidden;
+}
+.profile-header-card::before {
+    content: '';
+    position: absolute;
+    top: -50px;
+    right: -50px;
+    width: 250px;
+    height: 250px;
+    background: radial-gradient(circle, rgba(26,110,245,0.15) 0%, rgba(0,0,0,0) 70%);
+    border-radius: 50%;
+}
+.profile-avatar-large {
+    width: 120px;
+    height: 120px;
+    background: linear-gradient(135deg, #1a6ef5 0%, #0a4ebd 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 50px;
+    color: white;
+    box-shadow: 0 10px 30px rgba(26, 110, 245, 0.3);
+    border: 4px solid #1f335c;
+    flex-shrink: 0;
+    z-index: 1;
+}
+.profile-title {
+    z-index: 1;
+}
+.profile-title h2 {
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: white;
+}
+.profile-title p {
+    color: #9fb3d1;
+    font-size: 16px;
+    margin-bottom: 15px;
+}
+.role-badge {
+    padding: 6px 16px;
+    border-radius: 30px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    display: inline-block;
+}
+.role-admin { background: rgba(220, 53, 69, 0.15); color: #ff6b81; border: 1px solid rgba(220, 53, 69, 0.3); }
+.role-staff { background: rgba(255, 193, 7, 0.15); color: #ffd32a; border: 1px solid rgba(255, 193, 7, 0.3); }
+.role-policyholder { background: rgba(40, 167, 69, 0.15); color: #2ed573; border: 1px solid rgba(40, 167, 69, 0.3); }
+
+.details-card {
+    background: #111c35;
+    border: 1px solid #1f335c;
+    border-radius: 16px;
+    padding: 30px;
+}
+.details-card h4 {
+    color: white;
+    font-size: 18px;
+    margin-bottom: 25px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.details-card h4 i {
+    color: #1a6ef5;
+}
+.info-row {
+    display: flex;
+    border-bottom: 1px solid rgba(31, 51, 92, 0.5);
+    padding: 18px 0;
+}
+.info-row:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+.info-label {
+    width: 35%;
+    color: #9fb3d1;
+    font-size: 14px;
+    font-weight: 500;
+}
+.info-value {
+    width: 65%;
+    color: white;
+    font-weight: 500;
+    font-size: 15px;
+}
+
+/* Sidebar active state */
+.sidebar-link.active {
+    background: rgba(26, 110, 245, 0.15) !important;
+    color: white !important;
+    border-left: 3px solid #1a6ef5 !important;
+    padding-left: 24px !important;
+}
+
+@media (max-width: 768px) {
+    .profile-header-card {
+        flex-direction: column;
+        text-align: center;
+        padding: 30px 20px;
+    }
+    .info-row {
+        flex-direction: column;
+        gap: 8px;
+    }
+    .info-label, .info-value {
+        width: 100%;
+    }
+}
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+Staff Profile
+{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    
+    <!-- Header Banner -->
+    <div class="profile-header-card shadow-sm">
+        <div class="profile-avatar-large">
+            <i class="bi bi-person"></i>
+        </div>
+        <div class="profile-title">
+            <h2>{{ request.user.get_full_name|default:request.user.username }}</h2>
+            <p><i class="bi bi-envelope me-2"></i>{{ request.user.email|default:"No email provided" }}</p>
+            <span class="role-badge role-staff">
+                <i class="bi bi-briefcase me-1"></i> Staff Member
+            </span>
+        </div>
+    </div>
+
+    <!-- Details Section -->
+    <div class="row g-4">
+        <div class="col-md-12">
+            <div class="details-card shadow-sm">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h4 class="mb-0"><i class="bi bi-person-vcard"></i> Personal Information</h4>
+                    <a href="{% url 'accounts:edit_profile' %}" class="btn btn-sm btn-outline-primary shadow-sm">
+                        <i class="bi bi-pencil-square me-1"></i> Edit Profile
+                    </a>
+                </div>
+                
+                <div class="info-row">
+                    <div class="info-label">Username</div>
+                    <div class="info-value">@{{ request.user.username }}</div>
+                </div>
+                
+                <div class="info-row">
+                    <div class="info-label">Email Address</div>
+                    <div class="info-value">
+                        {% if request.user.email %}
+                            {{ request.user.email }}
+                        {% else %}
+                            <span class="text-muted"><i class="bi bi-dash"></i></span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="info-row">
+                    <div class="info-label">Phone Number</div>
+                    <div class="info-value">
+                        {% if request.user.phone %}
+                            {{ request.user.phone }}
+                        {% else %}
+                            <span class="text-muted"><i class="bi bi-dash"></i></span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="info-row">
+                    <div class="info-label">Address</div>
+                    <div class="info-value">
+                        {% if request.user.address %}
+                            {{ request.user.address }}
+                        {% else %}
+                            <span class="text-muted"><i class="bi bi-dash"></i></span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="info-row">
+                    <div class="info-label">Role</div>
+                    <div class="info-value">
+                        <span class="role-badge role-staff">
+                            <i class="bi bi-briefcase me-1"></i> Staff Member
+                        </span>
+                    </div>
+                </div>
+
+                <div class="info-row">
+                    <div class="info-label">Date Joined</div>
+                    <div class="info-value">{{ request.user.date_joined|date:"F j, Y" }}</div>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

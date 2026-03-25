@@ -1,0 +1,15 @@
+asgiref==3.11.1
+Django==6.0.3
+djangorestframework==3.16.1
+djangorestframework_simplejwt==5.5.1
+mysqlclient==2.2.8
+PyJWT==2.12.1
+python-dotenv==1.2.2
+sqlparse==0.5.5
+tzdata==2025.3
+
+# ML Dependencies
+scikit-learn==1.5.2
+pandas==2.2.2
+numpy==1.26.4
+joblib==1.4.2

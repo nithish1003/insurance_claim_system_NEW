@@ -1,0 +1,606 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Review Application #{{ application.id }}{% endblock %}
+
+{% block breadcrumb %}
+    <a href="{% url 'policy:admin_applications' %}" class="text-muted text-decoration-none">Applications</a>
+    <i class="bi bi-chevron-right mx-1 small"></i>
+    Application #{{ application.id }}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .review-card {
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.07);
+        border-radius: 14px;
+        overflow: hidden;
+    }
+    .review-card-header {
+        padding: 20px 28px;
+        border-bottom: 1px solid rgba(255,255,255,0.06);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .review-card-body { padding: 28px; }
+
+    /* Applicant Info Modern UI (As Requested) */
+    .applicant-card {
+        padding: 24px;
+        border-radius: 12px;
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.07);
+        margin-bottom: 24px;
+    }
+    .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+    }
+    .field-group {
+        margin-bottom: 16px;
+    }
+    .field-label {
+        font-size: 13px;
+        color: #9CA3AF;
+        display: block;
+        margin-bottom: 4px;
+        text-transform: none; /* User specified normal case in examples */
+    }
+    .field-value {
+        font-size: 16px;
+        font-weight: 600;
+        color: #FFFFFF;
+        margin: 0;
+    }
+    .divider {
+        height: 1px;
+        background: rgba(255,255,255,0.08);
+        margin: 16px 0;
+    }
+    .card-container {
+        padding: 20px 24px;
+    }
+    .profile-section-title {
+        font-size: 11px;
+        text-transform: uppercase;
+        color: #6366f1;
+        letter-spacing: 1px;
+        font-weight: 700;
+        margin-bottom: 12px;
+    }
+
+    .verdict-btn {
+        padding: 14px 40px;
+        border-radius: 12px;
+        font-size: 15px;
+        font-weight: 700;
+        border: none;
+        cursor: pointer;
+        transition: all 0.25s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .btn-approve {
+        background: linear-gradient(135deg, #00c664, #00a854);
+        color: #fff;
+        box-shadow: 0 6px 20px rgba(0,198,100,0.3);
+    }
+    .btn-approve:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(0,198,100,0.4); color: #fff; }
+    .btn-reject {
+        background: linear-gradient(135deg, #f44865, #d6304f);
+        color: #fff;
+        box-shadow: 0 6px 20px rgba(244,72,101,0.3);
+    }
+    .btn-reject:hover  { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(244,72,101,0.4); color: #fff; }
+
+    .alert-already-reviewed {
+        background: rgba(26,110,245,0.1);
+        border: 1px solid rgba(26,110,245,0.3);
+        border-radius: 12px;
+        padding: 18px 22px;
+        color: #a0c0ff;
+    }
+
+    .status-badge {
+        padding: 6px 16px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 600;
+    }
+    .badge-pending  { background: rgba(255,193,7,0.15);  color: #ffc107; }
+    .badge-approved { background: rgba(0,198,100,0.15);  color: #00c664; }
+    .badge-rejected { background: rgba(220,53,69,0.15);  color: #f44865; }
+
+    .page-backbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 24px;
+        padding: 14px 18px;
+        border-radius: 16px;
+        background: linear-gradient(135deg, rgba(15, 23, 42, 0.92), rgba(30, 41, 59, 0.72));
+        border: 1px solid rgba(148, 163, 184, 0.14);
+        box-shadow: 0 14px 32px rgba(2, 6, 23, 0.24);
+    }
+    .page-back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 16px;
+        border-radius: 12px;
+        text-decoration: none;
+        color: #e2e8f0;
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(148, 163, 184, 0.16);
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        transition: all 0.25s ease;
+    }
+    .page-back-link:hover {
+        color: #fff;
+        background: rgba(59, 130, 246, 0.12);
+        border-color: rgba(59, 130, 246, 0.3);
+        transform: translateY(-1px);
+        box-shadow: 0 10px 20px rgba(37, 99, 235, 0.18);
+    }
+    .page-back-link-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(59, 130, 246, 0.12);
+        color: #60a5fa;
+        border: 1px solid rgba(59, 130, 246, 0.18);
+        font-size: 14px;
+    }
+    .page-back-meta {
+        text-align: right;
+    }
+    .page-back-meta small {
+        display: block;
+        color: #94a3b8;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 3px;
+    }
+    .page-back-meta strong {
+        color: #f8fafc;
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+    @media (max-width: 767.98px) {
+        .page-backbar {
+            flex-direction: column;
+            align-items: stretch;
+            padding: 14px;
+        }
+        .page-back-meta {
+            text-align: left;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+{# ── Back button ──────────────────────────────────────────────────────────── #}
+<div class="page-backbar">
+    <a href="{% url 'policy:admin_applications' %}" class="page-back-link">
+        <span class="page-back-link-icon">
+            <i class="bi bi-arrow-left"></i>
+        </span>
+        <span>Back to Applications</span>
+    </a>
+    <div class="page-back-meta">
+        <small>Review Queue</small>
+        <strong>Application #{{ application.id }}</strong>
+    </div>
+</div>
+
+<div class="row g-4">
+
+    {# ── Left Column: Applicant & Policy Info ─────────────────────────────── #}
+    <div class="col-md-8">
+
+        {# Status Banner #}
+        <div class="review-card mb-4">
+            <div class="review-card-header">
+                <div>
+                    <h5 class="mb-1 text-white">Application #{{ application.id }}</h5>
+                    <small class="text-muted">
+                        <i class="bi bi-calendar3 me-1"></i>Submitted {{ application.created_at|date:"F d, Y — H:i" }}
+                    </small>
+                </div>
+                <span class="status-badge badge-{{ application.status }}">
+                    {{ application.get_status_display }}
+                </span>
+            </div>
+        </div>
+
+        {# Applicant Information (Production-Ready Grid Layout) #}
+        <div class="applicant-card shadow-sm border border-secondary border-opacity-25 rounded-4 p-4 mb-4 bg-dark text-white" id="applicant-info-section">
+            <style>
+                #applicant-info-section .profile-header {
+                    text-align: center;
+                    border-bottom: 1px solid rgba(255,255,255,0.05);
+                    padding-bottom: 2rem;
+                    margin-bottom: 2rem;
+                }
+                #applicant-info-section .profile-avatar {
+                    width: 80px;
+                    height: 80px;
+                    background: linear-gradient(135deg, #3b82f6, #2563eb);
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 32px;
+                    color: white;
+                    margin: 0 auto 1rem;
+                    box-shadow: 0 8px 16px rgba(59, 130, 246, 0.2);
+                }
+                #applicant-info-section .centered-grid {
+                    display: grid;
+                    grid-template-columns: repeat(2, 1fr);
+                    gap: 1.5rem;
+                    max-width: 800px;
+                    margin: 0 auto;
+                }
+                #applicant-info-section .field-group {
+                    text-align: center;
+                    padding: 1rem;
+                    background: rgba(255,255,255,0.02);
+                    border-radius: 12px;
+                    border: 1px solid rgba(255,255,255,0.05);
+                    transition: transform 0.2s, background 0.2s;
+                }
+                #applicant-info-section .field-group:hover {
+                    background: rgba(255,255,255,0.04);
+                    transform: translateY(-2px);
+                }
+                #applicant-info-section .field-label {
+                    display: block;
+                    font-size: 11px;
+                    text-transform: uppercase;
+                    letter-spacing: 1px;
+                    color: #94a3b8;
+                    margin-bottom: 0.5rem;
+                }
+                #applicant-info-section .field-value {
+                    font-size: 16px;
+                    font-weight: 700;
+                    margin: 0;
+                }
+                #applicant-info-section .address-row {
+                    grid-column: span 2;
+                    text-align: center;
+                    margin-top: 1rem;
+                }
+            </style>
+
+            {% with applicant=application.user %}
+            <div class="profile-header">
+                <div class="profile-avatar">
+                    {{ applicant.username|slice:":1"|upper }}
+                </div>
+                <h4 class="mb-1 text-info">{{ applicant.full_name|default:applicant.username }}</h4>
+                <p class="text-muted small mb-0"><i class="bi bi-person-badge-fill me-1"></i> Policyholder Applicant</p>
+            </div>
+
+            <div class="card-container">
+                <div class="centered-grid">
+                    <div class="field-group">
+                        <label class="field-label">Full Name</label>
+                        <p class="field-value">{{ applicant.full_name|default:applicant.username }}</p>
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label">Username</label>
+                        <p class="field-value text-primary">@{{ applicant.username }}</p>
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label">Email Address</label>
+                        {% if show_full_data %}
+                        <p class="field-value" style="color: #3b82f6;">{{ applicant.email }}</p>
+                        {% else %}
+                        <p class="field-value text-white-50">{{ masked_email }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label">Phone Number</label>
+                        {% if show_full_data %}
+                        <p class="field-value">{{ applicant.phone|default:"—" }}</p>
+                        {% else %}
+                        <p class="field-value text-white-50">{{ masked_phone }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label">Aadhaar (KYC)</label>
+                        <code class="field-value text-info">{{ applicant.aadhaar_masked }}</code>
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label">System Identity</label>
+                        <p class="field-value text-muted" style="font-size: 12px;">UID-00{{ applicant.id }}</p>
+                    </div>
+                    
+                    <div class="field-group address-row">
+                        <label class="field-label">Permanent Address</label>
+                        <p class="field-value small" style="font-weight: normal;">{{ applicant.address|default:"Not recorded" }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endwith %}
+        </div>
+        </div>
+
+        {# Policy Info #}
+        <div class="review-card mb-4">
+            <div class="review-card-header">
+                <h6 class="mb-0 text-warning"><i class="bi bi-file-earmark-lock me-2"></i>Policy Plan Details</h6>
+            </div>
+            <div class="review-card-body">
+                <div class="info-row">
+                    <span class="info-label">Policy Number</span>
+                    <span class="info-value fw-bold">{{ application.policy.policy_number }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Policy Type</span>
+                    <span class="info-value">{{ application.policy.policy_type|default:"General" }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Insurer</span>
+                    <span class="info-value">{{ application.policy.insurer_name|default:"—" }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Sum Insured</span>
+                    <span class="info-value text-success fw-bold">₹{{ application.policy.sum_insured|intcomma }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Deductible</span>
+                    <span class="info-value">₹{{ application.policy.deductible|intcomma }}</span>
+                </div>
+                {% with sched=application.policy.premium_schedule %}
+                {% if sched %}
+                <div class="info-row">
+                    <span class="info-label">Base Premium</span>
+                    <span class="info-value">₹{{ sched.base_premium|intcomma }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">GST ({{ sched.gst_percentage }}%)</span>
+                    <span class="info-value">₹{{ sched.gst_amount|intcomma }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Gross Premium</span>
+                    <span class="info-value text-info fw-bold">₹{{ sched.gross_premium|intcomma }}</span>
+                </div>
+                {% endif %}
+                {% endwith %}
+            </div>
+        </div>
+
+        {# Motor Documents (if applicable) #}
+        {% if application.vehicle_number or application.rc_upload %}
+        <div class="review-card mb-4">
+            <div class="review-card-header">
+                <h6 class="mb-0 text-info"><i class="bi bi-truck me-2"></i>Motor Verification Documents</h6>
+            </div>
+            <div class="review-card-body">
+                {% if application.vehicle_number %}
+                <div class="info-row">
+                    <span class="info-label">Vehicle Number</span>
+                    <code class="info-value">{{ application.vehicle_number }}</code>
+                </div>
+                {% endif %}
+
+                {% if application.rc_upload %}
+                <div class="info-row align-items-start">
+                    <span class="info-label">RC Document</span>
+                    <div>
+                        {# ── inline modal preview button ───────────────── #}
+                        {% with rc_url=application.rc_upload.url rc_name=application.rc_upload.name|lower %}
+                        <button
+                            class="doc-preview-btn"
+                            data-url="{{ rc_url }}"
+                            data-name="RC Document"
+                            data-type="{% if rc_name|slice:'-4:' == '.pdf' %}pdf{% else %}image{% endif %}"
+                            style="background:rgba(26,110,245,0.1); border:1px solid rgba(26,110,245,0.3);
+                                   color:#6fa3f5; border-radius:8px; padding:5px 14px;
+                                   font-size:12px; cursor:pointer; display:inline-flex;
+                                   align-items:center; gap:6px;">
+                            <i class="bi bi-eye"></i> Preview RC
+                        </button>
+                        {% endwith %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% elif 'motor' in application.policy.policy_type|lower %}
+        <div class="review-card mb-4">
+            <div class="review-card-header">
+                <h6 class="mb-0 text-info"><i class="bi bi-truck me-2"></i>Motor Policy</h6>
+            </div>
+            <div class="review-card-body">
+                <p class="text-muted small mb-0">No motor documents were submitted with this application.</p>
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+
+    {# ── Right Column: Admin Verdict ──────────────────────────────────────── #}
+    <div class="col-md-4">
+        <div class="review-card" style="position: sticky; top: 20px;">
+            <div class="review-card-header">
+                <h6 class="mb-0 text-white"><i class="bi bi-gavel me-2"></i>Admin Verdict</h6>
+            </div>
+            <div class="review-card-body">
+
+                {% if application.status == 'pending' %}
+                {# ── Active Verdict Form ────────────────────────────────────── #}
+                <form method="POST" id="verdictForm">
+                    {% csrf_token %}
+
+                    <div class="mb-4">
+                        <label class="form-label text-muted small">Remarks / Reason (optional)</label>
+                        <textarea
+                            name="admin_remarks"
+                            class="form-control bg-transparent text-white border-secondary"
+                            rows="4"
+                            placeholder="Add notes or reason for rejection…"
+                            id="adminRemarks"
+                        ></textarea>
+                    </div>
+
+                    <div class="d-grid gap-3">
+                        <button
+                            type="submit"
+                            name="action"
+                            value="approve"
+                            class="verdict-btn btn-approve"
+                            onclick="return confirm('Approve this application and create an active policy for the user?')"
+                        >
+                            <i class="bi bi-shield-check"></i> Approve & Activate
+                        </button>
+                        <button
+                            type="submit"
+                            name="action"
+                            value="reject"
+                            class="verdict-btn btn-reject"
+                            onclick="return verifyReject()"
+                        >
+                            <i class="bi bi-x-circle"></i> Reject Application
+                        </button>
+                    </div>
+                </form>
+
+                {% else %}
+                {# ── Already Reviewed ──────────────────────────────────────── #}
+                <div class="alert-already-reviewed mb-3">
+                    <i class="bi bi-info-circle me-2"></i>
+                    This application was <strong>{{ application.get_status_display }}</strong>
+                    {% if application.reviewed_at %}on {{ application.reviewed_at|date:"M d, Y" }}{% endif %}.
+                </div>
+
+                {% if application.reviewed_by %}
+                <div class="info-row">
+                    <span class="info-label">Reviewed By</span>
+                    <span class="info-value">{{ application.reviewed_by.get_full_name|default:application.reviewed_by.username }}</span>
+                </div>
+                {% endif %}
+
+                {% if application.admin_remarks and not 'vehicle_number:' in application.admin_remarks %}
+                <div class="mt-3 p-3 rounded" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);">
+                    <small class="text-muted d-block mb-1">Admin Remarks:</small>
+                    <p class="mb-0 text-light small">{{ application.admin_remarks }}</p>
+                </div>
+                {% endif %}
+                {% endif %}
+
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+
+{# ── Document Preview Modal (shared with claim_detail) ────────────────────── #}
+<div id="docPreviewModal" style="
+    display:none; position:fixed; inset:0; z-index:9999;
+    background:rgba(0,0,0,0.82); backdrop-filter:blur(6px);
+    align-items:center; justify-content:center; padding:20px;">
+    <div style="background:#111827; border:1px solid rgba(255,255,255,0.1); border-radius:16px;
+                width:100%; max-width:860px; max-height:90vh;
+                display:flex; flex-direction:column; overflow:hidden;
+                box-shadow:0 25px 60px rgba(0,0,0,0.6);">
+        <div style="display:flex; justify-content:space-between; align-items:center;
+                    padding:16px 22px; border-bottom:1px solid rgba(255,255,255,0.08);">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <i class="bi bi-file-earmark-text" style="color:#6fa3f5; font-size:18px;"></i>
+                <span id="docModalTitle" style="color:#e2e8f0; font-weight:600; font-size:15px;"></span>
+            </div>
+            <div style="display:flex; gap:10px; align-items:center;">
+                <a id="docModalDownload" href="#" target="_blank"
+                   style="font-size:12px; color:#7a8ba8; text-decoration:none;
+                          display:flex; align-items:center; gap:5px;
+                          border:1px solid rgba(255,255,255,0.1); padding:5px 12px;
+                          border-radius:8px;">
+                    <i class="bi bi-download"></i> Open in Tab
+                </a>
+                <button onclick="closeDocModal()" style="
+                    background:rgba(244,72,101,0.1); border:1px solid rgba(244,72,101,0.3);
+                    color:#f44865; border-radius:8px; width:34px; height:34px;
+                    display:flex; align-items:center; justify-content:center;
+                    cursor:pointer; font-size:18px;">
+                    <i class="bi bi-x"></i>
+                </button>
+            </div>
+        </div>
+        <div style="flex:1; overflow:auto; padding:20px; display:flex;
+                    align-items:center; justify-content:center; min-height:200px;">
+            <div id="docModalContent" style="width:100%; height:100%;
+                 display:flex; align-items:center; justify-content:center;"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+const modal   = document.getElementById('docPreviewModal');
+const content = document.getElementById('docModalContent');
+const title   = document.getElementById('docModalTitle');
+const dlBtn   = document.getElementById('docModalDownload');
+
+document.querySelectorAll('.doc-preview-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const url  = this.dataset.url;
+        const name = this.dataset.name;
+        const type = this.dataset.type;
+        title.textContent = name;
+        dlBtn.href = url;
+        content.innerHTML = type === 'pdf'
+            ? `<iframe src="${url}" style="width:100%;height:65vh;border:none;border-radius:8px;background:#fff;" title="${name}"></iframe>`
+            : `<img src="${url}" alt="${name}" style="max-width:100%;max-height:65vh;object-fit:contain;border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,0.5);" />`;
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    });
+});
+
+function closeDocModal() {
+    modal.style.display = 'none';
+    content.innerHTML = '';
+    document.body.style.overflow = '';
+}
+modal.addEventListener('click', e => { if (e.target === modal) closeDocModal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDocModal(); });
+</script>
+
+<script>
+    // Initialize tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+      return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+
+    function verifyReject() {
+        const remarks = document.getElementById('adminRemarks').value.trim();
+        if (!remarks) {
+            if (!confirm('You have not provided a rejection reason. Are you sure you want to reject without a reason?')) {
+                return false;
+            }
+        }
+        return confirm('Reject this application? This action will notify the user.');
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,350 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+<title>Policy Detail — InsureAI Portal</title>
+
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet"/>
+
+<style>
+
+body{
+font-family:'DM Sans',sans-serif;
+background:#0a1628;
+color:white;
+margin:0;
+}
+
+.app{
+display:flex;
+min-height:100vh;
+}
+
+/* SIDEBAR */
+
+.sidebar{
+width:240px;
+background:#111c35;
+padding:20px;
+}
+
+.sidebar-logo{
+font-family:'DM Serif Display',serif;
+font-size:20px;
+margin-bottom:30px;
+display:block;
+color:white;
+text-decoration:none;
+}
+
+.nav-item{
+display:block;
+padding:10px;
+color:#9fb3d1;
+text-decoration:none;
+margin-bottom:5px;
+border-radius:6px;
+}
+
+.nav-item:hover{
+background:#1a2d55;
+color:white;
+}
+
+.nav-item.active{
+background:#1a6ef5;
+color:white;
+}
+
+/* MAIN */
+
+.main{
+flex:1;
+}
+
+.topbar{
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:15px 25px;
+background:#0f1b33;
+border-bottom:1px solid #1f335c;
+}
+
+.content{
+padding:30px;
+}
+
+/* HERO */
+
+.policy-hero{
+background:#111c35;
+padding:30px;
+border-radius:10px;
+margin-bottom:20px;
+}
+
+.hero-pol-name{
+font-size:28px;
+font-family:'DM Serif Display',serif;
+}
+
+.hero-pol-num{
+font-size:13px;
+color:#9fb3d1;
+margin-bottom:10px;
+}
+
+.metric{
+margin-top:15px;
+display:flex;
+gap:40px;
+}
+
+.metric div{
+font-size:14px;
+}
+
+.badge{
+background:#1a6ef5;
+padding:5px 10px;
+border-radius:20px;
+font-size:12px;
+}
+
+.sec{
+background:#111c35;
+padding:20px;
+border-radius:10px;
+margin-bottom:20px;
+}
+
+.sec-title{
+font-size:18px;
+margin-bottom:15px;
+font-family:'DM Serif Display',serif;
+}
+
+.detail-row{
+margin-bottom:8px;
+font-size:14px;
+color:#cbd5e1;
+}
+
+.btn{
+padding:10px 18px;
+border:none;
+border-radius:6px;
+cursor:pointer;
+}
+
+.btn-primary{
+background:#1a6ef5;
+color:white;
+}
+
+.btn-secondary{
+background:#374151;
+color:white;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="app">
+
+<!-- SIDEBAR -->
+
+<nav class="sidebar">
+
+<a class="sidebar-logo" href="{% url 'accounts:login' %}">
+InsureAI
+</a>
+
+<a class="nav-item" href="{% url 'accounts:admin_dashboard' %}">Dashboard</a>
+
+<a class="nav-item active" href="{% url 'policy:list' %}">
+My Policies
+</a>
+
+<a class="nav-item" href="{% url 'policy:create' %}">
+Create Policy
+</a>
+
+<a class="nav-item" href="{% url 'claim:list' %}">
+Claims
+</a>
+
+<a class="nav-item" href="{% url 'accounts:logout' %}">
+Logout
+</a>
+
+<br>
+
+<div style="font-size:13px">
+
+<div>
+<strong>{{ request.user.first_name }} {{ request.user.last_name }}</strong>
+</div>
+
+<div style="color:#9fb3d1">
+{{ request.user.role }}
+</div>
+
+</div>
+
+</nav>
+
+<!-- MAIN -->
+
+<div class="main">
+
+<div class="topbar">
+
+<div>
+
+<a href="{% url 'policy:list' %}" style="color:#9fb3d1;text-decoration:none">
+← Back
+</a>
+
+</div>
+
+<div>
+
+Policy Detail
+
+</div>
+
+</div>
+
+<div class="content">
+
+<!-- HERO -->
+
+<div class="policy-hero">
+
+<div class="hero-pol-num">
+
+Policy Number · {{ policy.policy_number }}
+
+</div>
+
+<div class="hero-pol-name">
+
+{{ policy.insurer }}
+
+</div>
+
+<br>
+
+<span class="badge">
+{{ policy.policy_type }}
+</span>
+
+<div class="metric">
+
+<div>
+<strong>Sum Insured</strong><br>
+₹{{ policy.sum_insured }}
+</div>
+
+<div>
+<strong>Premium</strong><br>
+₹{{ policy.premium }}
+</div>
+
+<div>
+<strong>Start Date</strong><br>
+{{ policy.start_date }}
+</div>
+
+<div>
+<strong>End Date</strong><br>
+{{ policy.end_date }}
+</div>
+
+</div>
+
+</div>
+
+<!-- POLICY DETAILS -->
+
+<div class="sec">
+
+<div class="sec-title">
+
+Policy Information
+
+</div>
+
+<div class="detail-row">
+Policy Number : {{ policy.policy_number }}
+</div>
+
+<div class="detail-row">
+Policy Type : {{ policy.policy_type }}
+</div>
+
+<div class="detail-row">
+Insurer : {{ policy.insurer }}
+</div>
+
+<div class="detail-row">
+Sum Insured : ₹{{ policy.sum_insured }}
+</div>
+
+<div class="detail-row">
+Deductible Amount : ₹{{ policy.deductible_amount }}
+</div>
+
+<div class="detail-row">
+Premium : ₹{{ policy.premium }}
+</div>
+
+<div class="detail-row">
+Start Date : {{ policy.start_date }}
+</div>
+
+<div class="detail-row">
+End Date : {{ policy.end_date }}
+</div>
+
+<div class="detail-row">
+Created By : {{ policy.created_by }}
+</div>
+
+</div>
+
+<!-- ACTIONS -->
+
+<div class="sec">
+
+<div class="sec-title">
+Actions
+</div>
+
+<button class="btn btn-secondary" onclick="alert('Download Policy feature is coming soon!')">
+Download Policy
+</button>
+
+<button class="btn btn-secondary" onclick="alert('Renew Policy feature is coming soon!')">
+Renew Policy
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</body>
+</html>

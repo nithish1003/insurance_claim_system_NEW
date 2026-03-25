@@ -1,0 +1,416 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Transaction Ledger — Financial Operations{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Premium Financial Dashboard Styling */
+    .ledger-container {
+        animation: fadeIn 0.4s ease-out;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .stat-bar {
+        background: rgba(15, 23, 42, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 24px;
+        display: flex;
+        gap: 30px;
+    }
+
+    .stat-item {
+        display: flex;
+        flex-direction: column;
+    }
+    .stat-label { font-size: 11px; text-transform: uppercase; color: #94a3b8; letter-spacing: 1px; margin-bottom: 4px; }
+    .stat-value { font-size: 20px; font-weight: 700; color: #ffffff; }
+
+    /* Enhanced Table UI */
+    .premium-table-wrapper {
+        background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+    }
+
+    .premium-table-header {
+        padding: 24px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: linear-gradient(to right, rgba(255, 255, 255, 0.02), transparent);
+    }
+
+    .premium-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .premium-table th {
+        background: rgba(0, 0, 0, 0.2);
+        color: #64748b;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 11px;
+        letter-spacing: 1.5px;
+        padding: 16px 24px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .premium-table td {
+        padding: 20px 24px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        vertical-align: middle;
+        transition: background 0.2s ease;
+    }
+
+    .premium-table tr:hover td {
+        background: rgba(26, 110, 245, 0.03);
+    }
+
+    /* Transaction Indicators */
+    .txn-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 8px;
+    }
+    .dot-completed { background: #10b981; box-shadow: 0 0 8px #10b981; }
+    .dot-pending { background: #f59e0b; box-shadow: 0 0 8px #f59e0b; }
+    .dot-failed { background: #ef4444; box-shadow: 0 0 8px #ef4444; }
+
+    .status-capsule {
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: inline-flex;
+        align-items: center;
+    }
+    .status-completed { background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); }
+    .status-pending { background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.2); }
+    .status-failed { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
+
+    .method-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        background: rgba(255,255,255,0.03);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        color: #94a3b8;
+    }
+
+    .btn-manage-financial {
+        background: rgba(26, 110, 245, 0.1);
+        color: #3b82f6 !important;
+        border: 1px solid rgba(26, 110, 245, 0.2);
+        padding: 8px 16px;
+        border-radius: 10px;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-manage-financial:hover {
+        background: #1a6ef5;
+        color: white !important;
+        transform: scale(1.05);
+        box-shadow: 0 10px 20px -5px rgba(26, 110, 245, 0.4);
+    }
+
+    .mono-id {
+        font-family: 'JetBrains Mono', 'Monaco', monospace;
+        font-size: 12px;
+        color: #1a6ef5;
+        letter-spacing: -0.5px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="ledger-container">
+    <div class="d-flex justify-content-between align-items-end mb-4">
+        <div>
+            <nav aria-label="breadcrumb" class="mb-2">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="{% url 'accounts:admin_dashboard' %}" class="text-muted text-decoration-none small">Dashboard</a></li>
+                    <li class="breadcrumb-item active text-white opacity-50 small" aria-current="page">Ledger</li>
+                </ol>
+            </nav>
+            <h2 class="text-white fw-bold mb-0">Financial Operations</h2>
+            <p class="text-muted small mb-0">System-wide transaction monitoring and treasury control.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-outline-secondary btn-sm px-3" onclick="window.print()">
+                <i class="bi bi-printer me-2"></i>Export PDF
+            </button>
+            <a href="{% url 'accounts:admin_dashboard' %}" class="btn btn-primary btn-sm px-4">
+                <i class="bi bi-arrow-left me-2"></i>Admin Home
+            </a>
+        </div>
+    </div>
+
+    <!-- Summary Metrics -->
+    <div class="stat-bar">
+        <div class="stat-item">
+            <span class="stat-label">Total Transactions</span>
+            <span class="stat-value text-white">{{ payments|length }}</span>
+        </div>
+        <div class="stat-item" style="border-left: 1px solid rgba(255,255,255,0.05); padding-left: 30px;">
+            <span class="stat-label">Success Rate</span>
+            <span class="stat-value text-success">100%</span>
+        </div>
+        <div class="stat-item ms-auto text-end">
+            <span class="stat-label">System Date</span>
+            <span class="stat-value text-white-50 small">{% now "M d, Y" %}</span>
+        </div>
+    </div>
+
+    <!-- Filter & Search Bar -->
+    <div class="premium-table-card mb-4">
+        <div class="card-header">
+            <h5 class="small text-muted text-uppercase mb-0"><i class="bi bi-filter me-2"></i>Filter Ledger</h5>
+        </div>
+        <div class="p-3">
+            <form method="get" class="row g-3 align-items-end">
+                <div class="col-md-5">
+                    <label class="small text-muted mb-1">Search Keywords (ID, Policy, User)</label>
+                    <input type="text" name="q" value="{{ q }}" class="form-control form-control-sm bg-dark border-secondary text-white" placeholder="TXN ID, POL-123, username...">
+                </div>
+                <div class="col-md-4">
+                    <label class="small text-muted mb-1">Select Claim Dossier</label>
+                    <select name="claim_filter" class="form-select form-select-sm bg-dark border-secondary text-white">
+                        <option value="">— All Claims —</option>
+                        {% for c in all_claims %}
+                        <option value="{{ c.id }}" {% if claim_filter_id == c.id %}selected{% endif %}>{{ c.claim_number }} ({{ c.created_by.username }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary btn-sm w-100 py-2">Apply Filters</button>
+                    <a href="{% url 'policy:payment_list' %}" class="btn btn-outline-secondary btn-sm w-100 py-2">Reset</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- FILTERED CLAIM SETTLEMENTS (DEDICATED TABLE) -->
+    {% if selected_claim_settlements %}
+    <div class="premium-table-wrapper mb-5" style="border: 1px solid rgba(16, 185, 129, 0.3);">
+        <div class="premium-table-header" style="background: rgba(16, 185, 129, 0.05);">
+            <div class="d-flex align-items-center gap-3">
+                <h5 class="mb-0 text-success fw-bold"><i class="bi bi-bank2 me-2"></i>Claim Settlement Details</h5>
+                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25">{{ selected_claim_settlements.count }} PAYOUTS</span>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="premium-table">
+                <thead>
+                    <tr>
+                        <th class="ps-4">Settlement Ref</th>
+                        <th>Claim Number</th>
+                        <th>Payee Name</th>
+                        <th>Settled Amount</th>
+                        <th>Bank Details</th>
+                        <th class="pe-4">Processed Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in selected_claim_settlements %}
+                    <tr>
+                        <td class="ps-4"><span class="mono-id fw-bold text-success">{{ s.transaction_reference }}</span></td>
+                        <td><div class="text-white fw-bold">{{ s.claim.claim_number }}</div></td>
+                        <td><div class="text-white small">{{ s.payee_name }}</div></td>
+                        <td><div class="fw-bold text-white">₹{{ s.settled_amount|intcomma }}</div><small class="text-danger" style="font-size: 10px;">DEBIT</small></td>
+                        <td>
+                            <div class="text-white extra-small">{{ s.bank_name }}</div>
+                            {% with account_len=s.bank_account|length %}
+                            <div class="text-muted" style="font-size: 10px;">A/C: {{ s.bank_account|slice:"-4:"|rjust:account_len|default:"****" }}</div>
+                            {% endwith %}
+                        </td>
+                        <td class="pe-4 text-muted small">{{ s.settlement_date|date:"d M, Y" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- MAIN LEDGER TABLE -->
+    <!-- 🟢 CREDIT TRANSACTIONS (PREMIUMS) -->
+    <div class="premium-table-wrapper mb-5" style="border: 1px solid rgba(16, 185, 129, 0.2);">
+        <div class="premium-table-header" style="background: rgba(16, 185, 129, 0.05);">
+            <div class="d-flex align-items-center gap-3">
+                <h5 class="mb-0 text-success fw-bold"><i class="bi bi-arrow-up-circle me-2"></i>Credit Transactions (Premiums)</h5>
+                <span class="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill small border border-success border-opacity-25">INFLOW</span>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="premium-table">
+                <thead>
+                    <tr>
+                        <th class="ps-4">Reference ID</th>
+                        <th>Member Details</th>
+                        <th>Policy Asset</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Method</th>
+                        <th>Captured On</th>
+                        <th class="pe-4 text-end">Control</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for payment in payments %}
+                      {% if payment.direction == 'CREDIT' or not payment.direction %}
+                    <tr>
+                        <td class="ps-4">
+                            <span class="mono-id fw-bold">{{ payment.transaction_id }}</span>
+                            <div class="text-muted" style="font-size: 10px;">ID: #{{ payment.id|add:1000 }}</div>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="bg-success bg-opacity-10 text-success rounded-circle text-center d-flex align-items-center justify-content-center fw-bold" style="width: 32px; height: 32px; font-size: 12px; border: 1px solid rgba(16, 185, 129, 0.2);">
+                                    {{ payment.user_policy.user.username|slice:":1"|upper }}
+                                </div>
+                                <div>
+                                    <div class="fw-bold text-white small">{{ payment.user_policy.user.get_full_name|default:payment.user_policy.user.username }}</div>
+                                    <div class="text-muted" style="font-size: 11px;">UID-00{{ payment.user_policy.user.id }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="text-white small fw-semibold">{{ payment.user_policy.policy.policy_number }}</div>
+                            <div class="text-muted" style="font-size: 11px;">{{ payment.user_policy.policy.policy_type|title }} Plan</div>
+                        </td>
+                        <td>
+                            <div class="fw-bold text-white">₹{{ payment.amount|intcomma }}</div>
+                            <div class="text-success" style="font-size: 10px; font-weight: 700;">+ CREDIT (PREMIUM)</div>
+                        </td>
+                        <td>
+                            <div class="status-capsule status-{{ payment.payment_status }}">
+                                <span class="txn-dot dot-{{ payment.payment_status }}"></span>
+                                {{ payment.get_payment_status_display }}
+                            </div>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="text-muted small uppercase">{{ payment.get_payment_method_display }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="text-white small">{{ payment.created_at|date:"M d, Y" }}</div>
+                        </td>
+                        <td class="pe-4 text-end">
+                            <a href="{% url 'policy:manage_payment' payment.id %}" class="btn-manage-financial">
+                                <i class="bi bi-search"></i> Audit
+                            </a>
+                        </td>
+                    </tr>
+                      {% endif %}
+                    {% empty %}
+                    <tr><td colspan="8" class="text-center py-4 text-muted small">No credit transactions recorded.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 🔴 DEBIT TRANSACTIONS (SETTLEMENTS) -->
+    <div class="premium-table-wrapper" style="border: 1px solid rgba(239, 68, 68, 0.2);">
+        <div class="premium-table-header" style="background: rgba(239, 68, 68, 0.05);">
+            <div class="d-flex align-items-center gap-3">
+                <h5 class="mb-0 text-danger fw-bold"><i class="bi bi-arrow-down-circle me-2"></i>Debit Transactions (Settlements)</h5>
+                <span class="badge bg-danger bg-opacity-10 text-danger px-3 py-2 rounded-pill small border border-danger border-opacity-25">OUTFLOW</span>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="premium-table">
+                <thead>
+                    <tr>
+                        <th class="ps-4">Settlement ID</th>
+                        <th>Member / Payee</th>
+                        <th>Policy Asset</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Method</th>
+                        <th>Captured On</th>
+                        <th class="pe-4 text-end">Control</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for payment in payments %}
+                      {% if payment.direction == 'DEBIT' %}
+                    <tr>
+                        <td class="ps-4">
+                            <span class="mono-id fw-bold text-danger">{{ payment.transaction_id }}</span>
+                            <div class="text-muted" style="font-size: 10px;">CLAIM: {{ payment.claim.claim_number }}</div>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="bg-danger bg-opacity-10 text-danger rounded-circle text-center d-flex align-items-center justify-content-center fw-bold" style="width: 32px; height: 32px; font-size: 12px; border: 1px solid rgba(239, 68, 68, 0.2);">
+                                    {{ payment.user_policy.user.username|slice:":1"|upper }}
+                                </div>
+                                <div>
+                                    <div class="fw-bold text-white small">{{ payment.user_policy.user.get_full_name|default:payment.user_policy.user.username }}</div>
+                                    <div class="text-muted" style="font-size: 11px;">Payee: {{ payment.gateway_reference|default:"Standard" }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="text-white small fw-semibold">{{ payment.user_policy.policy.policy_number }}</div>
+                            <div class="text-muted" style="font-size: 11px;">Claim Payout</div>
+                        </td>
+                        <td>
+                            <div class="fw-bold text-white">₹{{ payment.amount|intcomma }}</div>
+                            <div class="text-danger" style="font-size: 10px; font-weight: 700;">- DEBIT (SETTLEMENT)</div>
+                        </td>
+                        <td>
+                            <div class="status-capsule status-{{ payment.payment_status }}">
+                                <span class="txn-dot dot-{{ payment.payment_status }}"></span>
+                                {{ payment.get_payment_status_display }}
+                            </div>
+                        </td>
+                        <td><span class="text-muted small uppercase">{{ payment.get_payment_method_display }}</span></td>
+                        <td><div class="text-white small">{{ payment.created_at|date:"M d, Y" }}</div></td>
+                        <td class="pe-4 text-end">
+                            <a href="{% url 'policy:manage_payment' payment.id %}" class="btn-manage-financial">
+                                <i class="bi bi-search"></i> Audit
+                            </a>
+                        </td>
+                    </tr>
+                      {% endif %}
+                    {% empty %}
+                    <tr><td colspan="8" class="text-center py-4 text-muted small">No debit transactions recorded.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

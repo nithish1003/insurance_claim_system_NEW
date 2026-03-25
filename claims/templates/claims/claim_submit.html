@@ -1,0 +1,399 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Submit Claim{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Animated Back Button styling */
+.btn-back-animated {
+    background: rgba(255, 255, 255, 0.04);
+    color: #e2e8f0;
+    padding: 10px 16px;
+    border-radius: 12px;
+    position: relative;
+    overflow: hidden;
+    gap: 6px;
+    z-index: 1;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid rgba(148, 163, 184, 0.16);
+    font-weight: 700;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    transition: all 0.3s ease;
+}
+
+.btn-back-animated::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+    transform: skewX(-20deg);
+    transition: all 0.6s ease;
+    z-index: -1;
+}
+
+.btn-back-animated:hover {
+    background: rgba(59, 130, 246, 0.14);
+    color: white;
+    border-color: rgba(59, 130, 246, 0.28);
+    box-shadow: 0 10px 20px rgba(37, 99, 235, 0.18);
+    transform: translateY(-1px);
+}
+
+.btn-back-animated:hover::after {
+    left: 150%;
+}
+
+.btn-back-animated .back-icon {
+    display: inline-block;
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    margin-right: 6px;
+}
+
+.btn-back-animated:hover .back-icon {
+    transform: translateX(-4px) scale(1.1);
+}
+
+/* Dark Theme overrides for the form */
+.form-card {
+    background:
+        radial-gradient(circle at top right, rgba(255, 255, 255, 0.08), transparent 38%),
+        linear-gradient(160deg, rgba(15, 23, 42, 0.96) 0%, rgba(15, 23, 42, 0.82) 55%, rgba(30, 41, 59, 0.96) 100%);
+    border: 1px solid rgba(148, 163, 184, 0.16);
+    border-radius: 18px;
+    color: white;
+    box-shadow: 0 14px 32px rgba(2, 6, 23, 0.24);
+    overflow: hidden;
+    position: relative;
+}
+
+.form-card::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 3px;
+    background: linear-gradient(90deg, #3b82f6, rgba(255, 255, 255, 0));
+    opacity: 0.95;
+}
+
+.form-card .card-header {
+    background: linear-gradient(to right, rgba(255, 255, 255, 0.03), transparent);
+    border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.form-label {
+    color: #9fb3d1;
+    font-weight: 500;
+}
+
+.form-control {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: white !important;
+}
+
+.form-control:focus {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border-color: #1a6ef5 !important;
+    box-shadow: 0 0 0 0.25rem rgba(26, 110, 245, 0.25) !important;
+}
+
+select.form-control option {
+    background: #111c35;
+    color: white;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid px-4 py-3">
+
+<div class="d-flex justify-content-between align-items-center mb-4" data-aos="fade-down">
+    <h3 class="m-0 fw-bold text-white" style="font-family: 'DM Serif Display', serif;">Submit a New Claim</h3>
+    
+    <!-- Animated Go Back Button -->
+    <a href="{% url 'accounts:policyholder_dashboard' %}" class="btn-back-animated hover-scale">
+        <span class="back-icon">←</span> Go Back
+    </a>
+</div>
+
+<div class="card form-card shadow-sm" data-aos="fade-up" data-aos-delay="100">
+
+<div class="card-header py-3">
+<i class="bi bi-file-earmark-medical me-2 text-primary"></i> Claim Details Form
+</div>
+
+<div class="card-body p-4">
+
+<form method="POST" enctype="multipart/form-data">
+
+{% csrf_token %}
+
+<!-- Policy Selection -->
+<div class="mb-4">
+    <label class="form-label">Policy <span class="text-danger">*</span></label>
+    <select name="policy" class="form-control" id="policy_select" required>
+        <option value="">Select Policy</option>
+        {% for p in policies %}
+        <option value="{% if p.policy %}{{ p.policy.id }}{% else %}{{ p.id }}{% endif %}" 
+                data-sum-insured="{% if p.remaining_sum_insured is not None %}{{ p.remaining_sum_insured }}{% else %}{{ p.sum_insured }}{% endif %}" 
+                data-type="{% if p.policy %}{{ p.policy.policy_type|default:'general'|lower }}{% else %}{{ p.policy_type|default:'general'|lower }}{% endif %}">
+            {% if p.policy %}{{ p.policy.policy_number }}{% else %}{{ p.policy_number }}{% endif %} 
+            - {% if p.policy %}{{ p.policy.policy_type|default:"General" }}{% else %}{{ p.policy_type|default:"General" }}{% endif %}
+            {% if p.remaining_sum_insured is not None %} (Available: ₹{{ p.remaining_sum_insured|intcomma }}){% endif %}
+        </option>
+        {% endfor %}
+    </select>
+</div>
+
+<!-- Description -->
+<div class="mb-4">
+    <label class="form-label">Description <span class="text-danger">*</span></label>
+    <textarea name="description"
+              class="form-control"
+              rows="4"
+              id="claim_description"
+              placeholder="Briefly describe the incident... Our AI will classify the claim type for you."
+              required></textarea>
+</div>
+
+<!-- Incident Date & Claim Amount -->
+<div class="row mb-4">
+    <div class="col-md-6 mb-3 mb-md-0">
+        <label class="form-label">Incident Date <span class="text-danger">*</span></label>
+        <input type="date" name="incident_date" class="form-control" required>
+    </div>
+    <div class="col-md-6">
+        <label class="form-label">Claim Amount (₹) <span class="text-danger">*</span></label>
+        <input type="number" name="claimed_amount" id="claim_amount" class="form-control" placeholder="e.g. 50000" required>
+        <div id="max-amount-text" class="text-info small mt-1"></div>
+        <div id="claim-amount-error" class="text-danger small mt-1"></div>
+    </div>
+</div>
+
+<hr style="border-color: rgba(255,255,255,0.1);">
+
+<!-- 🚗 Motor Specific Fields -->
+<div id="motor_fields" class="dynamic-field-group" style="display: none;">
+    <div class="bg-primary bg-opacity-10 p-3 rounded mb-4 border border-primary border-opacity-25 shadow-sm" data-aos="fade-up">
+        <h6 class="text-primary mb-3 fw-bold"><i class="bi bi-car-front me-2"></i>Motor Insurance Details</h6>
+        <div class="row g-3">
+            <div class="col-md-12">
+                <label class="form-label small">Vehicle Registration Number <span class="text-danger">*</span></label>
+                <input type="text" name="vehicle_number" class="form-control" placeholder="e.g. MH 12 AB 1234">
+                <small class="text-muted">Must match your policy's registered vehicle.</small>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label small">Upload RC (Registration Certificate) <span class="text-danger">*</span></label>
+                <input type="file" name="rc_document" class="form-control" accept="image/*,.pdf">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label small">Upload Repair/Garage Bill <span class="text-danger">*</span></label>
+                <input type="file" name="repair_bill" class="form-control" accept="image/*,.pdf">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 🏥 Health Specific Fields -->
+<div id="health_fields" class="dynamic-field-group" style="display: none;">
+    <div class="bg-success bg-opacity-10 p-3 rounded mb-4 border border-success border-opacity-25 shadow-sm" data-aos="fade-up">
+        <h6 class="text-success mb-3 fw-bold"><i class="bi bi-hospital me-2"></i>Health Insurance Documents</h6>
+        <div class="mb-0">
+            <label class="form-label small">Upload Hospital/Medical Bill <span class="text-danger">*</span></label>
+            <input type="file" name="hospital_bill" class="form-control" accept="image/*,.pdf">
+        </div>
+    </div>
+</div>
+
+<!-- 🕯️ Life Specific Fields -->
+<div id="life_fields" class="dynamic-field-group" style="display: none;">
+    <div class="bg-danger bg-opacity-10 p-3 rounded mb-4 border border-danger border-opacity-25 shadow-sm" data-aos="fade-up">
+        <h6 class="text-danger mb-3 fw-bold"><i class="bi bi-heart-pulse me-2"></i>Life Insurance Verification</h6>
+        <div class="mb-0">
+            <label class="form-label small">Upload Death Certificate <span class="text-danger">*</span></label>
+            <input type="file" name="death_certificate" class="form-control" accept="image/*,.pdf">
+        </div>
+    </div>
+</div>
+
+<!-- 🏠 Home Specific Fields -->
+<div id="home_fields" class="dynamic-field-group" style="display: none;">
+    <div class="bg-info bg-opacity-10 p-3 rounded mb-4 border border-info border-opacity-25 shadow-sm" data-aos="fade-up">
+        <h6 class="text-info mb-3 fw-bold"><i class="bi bi-house me-2"></i>Home/Property Evidence</h6>
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label small">Property Ownership Proof <span class="text-danger">*</span></label>
+                <input type="file" name="property_proof" class="form-control" accept="image/*,.pdf">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label small">Damage Proof (Photos/Survey) <span class="text-danger">*</span></label>
+                <input type="file" name="damage_proof" class="form-control" accept="image/*,.pdf">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Common Identity Section -->
+<div class="mb-4">
+    <label class="form-label fw-bold">Verification Documents</label>
+    <div class="row g-3">
+        <div class="col-md-12 mb-2">
+            <label class="form-label small">Aadhaar Number <span class="text-danger">*</span></label>
+            <input type="text" 
+                   name="aadhaar_number" 
+                   class="form-control" 
+                   placeholder="XXXX XXXX XXXX" 
+                   required 
+                   pattern="\d{12}" 
+                   title="Aadhaar must be exactly 12 numeric digits.">
+            <small class="text-muted">Must match your registered Aadhaar number.</small>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label small">Identity Proof (Aadhaar) <span class="text-danger">*</span></label>
+            <input type="file" name="identity_proof" class="form-control" accept="image/*,.pdf" required>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label small">Additional Supporting Documents</label>
+            <input type="file" name="supporting_document" class="form-control" accept="image/*,.pdf" multiple>
+        </div>
+    </div>
+    <small class="text-muted mt-2 d-block">Please ensure uploaded files are clear and readable.</small>
+</div>
+
+<!-- Submit -->
+<div class="text-end border-top" style="border-color: #1f335c !important; padding-top: 20px;">
+    <button type="submit" class="btn hover-scale" style="background: #1a6ef5; color: white; padding: 12px 30px; font-weight: 700; border-radius: 8px; text-transform: uppercase; letter-spacing: 0.05em;">
+        <i class="bi bi-shield-fill-check me-2"></i> Submit Claim Request
+    </button>
+</div>
+
+</form>
+
+</div>
+
+</div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    (function () {
+        const policySelect = document.getElementById("policy_select");
+        const claimAmountInput = document.getElementById("claim_amount");
+        const maxAmountText = document.getElementById("max-amount-text");
+        const errorText = document.getElementById("claim-amount-error");
+        
+        // Dynamic Groups
+        const motorGroup = document.getElementById("motor_fields");
+        const healthGroup = document.getElementById("health_fields");
+        const lifeGroup = document.getElementById("life_fields");
+        const homeGroup = document.getElementById("home_fields");
+
+        function getSelectedPolicyData() {
+            if (!policySelect) return { sum: null, type: null };
+            const selected = policySelect.options[policySelect.selectedIndex];
+            if (!selected || !selected.value) return { sum: null, type: null };
+            
+            return {
+                sum: parseFloat(selected.getAttribute("data-sum-insured") || "0"),
+                type: selected.getAttribute("data-type") || ""
+            };
+        }
+
+        function formatCurrency(value) {
+            try {
+                return new Intl.NumberFormat("en-IN", {
+                    style: "currency",
+                    currency: "INR",
+                    maximumFractionDigits: 0
+                }).format(value);
+            } catch (e) {
+                return `₹${value}`;
+            }
+        }
+
+        function updateUI() {
+            const data = getSelectedPolicyData();
+            
+            // 1. Update Max Amount Display
+            if (data.sum) {
+                maxAmountText.textContent = `Maximum allowed claim: ${formatCurrency(data.sum)}`;
+                claimAmountInput.max = data.sum;
+            } else {
+                maxAmountText.textContent = "";
+                claimAmountInput.removeAttribute("max");
+            }
+
+            // 2. Toggle Dynamic Fields
+            const type = data.type;
+            
+            // Hide all first
+            [motorGroup, healthGroup, lifeGroup, homeGroup].forEach(g => {
+                if (g) {
+                    g.style.display = "none";
+                    // Disable required on inputs inside hidden groups
+                    g.querySelectorAll('input').forEach(i => i.required = false);
+                }
+            });
+
+            // Show relevant group
+            if (type.includes("motor") || type.includes("vehicle")) {
+                motorGroup.style.display = "block";
+                motorGroup.querySelectorAll('input').forEach(i => i.required = true);
+            } else if (type.includes("health")) {
+                healthGroup.style.display = "block";
+                healthGroup.querySelectorAll('input').forEach(i => i.required = true);
+            } else if (type.includes("life")) {
+                lifeGroup.style.display = "block";
+                lifeGroup.querySelectorAll('input').forEach(i => i.required = true);
+            } else if (type.includes("home")) {
+                homeGroup.style.display = "block";
+                homeGroup.querySelectorAll('input').forEach(i => i.required = true);
+            }
+            
+            validateAmount();
+            
+            // Refresh AOS to catch new elements
+            if (window.AOS) AOS.refresh();
+        }
+
+        function validateAmount() {
+            const data = getSelectedPolicyData();
+            const amount = parseFloat(claimAmountInput.value || "0");
+            if (data.sum && amount > data.sum) {
+                const message = `Claim amount cannot exceed sum insured (${formatCurrency(data.sum)})`;
+                errorText.textContent = message;
+                claimAmountInput.setCustomValidity(message);
+            } else {
+                errorText.textContent = "";
+                claimAmountInput.setCustomValidity("");
+            }
+        }
+
+        if (policySelect) {
+            policySelect.addEventListener("change", updateUI);
+        }
+
+        if (claimAmountInput) {
+            claimAmountInput.addEventListener("input", validateAmount);
+        }
+        
+        // Initial state
+        if (policySelect && policySelect.value) updateUI();
+
+    })();
+</script>
+{% endblock %}

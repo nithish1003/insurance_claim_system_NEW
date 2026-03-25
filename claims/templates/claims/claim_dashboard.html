@@ -1,0 +1,324 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Claims Dashboard{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid px-4 py-3">
+
+<!-- Header -->
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+
+<div>
+<h4 class="mb-0">Claims Dashboard</h4>
+<span class="text-muted small">Overview of all claims</span>
+</div>
+
+<div class="d-flex gap-2">
+
+<a href="{% url 'claims:claim_list' %}"
+class="btn btn-outline-secondary btn-sm">
+
+<i class="bi bi-list-ul me-1"></i>
+All Claims
+
+</a>
+
+<a href="{% url 'claims:claim_submit' %}"
+class="btn btn-dark btn-sm">
+
+<i class="bi bi-plus-lg me-1"></i>
+New Claim
+
+</a>
+
+</div>
+
+</div>
+
+
+
+<!-- KPI Row -->
+
+<div class="row g-3 mb-4">
+
+<div class="col-md-2">
+
+<div class="card shadow-sm border-0">
+
+<div class="card-body text-center">
+
+<div class="small text-muted">Total Claims</div>
+
+<div class="fs-4 fw-bold">{{ kpi.total }}</div>
+
+</div>
+
+</div>
+
+</div>
+
+
+<div class="col-md-2">
+
+<div class="card shadow-sm border-0">
+
+<div class="card-body text-center">
+
+<div class="small text-muted">Draft</div>
+
+<div class="fs-4 fw-bold text-secondary">
+
+{{ kpi.draft }}
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+
+<div class="col-md-2">
+
+<div class="card shadow-sm border-0">
+
+<div class="card-body text-center">
+
+<div class="small text-muted">Submitted</div>
+
+<div class="fs-4 fw-bold text-primary">
+
+{{ kpi.submitted }}
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+
+<div class="col-md-2">
+
+<div class="card shadow-sm border-0">
+
+<div class="card-body text-center">
+
+<div class="small text-muted">Under Review</div>
+
+<div class="fs-4 fw-bold text-warning">
+
+{{ kpi.under_review }}
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+
+<div class="col-md-2">
+
+<div class="card shadow-sm border-0">
+
+<div class="card-body text-center">
+
+<div class="small text-muted">Approved</div>
+
+<div class="fs-4 fw-bold text-success">
+
+{{ kpi.approved }}
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+
+<div class="col-md-2">
+
+<div class="card shadow-sm border-0">
+
+<div class="card-body text-center">
+
+<div class="small text-muted">Rejected</div>
+
+<div class="fs-4 fw-bold text-danger">
+
+{{ kpi.rejected }}
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+
+
+<!-- Recent Claims -->
+
+<div class="card shadow-sm border-0">
+
+<div class="card-header bg-dark text-white d-flex justify-content-between">
+
+<span>
+
+<i class="bi bi-clock-history me-1"></i>
+Recent Claims
+
+</span>
+
+<a href="{% url 'claims:claim_list' %}"
+class="btn btn-sm btn-outline-light">
+
+View All
+
+</a>
+
+</div>
+
+
+<div class="table-responsive">
+
+<table class="table table-hover align-middle mb-0 small">
+
+<thead class="table-light">
+
+<tr>
+
+<th>Claim Number</th>
+
+<th>Type</th>
+
+<th>Policyholder</th>
+
+<th>Amount</th>
+
+<th>Status</th>
+
+<th>Date</th>
+
+<th></th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+{% for claim in recent_claims %}
+
+<tr>
+
+<td class="fw-semibold">
+
+<a href="{% url 'claims:claim_detail' claim.pk %}"
+class="text-dark text-decoration-none">
+
+{{ claim.claim_number }}
+
+</a>
+
+</td>
+
+<td>
+
+<span class="badge bg-light text-dark border">
+
+{{ claim.get_claim_type_display }}
+
+</span>
+
+</td>
+
+<td>
+
+{{ claim.created_by.get_full_name|default:claim.created_by.username }}
+
+</td>
+
+<td class="fw-semibold">
+
+₹{{ claim.claimed_amount|intcomma }}
+
+</td>
+
+<td>
+
+<span class="badge
+{% if claim.status == 'draft' %}bg-secondary
+{% elif claim.status == 'submitted' %}bg-primary
+{% elif claim.status == 'under_review' %}bg-warning text-dark
+{% elif claim.status == 'investigation' %}bg-info
+{% elif claim.status == 'approved' %}bg-success
+{% elif claim.status == 'partially_approved' %}bg-success
+{% elif claim.status == 'rejected' %}bg-danger
+{% elif claim.status == 'settled' %}bg-dark
+{% else %}bg-secondary
+{% endif %}">
+
+{{ claim.get_status_display }}
+
+</span>
+
+</td>
+
+<td class="text-muted">
+
+{{ claim.created_at|date:"d M Y" }}
+
+</td>
+
+<td>
+
+<a href="{% url 'claims:claim_detail' claim.pk %}"
+class="btn btn-outline-secondary btn-sm">
+
+<i class="bi bi-eye"></i>
+
+</a>
+
+</td>
+
+</tr>
+
+{% empty %}
+
+<tr>
+
+<td colspan="7"
+class="text-center text-muted py-4">
+
+No claims available
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</div>
+
+{% endblock %}

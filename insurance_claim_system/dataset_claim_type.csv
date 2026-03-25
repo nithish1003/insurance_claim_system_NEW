@@ -1,0 +1,33 @@
+description,claim_type
+bike accident near traffic signal,accident
+car crash on highway with injuries,accident
+motorcycle collision with another vehicle,accident
+slipped and fell at workplace,accident
+injury during construction work accident,accident
+road accident causing leg fracture,accident
+vehicle accident due to brake failure,accident
+fell from stairs and got injured,accident
+sports injury during football match,accident
+car accident in heavy rain,accident
+
+hospital treatment for fever,medical
+admitted to hospital for surgery,medical
+doctor prescribed medication for illness,medical
+treatment for dengue in hospital,medical
+emergency hospitalization due to chest pain,medical
+operation for appendix removal,medical
+therapy sessions for mental health treatment,medical
+medical checkup and diagnosis expenses,medical
+treatment for viral infection,medical
+ICU admission due to serious condition,medical
+
+mobile phone stolen from bus, thef
+bike stolen from parking area,theft
+house burglary and gold stolen,theft
+wallet stolen in crowded market,theft
+laptop theft from office,theft
+robbery at home during night,theft
+car stolen from street,theft
+pickpocket stole cash and phone,theft
+theft of personal belongings during travel,theft
+bag stolen from train,theft

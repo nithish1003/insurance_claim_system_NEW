@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Create Premium Schedule{% endblock %}
+
+{% block breadcrumb %}Create Premium Schedule{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="mb-1 text-white fw-bold">Schedule Configurator</h3>
+        <p class="text-muted mb-0">Initialize automated billing cycles for verified insurance policies.</p>
+    </div>
+    <a href="{% url 'premiums:list' %}" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-2">
+        <i class="bi bi-arrow-left"></i> Back to List
+    </a>
+</div>
+
+<div class="premium-card">
+    <div class="premium-card-header">
+        <h5><i class="bi bi-magic me-2"></i>New Revenue Schedule</h5>
+        <span class="text-muted small tracking-wider text-uppercase">STEP 1: INITIALIZE PARAMETERS</span>
+    </div>
+    <div class="p-4">
+        <form method="post" id="scheduleForm">
+            {% csrf_token %}
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <label class="form-label text-muted small text-uppercase tracking-wider">Target Policy</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-dark border-secondary border-opacity-25 text-primary"><i class="bi bi-shield-check"></i></span>
+                        <select name="policy" id="id_policy" class="form-select bg-dark text-white border-secondary border-opacity-25" required>
+                            <option value="">Select an active policy...</option>
+                            {% for policy in policies %}
+                            <option value="{{ policy.id }}" {% if selected_policy_id == policy.id %}selected{% endif %}>{{ policy.policy_number }} | {{ policy.policy_type|title }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label text-muted small text-uppercase tracking-wider">Base Premium (₹)</label>
+                    <input type="number" step="0.01" name="base_premium" id="id_base_premium" class="form-control bg-dark text-white border-secondary border-opacity-25 opacity-75" readonly required>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label text-muted small text-uppercase tracking-wider">GST Rate (%)</label>
+                    <input type="number" step="0.01" name="gst_percentage" id="id_gst_percentage" class="form-control bg-dark text-white border-secondary border-opacity-25 opacity-75" value="18.00" readonly>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label text-muted small text-uppercase tracking-wider">Billing Frequency</label>
+                    <select name="payment_frequency" id="id_payment_frequency" class="form-select bg-dark text-white border-secondary border-opacity-25" required>
+                        <option value="monthly">Monthly (12 Installments)</option>
+                        <option value="quarterly">Quarterly (4 Installments)</option>
+                        <option value="yearly" selected>Yearly (Full Payment)</option>
+                    </select>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label text-muted small text-uppercase tracking-wider">Calculated Installments</label>
+                    <input type="number" class="form-control bg-dark text-white border-secondary border-opacity-25 opacity-75" id="id_total_installments" readonly>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label text-muted small text-uppercase tracking-wider">Auto-Debit Service</label>
+                    <div class="form-check form-switch mt-2">
+                        <input class="form-check-input" type="checkbox" name="auto_debit_enabled" id="autoDebit">
+                        <label class="form-check-label text-muted" for="autoDebit">Enable electronic clearance</label>
+                    </div>
+                </div>
+
+                <div class="col-md-12">
+                    <hr class="border-secondary border-opacity-25 my-2">
+                </div>
+
+                <div class="col-md-4">
+                    <div class="p-3 rounded bg-dark bg-opacity-50 border border-secondary border-opacity-10">
+                        <label class="form-label text-muted small text-uppercase tracking-wider mb-1">Calculated Tax</label>
+                        <div class="h4 mb-0 text-info fw-bold">₹<span id="display_gst_amount">0.00</span></div>
+                        <input type="hidden" id="id_gst_amount">
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="p-3 rounded bg-dark bg-opacity-50 border border-secondary border-opacity-10">
+                        <label class="form-label text-muted small text-uppercase tracking-wider mb-1">Total Gross Premium</label>
+                        <div class="h4 mb-0 text-success fw-bold">₹<span id="display_gross_premium">0.00</span></div>
+                        <input type="hidden" id="id_gross_premium">
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="p-3 rounded bg-primary bg-opacity-10 border border-primary border-opacity-10">
+                        <label class="form-label text-primary small text-uppercase tracking-wider mb-1">Per Installment Dues</label>
+                        <div class="h4 mb-0 text-white fw-bold">₹<span id="display_installment_amount">0.00</span></div>
+                        <input type="hidden" id="id_installment_amount">
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-end mt-5">
+                <button type="submit" class="btn btn-primary px-5 py-2 fw-bold">
+                    <i class="bi bi-plus-circle me-2"></i> Generate Schedule
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const policySelect = document.getElementById('id_policy');
+    const basePremiumInput = document.getElementById('id_base_premium');
+    const gstPercentageInput = document.getElementById('id_gst_percentage');
+    const gstAmountInput = document.getElementById('id_gst_amount');
+    const grossPremiumInput = document.getElementById('id_gross_premium');
+    const frequencySelect = document.getElementById('id_payment_frequency');
+    const totalInstallmentsInput = document.getElementById('id_total_installments');
+    const installmentAmountInput = document.getElementById('id_installment_amount');
+    
+    // Display elements
+    const displayGst = document.getElementById('display_gst_amount');
+    const displayGross = document.getElementById('display_gross_premium');
+    const displayInstallment = document.getElementById('display_installment_amount');
+
+    function calculateInstallments() {
+        const grossPremium = parseFloat(grossPremiumInput.value) || 0;
+        const frequency = frequencySelect.value;
+        let installments = 1;
+
+        if (frequency === 'monthly') installments = 12;
+        else if (frequency === 'quarterly') installments = 4;
+        else if (frequency === 'yearly') installments = 1;
+
+        totalInstallmentsInput.value = installments;
+        
+        if (installments > 0) {
+            const amount = grossPremium / installments;
+            installmentAmountInput.value = amount.toFixed(2);
+            displayInstallment.innerText = amount.toLocaleString('en-IN', { minimumFractionDigits: 2 });
+        } else {
+            installmentAmountInput.value = "0.00";
+            displayInstallment.innerText = "0.00";
+        }
+    }
+
+    policySelect.addEventListener('change', function() {
+        const policyId = this.value;
+        if (!policyId) {
+            basePremiumInput.value = "";
+            displayGst.innerText = "0.00";
+            displayGross.innerText = "0.00";
+            displayInstallment.innerText = "0.00";
+            return;
+        }
+
+        fetch(`/premiums/api/get-policy-details/${policyId}/`)
+            .then(response => response.json())
+            .then(data => {
+                basePremiumInput.value = data.base_premium.toFixed(2);
+                gstPercentageInput.value = data.gst_percentage.toFixed(2);
+                
+                gstAmountInput.value = data.gst_amount.toFixed(2);
+                displayGst.innerText = data.gst_amount.toLocaleString('en-IN', { minimumFractionDigits: 2 });
+                
+                grossPremiumInput.value = data.gross_premium.toFixed(2);
+                displayGross.innerText = data.gross_premium.toLocaleString('en-IN', { minimumFractionDigits: 2 });
+                
+                calculateInstallments();
+            })
+            .catch(error => {
+                console.error('Error fetching policy details:', error);
+            });
+    });
+
+    frequencySelect.addEventListener('change', calculateInstallments);
+
+    document.addEventListener('DOMContentLoaded', function() {
+        if (policySelect.value) {
+            policySelect.dispatchEvent(new Event('change'));
+        }
+    });
+</script>
+{% endblock %}

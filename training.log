@@ -1,0 +1,11 @@
+2026-03-20 18:47:04,921 - INFO - ============================================================
+2026-03-20 18:47:04,922 - INFO - DATABASE-DRIVEN CLAIM TYPE TRAINING PIPELINE
+2026-03-20 18:47:04,923 - INFO - ============================================================
+2026-03-23 17:40:08,767 - INFO - ============================================================
+2026-03-23 17:40:08,767 - INFO - DATABASE-DRIVEN CLAIM TYPE TRAINING PIPELINE
+2026-03-23 17:40:08,767 - INFO - ============================================================
+2026-03-23 17:40:08,768 - INFO - 🚀 Starting database-driven training pipeline...
+2026-03-23 17:40:08,768 - INFO - 📊 Fetching verified claims from database...
+2026-03-23 17:40:08,777 - INFO - 📋 Found 0 verified claims
+2026-03-23 17:40:08,778 - WARNING - ⚠️  Skipping training: Insufficient data (0 records < 10)
+2026-03-23 17:40:08,778 - ERROR - ❌ Training pipeline failed

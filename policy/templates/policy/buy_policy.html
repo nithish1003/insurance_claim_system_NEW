@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Buy Policy{% endblock %}
+
+{% block breadcrumb %}Buy Policy{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3>Confirm Policy Purchase</h3>
+            <p class="text-muted mb-0">Review the policy details before purchase.</p>
+        </div>
+        <a href="{% url 'policy:browse' %}" class="btn btn-outline-secondary btn-sm">Back</a>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <div class="text-muted">Policy Number</div>
+                    <div class="fw-semibold">{{ policy.policy_number }}</div>
+                </div>
+                <div class="col-md-4">
+                    <div class="text-muted">Policy Type</div>
+                    <div class="fw-semibold">{{ policy.policy_type|default:"General" }}</div>
+                </div>
+                <div class="col-md-4">
+                    <div class="text-muted">Insurer</div>
+                    <div class="fw-semibold">{{ policy.insurer_name|default:"-" }}</div>
+                </div>
+                <div class="col-md-4">
+                    <div class="text-muted">Sum Insured</div>
+                    <div class="fw-semibold">₹{{ policy.sum_insured|intcomma }}</div>
+                </div>
+                <div class="col-md-4">
+                    <div class="text-muted">Deductible</div>
+                    <div class="fw-semibold">₹{{ policy.deductible|intcomma }}</div>
+                </div>
+                <div class="col-md-4">
+                    <div class="text-muted">Policy Period</div>
+                    <div class="fw-semibold">{{ policy.start_date|date:"d M Y" }} - {{ policy.end_date|date:"d M Y" }}</div>
+                </div>
+            </div>
+
+            {% if is_purchased %}
+            <span class="text-success">Already Purchased</span>
+            {% else %}
+            <form method="POST">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-primary">Confirm Purchase</button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

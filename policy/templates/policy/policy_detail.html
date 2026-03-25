@@ -1,0 +1,451 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+<title>Policy Detail — InsureAI Portal</title>
+
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet"/>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+
+<style>
+
+body{
+font-family:'DM Sans',sans-serif;
+background:#0a1628;
+color:white;
+margin:0;
+}
+
+.app{
+display:flex;
+min-height:100vh;
+}
+
+/* SIDEBAR MATCHING BASE.HTML */
+.sidebar{
+width:240px;
+background:#111c35;
+min-height:100vh;
+position:fixed;
+left:0;
+top:0;
+color:white;
+padding: 0 !important;
+}
+
+.sidebar-header{
+padding: 20px;
+border-bottom: 1px solid #1f335c;
+text-align: center;
+}
+
+.sidebar-logo{
+font-family:'DM Serif Display',serif;
+font-size:20px;
+color:white;
+text-decoration:none;
+display: block;
+}
+
+.sidebar a{
+color:#9fb3d1;
+text-decoration:none;
+display:flex;
+align-items:center;
+gap: 12px;
+padding:12px 18px;
+transition: all 0.3s ease;
+border-left: 3px solid transparent;
+font-size: 14px;
+}
+
+.sidebar a i {
+font-size: 18px;
+transition: transform 0.3s ease;
+}
+
+.sidebar a:hover{
+background:rgba(26, 110, 245, 0.1);
+color:white;
+padding-left: 24px;
+border-left-color: #1a6ef5;
+}
+
+.sidebar a.active{
+background:rgba(26, 110, 245, 0.15);
+color:white;
+border-left-color: #1a6ef5;
+}
+
+.sidebar a:hover i {
+transform: scale(1.15);
+color: #1a6ef5;
+}
+
+.sidebar-logout {
+border-top: 1px solid #1f335c;
+margin-top: auto;
+}
+
+/* MAIN */
+
+.main{
+flex:1;
+margin-left: 240px;
+}
+
+.topbar{
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:15px 25px;
+background:#0f1b33;
+border-bottom:1px solid #1f335c;
+}
+
+.content{
+padding:30px;
+}
+
+/* HERO */
+
+.policy-hero{
+background:#111c35;
+padding:30px;
+border-radius:10px;
+margin-bottom:20px;
+}
+
+.hero-pol-name{
+font-size:28px;
+font-family:'DM Serif Display',serif;
+}
+
+.hero-pol-num{
+font-size:13px;
+color:#9fb3d1;
+margin-bottom:10px;
+}
+
+.metric{
+margin-top:15px;
+display:flex;
+gap:40px;
+}
+
+.metric div{
+font-size:14px;
+}
+
+.badge{
+background:#1a6ef5;
+padding:5px 10px;
+border-radius:20px;
+font-size:12px;
+}
+
+.sec{
+background:#111c35;
+padding:20px;
+border-radius:10px;
+margin-bottom:20px;
+}
+
+.sec-title{
+font-size:18px;
+margin-bottom:15px;
+font-family:'DM Serif Display',serif;
+}
+
+.detail-row{
+margin-bottom:8px;
+font-size:14px;
+color:#cbd5e1;
+}
+
+.btn{
+padding:10px 18px;
+border:none;
+border-radius:6px;
+cursor:pointer;
+}
+
+.btn-primary{
+background:#1a6ef5;
+color:white;
+}
+
+.btn-secondary{
+background:#374151;
+color:white;
+}
+
+.btn-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #9fb3d1 !important;
+    text-decoration: none !important;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-back:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: white !important;
+    transform: translateX(-4px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.btn-back .back-icon {
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.btn-back:hover .back-icon {
+    transform: translateX(-3px) scale(1.2);
+}
+
+.btn-back::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transform: skewX(-20deg);
+}
+
+.btn-back:hover::after {
+    animation: shimmer-btn 1.5s infinite;
+}
+
+@keyframes shimmer-btn {
+    0% { left: -100%; }
+    100% { left: 200%; }
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="app">
+
+<!-- SIDEBAR -->
+<nav class="sidebar shadow">
+    <div class="sidebar-header">
+        <a class="sidebar-logo" href="/">
+            InsureCRM
+        </a>
+    </div>
+
+    <div class="py-2">
+        {% if request.user.is_superuser or request.user.role == "admin" %}
+        <a href="{% url 'accounts:admin_dashboard' %}">
+            <i class="bi bi-speedometer2"></i> Dashboard
+        </a>
+        {% endif %}
+
+        {% if request.user.role == "staff" %}
+        <a href="{% url 'accounts:staff_dashboard' %}">
+            <i class="bi bi-speedometer2"></i> Staff Dashboard
+        </a>
+        {% endif %}
+
+        {% if not request.user.is_superuser and request.user.role == "policyholder" %}
+        <a href="{% url 'accounts:policyholder_dashboard' %}">
+            <i class="bi bi-house"></i> Dashboard
+        </a>
+        {% endif %}
+
+        <a href="{% url 'policy:list' %}" class="active">
+            <i class="bi bi-file-earmark-text"></i> Policies
+        </a>
+
+        <a href="{% url 'claim:list' %}">
+            <i class="bi bi-shield-exclamation"></i> Claims
+        </a>
+
+        <a href="{% url 'claim:create' %}">
+            <i class="bi bi-plus-circle"></i> File Claim
+        </a>
+
+        <div style="margin-top: 40px;">
+            <a href="{% url 'accounts:logout' %}" style="color: #ff6b81;">
+                <i class="bi bi-box-arrow-right"></i> Logout
+            </a>
+        </div>
+    </div>
+</nav>
+
+<!-- MAIN -->
+
+<div class="main">
+
+<div class="topbar">
+
+<div>
+
+<a href="{% if request.user.role == 'staff' %}{% url 'accounts:staff_dashboard' %}{% else %}{% url 'policy:list' %}{% endif %}" class="btn-back">
+    <span class="back-icon">←</span> Back to List
+</a>
+
+</div>
+
+<div>
+
+Policy Detail
+
+</div>
+
+</div>
+
+<div class="content">
+
+<!-- HERO -->
+
+<div class="policy-hero">
+
+<div class="hero-pol-num">
+
+Policy Number · {{ policy.policy_number }}
+
+</div>
+
+<div class="hero-pol-name">
+
+{{ policy.insurer_name|default:"-" }}
+
+</div>
+
+<br>
+
+<span class="badge">
+{{ policy.get_policy_type_display }}
+</span>
+
+<div class="metric">
+
+<div>
+<strong>Sum Insured</strong><br>
+₹{{ policy.sum_insured }}
+</div>
+
+<div>
+<strong>Premium</strong><br>
+{% if latest_schedule %}
+₹{{ latest_schedule.gross_premium }}
+{% else %}
+-
+{% endif %}
+</div>
+
+<div>
+<strong>Start Date</strong><br>
+{{ policy.start_date }}
+</div>
+
+<div>
+<strong>End Date</strong><br>
+{{ policy.end_date }}
+</div>
+
+</div>
+
+</div>
+
+<!-- POLICY DETAILS -->
+
+<div class="sec">
+
+<div class="sec-title">
+
+Policy Information
+
+</div>
+
+<div class="detail-row">
+Policy Number : {{ policy.policy_number }}
+</div>
+
+<div class="detail-row">
+Policy Type : {{ policy.get_policy_type_display }}
+</div>
+
+<div class="detail-row">
+Insurer : {{ policy.insurer_name }}
+</div>
+
+<div class="detail-row">
+Sum Insured : ₹{{ policy.sum_insured }}
+</div>
+
+<div class="detail-row">
+Deductible Amount : ₹{{ policy.deductible }}
+</div>
+
+<div class="detail-row">
+Premium : {% if latest_schedule %}₹{{ latest_schedule.gross_premium }}{% else %}-{% endif %}
+</div>
+
+<div class="detail-row">
+Start Date : {{ policy.start_date }}
+</div>
+
+<div class="detail-row">
+End Date : {{ policy.end_date }}
+</div>
+
+<div class="detail-row">
+Status : <span class="badge" style="background: 
+    {% if policy.status == 'active' %}#00c664
+    {% elif policy.status == 'expired' %}#ff5a5a
+    {% elif policy.status == 'pending' %}#ffd32a
+    {% else %}#374151{% endif %}">
+    {{ policy.get_status_display }}
+</span>
+</div>
+
+</div>
+
+<!-- ACTIONS -->
+
+<div class="sec">
+
+<div class="sec-title">
+Actions
+</div>
+
+<button class="btn btn-secondary" onclick="alert('Download Policy feature is coming soon!')">
+Download Policy
+</button>
+
+<button class="btn btn-secondary" onclick="alert('Renew Policy feature is coming soon!')">
+Renew Policy
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</body>
+</html>

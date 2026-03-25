@@ -1,0 +1,258 @@
+{% extends "base.html" %}
+
+{% block title %}Create Policy{% endblock %}
+
+{% block breadcrumb %}
+<a href="{% url 'policy:list' %}" class="text-decoration-none text-white">Policies</a> / Create Policy
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.form-card {
+    background: #111c35;
+    border: 1px solid #1f335c;
+    border-radius: 12px;
+    padding: 30px;
+    position: relative;
+    z-index: 1;
+}
+.form-label {
+    color: #9fb3d1;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 8px;
+    display: block;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.form-control, .form-select {
+    background-color: #1e293b;
+    border: 1px solid rgba(255,255,255,0.2);
+    color: #ffffff;
+    border-radius: 8px;
+    padding: 12px 15px;
+    font-size: 14px;
+    line-height: 1.5;
+    position: relative;
+    z-index: 2;
+    box-sizing: border-box;
+    width: 100%;
+    transition: all 0.3s ease;
+}
+.form-control::placeholder, .form-select::placeholder {
+    color: #94a3b8;
+    opacity: 1;
+}
+.form-control:focus, .form-select:focus {
+    background-color: #1e293b;
+    border-color: #1a6ef5;
+    color: #ffffff;
+    box-shadow: 0 0 0 3px rgba(26, 110, 245, 0.25);
+    outline: none;
+    z-index: 10;
+}
+.form-control:hover, .form-select:hover {
+    border-color: rgba(255,255,255,0.4);
+    background-color: #1e293b;
+}
+.form-select {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 15px center;
+    background-size: 12px 12px;
+}
+.form-select option {
+    background-color: #111c35;
+    color: #ffffff;
+}
+.form-group {
+    margin-bottom: 20px;
+    position: relative;
+}
+.action-buttons {
+    display: flex;
+    gap: 15px;
+    margin-top: 30px;
+    border-top: 1px solid #1f335c;
+    padding-top: 25px;
+    position: relative;
+    z-index: 1;
+}
+.btn-save {
+    background: #1a6ef5;
+    color: white;
+    padding: 10px 24px;
+    border-radius: 8px;
+    border: none;
+    font-weight: 500;
+    transition: 0.3s ease;
+    position: relative;
+    z-index: 5;
+}
+.btn-save:hover {
+    background: #3d8bff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(26, 110, 245, 0.3);
+}
+.btn-cancel {
+    background: rgba(255,255,255,0.05);
+    color: #9fb3d1;
+    padding: 10px 24px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.1);
+    font-weight: 500;
+    text-decoration: none;
+    transition: 0.3s ease;
+    position: relative;
+    z-index: 5;
+}
+.btn-cancel:hover {
+    background: rgba(255,255,255,0.1);
+    color: white;
+}
+/* Ensure text is always visible and properly positioned */
+.form-control, .form-select {
+    text-align: left;
+    vertical-align: middle;
+}
+/* Fix any potential overlapping issues */
+.form-control[readonly], .form-control[disabled], .form-select[readonly], .form-select[disabled] {
+    background-color: #1e293b;
+    color: #ffffff;
+    opacity: 1;
+    cursor: not-allowed;
+}
+/* Grid layout for better spacing */
+.row.g-4 .col-md-6 {
+    display: flex;
+    flex-direction: column;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <h2 class="mb-4 text-white" style="font-family: 'DM Serif Display', serif;">Create New Policy</h2>
+        
+        <div class="form-card shadow-sm">
+            <form method="POST">
+                {% csrf_token %}
+                
+                <div class="row g-4">
+                    
+                    <div class="col-md-6">
+                        <label class="form-label">Policy Type</label>
+                        <select name="policy_type" class="form-select" id="id_policy_type" required>
+                            <option value="">Select Category...</option>
+                            {% for type in policy_types %}
+                                <option value="{{ type.code }}">{{ type.name }}</option>
+                            {% endfor %}
+                            {% if not policy_types %}
+                            <option value="health">Health Insurance</option>
+                            <option value="motor">Motor Insurance</option>
+                            <option value="life">Life Insurance</option>
+                            <option value="home">Home Insurance</option>
+                            {% endif %}
+                        </select>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Insurer Name</label>
+                        <select name="insurer_name" class="form-select" required>
+                            <option value="">Select Insurer...</option>
+                            {% for insurer in insurers %}
+                                <option value="{{ insurer.name }}">{{ insurer.name }}</option>
+                            {% endfor %}
+                            {% if not insurers %}
+                            <option value="Bajaj">Bajaj</option>
+                            <option value="Tata">Tata</option>
+                            <option value="Birla">Birla</option>
+                            <option value="Acko">Acko</option>
+                            {% endif %}
+                        </select>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Start Date</label>
+                        <input type="date" name="start_date" class="form-control" required>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">End Date</label>
+                        <input type="date" name="end_date" class="form-control" required>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Sum Insured (₹)</label>
+                        <input type="number" step="0.01" name="sum_insured" id="id_sum_insured" class="form-control" required placeholder="0.00">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Deductible Amount (₹) <small class="text-info">(auto-calculated)</small></label>
+                        <input type="number" step="0.01" name="deductible" id="id_deductible" class="form-control" readonly placeholder="0.00">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Base Premium Amount (₹) <small class="text-info">(auto-calculated)</small></label>
+                        <input type="number" step="0.01" id="id_base_premium" name="base_premium" class="form-control" readonly placeholder="0.00">
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button type="submit" class="btn-save">
+                        <i class="bi bi-check-circle me-1"></i> Create Policy
+                    </button>
+                    <a href="{% url 'policy:list' %}" class="btn-cancel">Cancel</a>
+                </div>
+                
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const policyTypeSelect = document.getElementById('id_policy_type');
+        const sumInsuredInput = document.getElementById('id_sum_insured');
+        const basePremiumInput = document.getElementById('id_base_premium');
+        const deductibleInput = document.getElementById('id_deductible');
+
+        function calculateValues() {
+            const policyType = policyTypeSelect.value.toLowerCase();
+            const sumInsured = parseFloat(sumInsuredInput.value) || 0;
+            
+            // 🛡️ Deductible Calculation
+            // Logic: 3% of Sum Insured, Min 5k, Max 25k
+            if (sumInsured > 0) {
+                let deductible = sumInsured * 0.03;
+                if (deductible < 5000) deductible = 5000;
+                if (deductible > 25000) deductible = 25000;
+                deductibleInput.value = deductible.toFixed(2);
+            } else {
+                deductibleInput.value = "0.00";
+            }
+
+            // 💰 Premium Calculation
+            // Logic: Health 3%, Vehicle 2%, Home 1.2%, Else 1%
+            let rate = 0;
+            if (policyType === 'health') {
+                rate = 0.03;
+            } else if (policyType === 'vehicle' || policyType === 'motor') {
+                rate = 0.02;
+            } else if (policyType === 'home') {
+                rate = 0.012;
+            } else if (policyType !== "") {
+                rate = 0.01; // Default for other types
+            }
+            const premium = sumInsured * rate;
+            basePremiumInput.value = premium.toFixed(2);
+        }
+
+        policyTypeSelect.addEventListener('change', calculateValues);
+        sumInsuredInput.addEventListener('input', calculateValues);
+    });
+</script>
+{% endblock %}

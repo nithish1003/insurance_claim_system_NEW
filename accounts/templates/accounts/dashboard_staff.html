@@ -1,0 +1,1046 @@
+{% extends "base.html" %}
+{% load humanize file_filters %}
+
+{% block title %}Staff Dashboard — InsureCRM{% endblock %}
+
+{% block sidebar_items %}
+<a href="#" class="sidebar-link active" onclick="switchView('dashboard', this)">
+    <i class="bi bi-speedometer2"></i> Dashboard
+</a>
+<a href="#" class="sidebar-link" onclick="switchView('claims', this)">
+    <i class="bi bi-shield-check"></i> Claims Review
+</a>
+<a href="#" class="sidebar-link" onclick="switchView('assessment', this)">
+    <i class="bi bi-clipboard-pulse"></i> Assessment Details
+</a>
+<a href="#" class="sidebar-link" onclick="switchView('policies', this)">
+    <i class="bi bi-file-earmark-text"></i> Policy Information
+</a>
+<a href="#" class="sidebar-link" onclick="switchView('reports', this)">
+    <i class="bi bi-graph-up-arrow"></i> Reports
+</a>
+<hr class="my-3" style="border-color: rgba(255,255,255,0.08);">
+<a href="{% url 'accounts:logout' %}" class="sidebar-logout">
+    <i class="bi bi-box-arrow-right"></i> Logout
+</a>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* SLA Badges */
+    .sla-badge {
+        font-size: 10px;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    .sla-on-track { background: rgba(0, 198, 100, 0.1); color: #00c664; border: 1px solid rgba(0, 198, 100, 0.2); }
+    .sla-warning { background: rgba(255, 193, 7, 0.1); color: #ffc107; border: 1px solid rgba(255, 193, 7, 0.2); }
+    .sla-overdue { background: rgba(255, 65, 54, 0.1); color: #ff4136; border: 1px solid rgba(255, 65, 54, 0.2); }
+
+    /* Fraud Indicators */
+    .fraud-indicator {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+    }
+    .fraud-low { background: rgba(0, 198, 100, 0.15); color: #00c664; }
+    .fraud-high { background: rgba(255, 65, 54, 0.15); color: #ff4136; animation: pulse 2s infinite; }
+    
+    @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.6; }
+        100% { opacity: 1; }
+    }
+
+    /* Policy/Payment Validation Icons */
+    .validation-icon {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+    }
+    .validation-pass { background: rgba(0, 198, 100, 0.2); color: #00c664; }
+    .validation-fail { background: rgba(255, 65, 54, 0.2); color: #ff4136; }
+
+    /* Timeline Section */
+    .timeline {
+        border-left: 2px solid rgba(255,255,255,0.08);
+        padding-left: 20px;
+        margin-left: 10px;
+    }
+    .timeline-item {
+        position: relative;
+        padding-bottom: 20px;
+    }
+    .timeline-item::before {
+        content: "";
+        position: absolute;
+        left: -27px;
+        top: 0;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #1a6ef5;
+        border: 2px solid #111c35;
+    }
+    .timeline-date {
+        font-size: 11px;
+        color: #7a8ba8;
+        margin-bottom: 4px;
+    }
+    .timeline-content {
+        background: rgba(255,255,255,0.02);
+        padding: 8px 12px;
+        border-radius: 8px;
+        font-size: 12px;
+    }
+
+    /* Smart Search Suggestions */
+    .search-group { position: relative; }
+    .search-suggestions {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: #111c35;
+        border: 1px solid rgba(255,255,255,0.1);
+        border-top: none;
+        border-radius: 0 0 12px 12px;
+        z-index: 1050;
+        display: none;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        max-height: 250px;
+        overflow-y: auto;
+    }
+    .suggestion-item {
+        padding: 10px 15px;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: background 0.2s;
+    }
+    .suggestion-item:last-child { border-bottom: none; }
+    .suggestion-item:hover { background: rgba(26, 110, 245, 0.1); }
+    .suggestion-text { color: #ffffff; font-size: 13px; font-weight: 500; }
+    .suggestion-meta { color: #94a3b8; font-size: 11px; }
+
+    /* Advanced Filter Bar */
+    .filter-bar {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        padding: 15px 20px;
+        margin-bottom: 25px;
+    }
+
+    /* Policy Inventory Card Styling */
+    .policy-inventory-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 1.25rem;
+    }
+    .policy-box-card {
+        background: linear-gradient(145deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.01) 100%);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        padding: 1.25rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+    .policy-box-card:hover {
+        transform: translateY(-5px);
+        border-color: rgba(26, 110, 245, 0.4);
+        box-shadow: 0 10px 25px -10px rgba(0, 0, 0, 0.5);
+        background: linear-gradient(145deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.02) 100%);
+    }
+    .policy-box-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: #1a6ef5;
+        opacity: 0.5;
+    }
+    .policy-box-card.active::before { background: #10b981; }
+    .policy-box-card.pending::before { background: #f59e0b; }
+    .policy-box-card.expired::before { background: #ef4444; }
+
+    .policy-badge {
+        font-size: 9px;
+        padding: 2px 8px;
+        border-radius: 20px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .policy-type-icon {
+        width: 32px;
+        height: 32px;
+        background: rgba(26, 110, 245, 0.1);
+        color: #3b82f6;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+    }
+    .policy-sum {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #ffffff;
+    }
+    .policy-label {
+        font-size: 10px;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 2px;
+    }
+    .kpi-row { display: flex; gap: 20px; margin-bottom: 30px; }
+    .kpi-box {
+        flex: 1;
+        background: linear-gradient(145deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.01) 100%);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 12px;
+        padding: 20px;
+        position: relative;
+        overflow: hidden;
+        transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+    .kpi-box:hover {
+        transform: translateY(-3px);
+        border-color: rgba(26, 110, 245, 0.3);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+    .kpi-label { color: #94a3b8; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; margin-bottom: 8px; }
+    .kpi-value { color: #ffffff; font-size: 28px; font-weight: 700; line-height: 1; }
+    .kpi-icon {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 40px;
+        opacity: 0.1;
+        color: #1a6ef5;
+    }
+    .kpi-box.primary { border-left: 4px solid #1a6ef5; }
+    .kpi-box.warning { border-left: 4px solid #f59e0b; }
+    .kpi-box.success { border-left: 4px solid #10b981; }
+    .kpi-box.info { border-left: 4px solid #3b82f6; }
+
+    /* Report Graph Styling */
+    .bar-chart-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 12px;
+        gap: 10px;
+    }
+    .bar-container {
+        flex-grow: 1;
+        background: rgba(255, 255, 255, 0.05);
+        height: 8px;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    .bar-line {
+        height: 100%;
+        border-radius: 10px;
+        background: #1a6ef5;
+        transition: width 1s ease-in-out;
+    }
+    .bar-line.bg-warning { background: #f59e0b !important; }
+    .bar-line.bg-success { background: #10b981 !important; }
+
+    /* Premium Table & Card Styling */
+    .premium-card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+    .premium-card-header {
+        padding: 1rem 1.5rem;
+        background: rgba(255, 255, 255, 0.02);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .premium-card-header h6 {
+        margin: 0;
+        font-weight: 700;
+        color: #ffffff;
+        font-size: 0.9rem;
+    }
+    .premium-table-container {
+        overflow-x: auto;
+    }
+    .premium-table {
+        width: 100%;
+        border-collapse: collapse;
+        color: #e2e8f0;
+        font-size: 0.85rem;
+    }
+    .premium-table thead th {
+        background: rgba(255, 255, 255, 0.01);
+        padding: 1rem;
+        text-align: left;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-size: 0.75rem;
+        color: #94a3b8;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .premium-table tbody tr {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        transition: background 0.2s;
+    }
+    .premium-table tbody tr:hover {
+        background: rgba(255, 255, 255, 0.02);
+    }
+    .premium-table td {
+        padding: 1rem;
+        vertical-align: middle;
+    }
+    .progress-premium {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+        overflow: hidden;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+
+    <!-- ============================================== -->
+    <!-- 1. DASHBOARD VIEW (Summary & Tables)           -->
+    <!-- ============================================== -->
+    <div id="view-dashboard" class="view-section">
+        
+        <!-- Welcome Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4" data-aos="fade-down">
+            <div>
+                <h3 class="mb-1 text-white fw-bold">Review Dashboard Index</h3>
+                <p class="text-muted mb-0">Track real-time claim statistics and monitor assessment bottlenecks.</p>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <div class="text-end me-3 d-none d-md-block">
+                    <div class="text-white small fw-bold">System Integrity</div>
+                    <div class="text-success small"><i class="bi bi-shield-fill-check me-1"></i> Active Assessment</div>
+                </div>
+                <div class="premium-card p-2 px-3 mb-0 hover-scale" style="background: rgba(26, 110, 245, 0.1); border-color: rgba(26, 110, 245, 0.2);">
+                    <i class="bi bi-calendar3 me-2 text-primary"></i> <span class="text-white small fw-bold">{% now "F d, Y" %}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Advanced Filter Bar -->
+        <div class="filter-bar" data-aos="fade-right" data-aos-delay="100">
+            <form method="GET" class="row g-3 align-items-end">
+                <div class="col-md-5">
+                    <label class="form-label small text-muted font-weight-bold">Intelligent Search Overlay</label>
+                    <div class="input-group search-group">
+                        <select name="search_type" id="search-type" class="form-select bg-transparent border-secondary text-white" style="max-width: 140px; font-size: 13px;" onchange="updateSearchMode(this)">
+                            <option value="all" {% if request.GET.search_type == 'all' %}selected{% endif %}>All Records</option>
+                            <option value="claim" {% if request.GET.search_type == 'claim' %}selected{% endif %}>Claim No</option>
+                            <option value="policy" {% if request.GET.search_type == 'policy' %}selected{% endif %}>Policy No</option>
+                            <option value="name" {% if request.GET.search_type == 'name' %}selected{% endif %}>Member Name</option>
+                        </select>
+                        <input type="text" name="q" id="staff-search-input" class="form-control bg-transparent border-secondary text-white" 
+                               placeholder="Search across ledger..." 
+                               value="{{ request.GET.q }}" autocomplete="off" oninput="fetchSuggestions(this.value)">
+                        <div id="search-suggestions" class="search-suggestions"></div>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small text-muted">Lifecycle Status</label>
+                    <select name="status" class="form-select bg-transparent border-secondary text-white">
+                        <option value="">Global View</option>
+                        {% for code, label in status_choices %}
+                        <option value="{{ code }}" {% if request.GET.status == code %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small text-muted">Risk Category</label>
+                    <select name="type" class="form-select bg-transparent border-secondary text-white">
+                        <option value="">All Types</option>
+                        {% for code, label in type_choices %}
+                        <option value="{{ code }}" {% if request.GET.type == code %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-1">
+                    <button type="submit" class="btn btn-primary-modern w-100 hover-scale" title="Execute Search">
+                        <i class="bi bi-cpu-fill"></i>
+                    </button>
+                </div>
+                <div class="col-md-2">
+                    <a href="{% url 'accounts:staff_dashboard' %}" class="btn btn-outline-secondary w-100 btn-sm py-2 hover-scale" style="font-size: 11px; font-weight: 600;">Full Reset</a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Active Search Indicator -->
+        {% if request.GET.q or request.GET.status or request.GET.type %}
+        <div class="mb-4 d-flex align-items-center gap-2" data-aos="fade-in" style="background: rgba(26, 110, 245, 0.05); padding: 12px 18px; border-radius: 12px; border: 1px solid rgba(26, 110, 245, 0.2);">
+            <i class="bi bi-activity text-primary pulse"></i>
+            <span class="text-white-50 small fw-bold">Active Filter Stream:</span>
+            {% if request.GET.q %}
+            <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-2 py-1 small">"{{ request.GET.q }}"</span>
+            {% endif %}
+            {% if request.GET.status %}
+            <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 px-2 py-1 small">{{ request.GET.status|upper }}</span>
+            {% endif %}
+            {% if request.GET.type %}
+            <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25 px-2 py-1 small">{{ request.GET.type|upper }}</span>
+            {% endif %}
+            <a href="{% url 'accounts:staff_dashboard' %}" class="btn btn-outline-danger btn-sm ms-auto py-1 px-3 hover-scale" style="font-size: 10px; border-radius: 20px; font-weight: 700;">
+                <i class="bi bi-trash3 me-1"></i> Clear Filters
+            </a>
+        </div>
+        {% endif %}
+
+        <!-- Workflow Status Cards -->
+        <div class="kpi-row">
+            <div class="kpi-box info hover-scale" data-aos="zoom-in" data-aos-delay="100">
+                <div class="kpi-label">Master Submissions</div>
+                <div class="kpi-value">{{ kpi.total_claims|default:0 }}</div>
+                <i class="bi bi-hdd-network kpi-icon"></i>
+            </div>
+            <div class="kpi-box primary hover-scale" data-aos="zoom-in" data-aos-delay="200">
+                <div class="kpi-label">New Review Required</div>
+                <div class="kpi-value">{{ kpi.pending_claims|default:0 }}</div>
+                <i class="bi bi-shield-exclamation kpi-icon text-info"></i>
+                <div class="position-absolute bottom-0 start-0 w-100 bg-info opacity-10" style="height: 4px;"></div>
+            </div>
+            <div class="kpi-box warning hover-scale" data-aos="zoom-in" data-aos-delay="300">
+                <div class="kpi-label">Administrative Triage</div>
+                <div class="kpi-value">{{ kpi.forwarded_claims|default:0 }}</div>
+                <i class="bi bi-terminal kpi-icon"></i>
+            </div>
+            <div class="kpi-box success hover-scale" data-aos="zoom-in" data-aos-delay="400">
+                <div class="kpi-label">Cycle Completed</div>
+                <div class="kpi-value">{{ kpi.processed_claims|default:0 }}</div>
+                <i class="bi bi-graph-up kpi-icon"></i>
+            </div>
+        </div>
+
+        <!-- 2. Claims Waiting for Review Table -->
+        <div class="table-card mb-4" data-aos="fade-up" data-aos-delay="200">
+            <div class="p-3 border-bottom border-secondary" style="background: rgba(255,255,255,0.02);">
+                <h6 class="mb-0 text-white"><i class="bi bi-table me-2 text-primary"></i>Claims Waiting for Review</h6>
+            </div>
+            <div class="table-responsive">
+                <table class="table-modern">
+                    <thead>
+                        <tr>
+                            <th>Claim Number</th>
+                            <th>Policy Holder</th>
+                            <th>AI Audit & Decision</th>
+                            <th>AI Amount</th>
+                            <th class="text-center">SLA / Valid</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="stagger-container">
+                        {% for claim in waiting_claims %}
+                        <tr>
+                            <td class="fw-medium">
+                                <span class="text-info">{{ claim.claim_number }}</span>
+                                <div class="x-small text-muted mt-1" style="font-size: 9px;">{{ claim.ai_claim_type|upper|default:"PENDING" }}</div>
+                            </td>
+                            <td>
+                                <div class="fw-bold text-white">{{ claim.created_by.get_full_name|default:claim.created_by.username }}</div>
+                                <div class="d-flex align-items-center gap-2 mt-1">
+                                    <span class="badge {% if claim.priority_level == "HIGH" %}bg-danger{% elif claim.priority_level == "MEDIUM" %}bg-warning text-dark{% else %}bg-secondary opacity-50{% endif %}" style="font-size: 8px; padding: 2px 8px;">
+                                        {{ claim.priority_level|default:"LOW" }}
+                                    </span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex flex-column gap-1">
+                                    {% if claim.fraud_flag or claim.risk_score > 70 %}
+                                        <div class="fraud-indicator fraud-high" title="Score: {{ claim.risk_score }}">
+                                            <i class="bi bi-exclamation-triangle-fill"></i> HIGH RISK ({{ claim.risk_score|default:0|floatformat:0 }}%)
+                                        </div>
+                                    {% else %}
+                                        <div class="fraud-indicator fraud-low" title="Score: {{ claim.risk_score|default:0 }}">
+                                            <i class="bi bi-shield-check-fill"></i> LOW RISK ({{ claim.risk_score|default:0|floatformat:0 }}%)
+                                        </div>
+                                    {% endif %}
+                                    <div class="badge {% if claim.ai_decision == 'auto_process' %}bg-success-subtle text-success{% elif claim.ai_decision == 'reject' %}bg-danger-subtle text-danger{% else %}bg-info-subtle text-info{% endif %}" style="font-size: 9px; border: 1px solid currentColor;">
+                                        <i class="bi {% if claim.ai_decision == 'auto_process' %}bi-robot{% elif claim.ai_decision == 'reject' %}bi-x-octagon{% else %}bi-person-badge{% endif %} me-1"></i>
+                                        {{ claim.get_ai_decision_display|default:"PENDING AUDIT"|upper }}
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="fw-bold text-info-premium">₹{{ claim.ai_predicted_amount|default:0|intcomma }}</div>
+                                <div class="text-muted" style="font-size: 9px;">OF ₹{{ claim.claimed_amount|intcomma }}</div>
+                            </td>
+                            <td class="text-center">
+                                <div class="d-flex flex-column align-items-center gap-1">
+                                    <span class="sla-badge sla-{{ claim.sla_status }}" style="font-size: 8px;">{{ claim.sla_days }}d</span>
+                                    <div class="d-flex gap-1">
+                                        <i class="bi {% if claim.is_policy_active %}bi-check-circle-fill text-success{% else %}bi-x-circle-fill text-danger{% endif %}" style="font-size: 10px;" title="Policy Valid"></i>
+                                        <i class="bi {% if claim.is_premium_paid %}bi-check-circle-fill text-success{% else %}bi-x-circle-fill text-danger{% endif %}" style="font-size: 10px;" title="Premium Paid"></i>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="badge-status {% if claim.status == 'submitted' %}badge-info{% elif claim.status == 'under_review' %}badge-warning{% elif claim.status == 'approved' %}badge-success{% elif claim.status == 'rejected' %}badge-danger{% else %}badge-neutral{% endif %}" style="font-size: 10px;">
+                                    {{ claim.get_status_display|default:claim.status|upper }}
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex gap-2">
+                                    {% if claim.status == 'approved' or claim.status == 'rejected' or claim.status == 'settled' or claim.status == 'closed' %}
+                                    <a href="{% url 'claim:detail' claim.id %}" class="btn-primary-modern text-decoration-none py-1 px-3 hover-scale" style="background: rgba(59, 130, 246, 0.1); border-color: rgba(59, 130, 246, 0.2); color: #3b82f6;">
+                                        View
+                                    </a>
+                                    {% else %}
+                                    <a href="{% url 'claim:staff_review' claim.id %}" class="btn-primary-modern text-decoration-none py-1 px-3 hover-scale">
+                                        Review
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                         {% empty %}
+                         <tr><td colspan="8" class="text-center text-muted py-4">No waiting files.</td></tr>
+                         {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 6. Recent Reviewed Claims Section -->
+        <div class="table-card" data-aos="fade-up">
+            <div class="p-3 border-bottom border-secondary" style="background: rgba(255,255,255,0.02);">
+                <h6 class="mb-0 text-white"><i class="bi bi-clock-history me-2 text-warning"></i>Recent Reviewed Claims</h6>
+            </div>
+            <div class="table-responsive">
+                <table class="table-modern">
+                    <thead>
+                        <tr>
+                            <th>Claim Number</th>
+                            <th>Policy Holder</th>
+                            <th>Claim Amount</th>
+                            <th>AI Recommended</th>
+                            <th>Status</th>
+                            <th class="text-end pe-3">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="stagger-container">
+                        {% for claim in recent_claims %}
+                        <tr>
+                            <td class="fw-medium">{{ claim.claim_number }}</td>
+                            {% if claim.created_by %}
+                            <td>{{ claim.created_by.get_full_name|default:claim.created_by.username }}</td>
+                            {% else %}
+                            <td class="text-muted">Unknown</td>
+                            {% endif %}
+                            <td>₹{{ claim.claimed_amount|intcomma }}</td>
+                            <td>
+                                <span class="fw-bold text-info">
+                                    ₹{{ claim.assessment.recommended_amount|default:claim.ai_predicted_amount|default:0|intcomma }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge-status {% if claim.status == 'approved' %}badge-success{% elif claim.status == 'rejected' %}badge-danger{% else %}badge-info{% endif %}">
+                                    {{ claim.get_status_display }}
+                                </span>
+                            </td>
+                            <td class="text-end pe-3">
+                                <a href="{% url 'claim:detail' claim.id %}" class="btn-primary-modern text-decoration-none py-1 px-3 hover-scale" style="font-size: 10px;">
+                                    View Details
+                                </a>
+                            </td>
+                        </tr>
+                         {% empty %}
+                         <tr><td colspan="6" class="text-center text-muted py-4">No recent history logs.</td></tr>
+                         {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div> <!-- End Dashboard View -->
+
+    <!-- ============================================== -->
+    <!-- 2. CLAIMS REVIEW VIEW                          -->
+    <!-- ============================================== -->
+    <div id="view-claims" class="view-section" style="display: none;">
+        <div class="table-card" data-aos="fade-up">
+            <div class="p-3 border-bottom border-secondary" style="background: rgba(255,255,255,0.02);">
+                <h6 class="mb-0 text-white"><i class="bi bi-shield-check me-2 text-primary"></i>Claims Management Workspace</h6>
+            </div>
+            <div class="table-responsive">
+                <table class="table-modern">
+                    <thead>
+                        <tr>
+                            <th>Claim Number</th>
+                            <th>Policy Holder</th>
+                            <th>Policy No</th>
+                            <th>Claim Amount</th>
+                            <th>AI Recommended</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="stagger-container">
+                        {% for claim in waiting_claims %}
+                        <tr>
+                            <td class="fw-medium">{{ claim.claim_number }}</td>
+                            <td>
+                                <div class="fw-bold">{{ claim.created_by.get_full_name|default:claim.created_by.username }}</div>
+                                <div class="x-small text-muted">{{ claim.policy.policy_number }}</div>
+                            </td>
+                            <td>₹{{ claim.claimed_amount|intcomma }}</td>
+                            <td>
+                                <span class="text-info fw-bold">₹{{ claim.ai_predicted_amount|default:0|floatformat:0|intcomma }}</span>
+                            </td>
+                            <td>
+                                <span class="badge-status {% if claim.status == 'submitted' %}badge-info{% elif claim.status == 'under_review' %}badge-warning{% elif claim.status == 'approved' %}badge-success{% elif claim.status == 'rejected' %}badge-danger{% else %}badge-neutral{% endif %}">
+                                    {{ claim.get_status_display }}
+                                </span>
+                            </td>
+                            <td>
+                                <a href="{% url 'claim:staff_review' claim.id %}" class="btn-primary-modern text-decoration-none py-1 px-3 hover-scale">
+                                    Assess
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="7" class="text-center text-muted py-4">No waiting files.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- 3. CLAIM REVIEW PAGE (Sub-pane)                -->
+    <!-- ============================================== -->
+    <div id="view-review" class="view-section" style="display: none;">
+        <div class="mb-4">
+            <button class="btn btn-secondary btn-sm hover-scale" onclick="switchView('dashboard')">
+                <i class="bi bi-arrow-left me-1"></i> Back to Review List
+            </button>
+        </div>
+        <div id="review-content-placeholder"></div>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- 3B. ASSESSMENT DETAILS SCREEN (New Sidebar)    -->
+    <!-- ============================================== -->
+    <div id="view-assessment" class="view-section" style="display: none;">
+        <!-- 1. Pending Assessment Table -->
+        <div class="table-card mb-4" data-aos="fade-up">
+            <div class="p-3 border-bottom border-secondary" style="background: rgba(255,255,255,0.02);">
+                <h6 class="mb-0 text-white"><i class="bi bi-hourglass-split me-2 text-warning"></i>Audit & Assessment Workspace</h6>
+            </div>
+            <div class="table-responsive">
+                <table class="table-modern">
+                    <thead>
+                        <tr>
+                            <th>Claim Number</th>
+                            <th>Holder</th>
+                            <th>AI Risk</th>
+                            <th>SLA</th>
+                            <th class="text-center">Valid</th>
+                            <th class="text-center">Paid</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="stagger-container">
+                        {% for claim in waiting_claims %}
+                            {% if claim.status == 'submitted' or claim.status == 'under_review' or claim.status == 'investigation' %}
+                            <tr>
+                                <td class="fw-medium text-info">{{ claim.claim_number|default:"SYS-ERR" }}</td>
+                                <td>{{ claim.created_by.get_full_name|default:claim.created_by.username }}</td>
+                                <td>
+                                    <span class="badgex small {% if claim.fraud_flag %}text-danger{% else %}text-success{% endif %}">
+                                        {{ claim.risk_score|default:0 }}%
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="sla-badge sla-{{ claim.sla_status }}">{{ claim.sla_days }}d</span>
+                                </td>
+                                <td><i class="bi {% if claim.is_policy_active %}bi-check-circle-fill text-success{% else %}bi-x-circle-fill text-danger{% endif %} small"></i></td>
+                                <td><i class="bi {% if claim.is_premium_paid %}bi-check-circle-fill text-success{% else %}bi-x-circle-fill text-danger{% endif %} small"></i></td>
+                                <td>
+                                    <span class="badge-status {% if claim.status == 'submitted' %}badge-info{% else %}badge-warning{% endif %}">
+                                        {{ claim.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="{% url 'claim:staff_review' claim.id %}" class="btn-primary-modern text-decoration-none py-1 px-3 hover-scale">
+                                        Assess
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endif %}
+                        {% empty %}
+                            <tr><td colspan="8" class="text-center py-5 text-muted small"><i class="bi bi-patch-check me-2"></i>All assessments completed. Cycle has been finalized.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 2. Completed Assessment Details Table -->
+        <div class="table-card" data-aos="fade-up" data-aos-delay="100">
+            <div class="p-3 border-bottom border-secondary" style="background: rgba(255,255,255,0.02);">
+                <h6 class="mb-0 text-white"><i class="bi bi-check-all me-2 text-success"></i>Assessment Archive</h6>
+            </div>
+            <div class="table-responsive">
+                <table class="table-modern">
+                    <thead>
+                        <tr>
+                            <th class="ps-4">Claim ID</th>
+                            <th>Incident Date</th>
+                            <th>Audit Metrics</th>
+                            <th>Rec. Payout</th>
+                            <th>Final Status</th>
+                            <th class="pe-4 text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="stagger-container">
+                        {% for claim in processed_claims %}
+                            {% if claim.status != 'draft' %}
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="fw-bold text-white">{{ claim.claim_number }}</div>
+                                    <div class="x-small text-muted">ID: {{ claim.pk }}</div>
+                                </td>
+                                <td class="small">{{ claim.incident_date|date:"d M Y" }}</td>
+                                <td>
+                                    <div class="d-flex gap-1">
+                                        <span class="badge {% if claim.policy_validity == 'valid' or claim.policy_validity == 'Verified' %}bg-success{% else %}bg-danger{% endif %} opacity-75" style="font-size: 8px;" title="Policy Validity: {{ claim.policy_validity }}">VAL</span>
+                                        <span class="badge {% if claim.document_verification == 'verified' or claim.document_verification == 'Verified' %}bg-success{% else %}bg-danger{% endif %} opacity-75" style="font-size: 8px;" title="Docs: {{ claim.document_verification }}">DOC</span>
+                                        <span class="badge {% if claim.amount_verification == 'verified' or claim.amount_verification == 'Verified' %}bg-success{% else %}bg-danger{% endif %} opacity-75" style="font-size: 8px;" title="Amt: {{ claim.amount_verification }}">AMT</span>
+                                    </div>
+                                </td>
+                                <td class="fw-bold text-info-premium">₹{{ claim.recommended_amount|default:0|intcomma }}</td>
+                                <td>
+                                    <span class="badge-status {% if claim.status == 'approved' %}badge-success{% elif claim.status == 'rejected' %}badge-danger{% else %}badge-neutral{% endif %}">
+                                        {{ claim.get_status_display }}
+                                    </span>
+                                </td>
+                                <td class="pe-4 text-end">
+                                    <a href="{% url 'claim:detail' claim.id %}" class="btn-primary-modern py-1 px-3 text-decoration-none hover-scale" style="font-size: 10px;">
+                                        View Dossier
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- 4. POLICY INFORMATION SCREEN (MOCK / LOOPED)  -->
+    <!-- ============================================== -->
+    <div id="view-policies" class="view-section" style="display: none;">
+        <div class="d-flex justify-content-between align-items-center mb-4" data-aos="fade-down">
+            <div>
+                <h5 class="text-white mb-0 fw-bold">Policy Inventory Information</h5>
+                <p class="text-muted small mb-0">Management and oversight of all active and pending policy plans.</p>
+            </div>
+            <div class="d-flex gap-2">
+                <button class="btn btn-sm btn-outline-secondary hover-scale"><i class="bi bi-download me-1"></i> Export Data</button>
+                <div class="dropdown">
+                    <button class="btn btn-sm btn-primary-modern dropdown-toggle hover-scale" data-bs-toggle="dropdown">All Risk Categories</button>
+                    <ul class="dropdown-menu dropdown-menu-dark">
+                        <li><a class="dropdown-item" href="#">Motor Fleet</a></li>
+                        <li><a class="dropdown-item" href="#">Health Premium</a></li>
+                        <li><a class="dropdown-item" href="#">Life Coverage</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="policy-inventory-grid stagger-container">
+            {% for policy in all_policies %}
+            <div class="policy-box-card {{ policy.status }} hover-scale" data-aos="fade-up" data-aos-delay="100">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div class="policy-type-icon">
+                        {% if 'motor' in policy.policy_type|lower %}
+                            <i class="bi bi-car-front"></i>
+                        {% elif 'health' in policy.policy_type|lower %}
+                            <i class="bi bi-heart-pulse"></i>
+                        {% elif 'life' in policy.policy_type|lower %}
+                            <i class="bi bi-person-lines-fill"></i>
+                        {% else %}
+                            <i class="bi bi-file-earmark-text"></i>
+                        {% endif %}
+                    </div>
+                    <span class="policy-badge {% if policy.status == 'active' %}bg-success-subtle text-success{% elif policy.status == 'pending' %}bg-warning-subtle text-warning{% else %}bg-secondary-subtle text-muted{% endif %}">
+                        {{ policy.status|upper }}
+                    </span>
+                </div>
+                
+                <h6 class="text-white mb-1 fw-bold">{{ policy.policy_number }}</h6>
+                <div class="text-muted truncate-text mb-3" style="font-size: 11px;">{{ policy.insurer_name|default:"General Insurer Ltd" }}</div>
+                
+                <div class="row g-2 mb-3">
+                    <div class="col-6">
+                        <div class="policy-label">Sum Insured</div>
+                        <div class="policy-sum text-success">₹{{ policy.sum_insured|intcomma|default:"0" }}</div>
+                    </div>
+                    <div class="col-6">
+                        <div class="policy-label">Type</div>
+                        <div class="text-white small fw-bold">{{ policy.policy_type|default:"N/A"|truncatechars:12 }}</div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center border-top border-secondary pt-3 mt-2" style="border-color: rgba(255,255,255,0.05) !important;">
+                    <div class="text-muted x-small">
+                        <i class="bi bi-calendar3 me-1"></i> {{ policy.created_at|date:"M Y" }}
+                    </div>
+                    <a href="{% url 'policy:detail' policy.id %}" class="btn btn-sm btn-outline-primary py-1 px-3" style="font-size: 10px; border-radius: 20px;">
+                        Manage Policy
+                    </a>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center text-muted py-5">No policies available or loaded.</div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- 5. REPORTS SCREEN (MOCK / VISUALS)             -->
+    <!-- ============================================== -->
+    <div id="view-reports" class="view-section animate-fade-in" style="display: none;">
+        <h5 class="text-white mb-4" data-aos="fade-down">Analytics & Reports summary</h5>
+        
+        <!-- TOP GRAPHS -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-8">
+                <div class="dashboard-card p-4 h-100 hover-scale" data-aos="fade-up" data-aos-delay="100">
+                    <h6 class="text-white mb-3">Claim Distributions (Monthly Volume)</h6>
+                    {% for entry in monthly_perf %}
+                    <div class="bar-chart-item">
+                        <span class="text-muted small" style="width: 50px;">{{ entry.label }}</span>
+                        <div class="bar-container">
+                            <div class="bar-line {% if entry.percentage > 70 %}bg-success{% elif entry.percentage > 40 %}bg-warning{% endif %}" 
+                                 style="width: {{ entry.percentage|floatformat:0 }}%;"></div>
+                        </div>
+                        <span class="small ps-2 text-white" style="width: 30px;">{{ entry.count }}</span>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted small text-center py-4">No recent claim activity to display.</p>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="dashboard-card p-4 h-100 d-flex flex-column justify-content-center text-center hover-scale" data-aos="fade-up" data-aos-delay="200">
+                    <h1 class="text-info fw-bold">{{ efficiency }}%</h1>
+                    <h6 class="text-white">Review Efficiency Rate</h6>
+                    <p class="text-muted small">Forwarded assessments confirmed as valid by Admin files.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="premium-card hover-scale" data-aos="fade-up" data-aos-delay="300">
+            <div class="premium-card-header">
+                <h6><i class="bi bi-person-badge me-2 text-info"></i>AUDITOR PERFORMANCE METRICS</h6>
+                <span class="text-muted small tracking-wider text-uppercase">Direct Assessment Analytics</span>
+            </div>
+            <div class="premium-table-container">
+                <table class="premium-table">
+                    <thead>
+                        <tr>
+                            <th class="ps-4">Auditor Member</th>
+                            <th>Volume Audited</th>
+                            <th>Financial Throughput</th>
+                            <th>Accuracy Score</th>
+                            <th class="pe-4 text-end">SLA Record</th>
+                        </tr>
+                    </thead>
+                    <tbody class="stagger-container">
+                        {% for stat in staff_analytics %}
+                        <tr>
+                            <td class="ps-4">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="bg-primary rounded-circle text-center d-flex align-items-center justify-content-center fw-bold text-white small" style="width: 32px; height: 32px;">
+                                        {{ stat.user.username|slice:":1"|upper }}
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold text-white">{{ stat.user.get_full_name|default:stat.user.username }}</div>
+                                        <div class="x-small text-muted">{{ stat.user.email }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="fw-bold text-info">{{ stat.total_audit }}</div>
+                                <div class="x-small text-muted">Claims Handled</div>
+                            </td>
+                            <td>
+                                <div class="fw-bold text-white">₹{{ stat.total_audited|default:0|intcomma }}</div>
+                                <div class="x-small text-muted">Avg Rec: ₹{{ stat.avg_rec|default:0|intcomma }}</div>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="flex-grow-1" style="max-width: 80px;">
+                                        <div class="progress-premium" style="height: 4px;">
+                                            <div class="progress-bar {% if stat.accuracy > 85 %}bg-success{% elif stat.accuracy > 60 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                                 style="width: {{ stat.accuracy }}%"></div>
+                                        </div>
+                                    </div>
+                                    <span class="fw-bold {% if stat.accuracy > 85 %}text-success{% elif stat.accuracy > 60 %}text-warning{% else %}text-danger{% endif %}">{{ stat.accuracy }}%</span>
+                                </div>
+                            </td>
+                            <td class="pe-4 text-end">
+                                <span class="badge {% if stat.accuracy > 85 %}bg-success{% elif stat.accuracy > 60 %}bg-warning{% else %}bg-danger{% endif %} bg-opacity-10 text-opacity-75 border border-opacity-25 px-2 py-1 small">
+                                    Tier: {% if stat.accuracy > 85 %}A+{% elif stat.accuracy > 60 %}B{% else %}C{% endif %}
+                                </span>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="5" class="text-center py-5 text-muted small">No performance data synchronized for current staff roster.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function switchView(viewName, element) {
+        if (element) {
+            document.querySelectorAll('.sidebar-link').forEach(link => link.classList.remove('active'));
+            element.classList.add('active');
+        }
+
+        // Hide all views first
+        document.querySelectorAll('.view-section').forEach(sec => sec.style.display = 'none');
+        
+        const target = document.getElementById('view-' + viewName);
+        if (target) {
+            target.style.display = 'block';
+            // Refresh AOS to catch newly visible elements
+            if (typeof AOS !== 'undefined') {
+                AOS.refresh();
+            }
+        }
+    }
+
+    function updateSearchMode(select) {
+        const input = document.getElementById('staff-search-input');
+        const mode = select.value;
+        
+        const placeholders = {
+            'all': 'Search by any identifier...',
+            'claim': 'Enter Claim ID (e.g. CLM-123)...',
+            'policy': 'Enter Policy ID (e.g. POL-456)...',
+            'name': 'Enter Holder Name or Username...'
+        };
+        
+        input.placeholder = placeholders[mode] || placeholders['all'];
+        input.focus();
+    }
+
+    let searchTimeout;
+    function fetchSuggestions(query) {
+        clearTimeout(searchTimeout);
+        const container = document.getElementById('search-suggestions');
+        
+        if (query.length < 2) {
+            container.style.display = 'none';
+            return;
+        }
+
+        searchTimeout = setTimeout(() => {
+            fetch(`/accounts/staff-search-suggestions/?q=${query}`)
+                .then(res => res.json())
+                .then(data => {
+                    container.innerHTML = '';
+                    if (data.length > 0) {
+                        data.forEach(item => {
+                            const div = document.createElement('div');
+                            div.className = 'suggestion-item';
+                            div.innerHTML = `
+                                <span class="suggestion-text">${item.text}</span>
+                                <span class="suggestion-meta">${item.type.toUpperCase()}</span>
+                            `;
+                            div.onclick = () => selectSuggestion(item);
+                            container.appendChild(div);
+                        });
+                        container.style.display = 'block';
+                    } else {
+                        container.style.display = 'none';
+                    }
+                });
+        }, 300);
+    }
+
+    function selectSuggestion(item) {
+        const input = document.getElementById('staff-search-input');
+        const typeSelect = document.getElementById('search-type');
+        const container = document.getElementById('search-suggestions');
+        
+        // 1. Auto-fill input and type
+        input.value = item.value;
+        if (item.type === 'claim' || item.type === 'policy' || item.type === 'name') {
+            typeSelect.value = item.type;
+        }
+
+        // 2. Auto-fill status and claim_type if available (only for claims)
+        if (item.type === 'claim') {
+            const statusSelect = document.querySelector('select[name="status"]');
+            const claimTypeSelect = document.querySelector('select[name="claim_type"]'); // Check if name is correct
+            // The template uses name="type" for claim type filter
+            const realTypeSelect = document.querySelector('select[name="type"]');
+
+            if (statusSelect && item.status) statusSelect.value = item.status;
+            if (realTypeSelect && item.claim_type) realTypeSelect.value = item.claim_type;
+        }
+
+        // 3. Hide suggestions
+        container.style.display = 'none';
+
+        // 4. Submit form
+        input.form.submit();
+    }
+
+    // Close suggestions on outside click
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.search-group')) {
+            document.getElementById('search-suggestions').style.display = 'none';
+        }
+    });
+</script>
+{% endblock %}

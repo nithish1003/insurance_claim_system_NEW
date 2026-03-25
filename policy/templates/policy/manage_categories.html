@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Manage Categories{% endblock %}
+
+{% block breadcrumb %}
+<a href="{% url 'policy:admin_list' %}" class="text-decoration-none text-white">Policies</a> / Categories
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* 🌑 Modern Dark Design System */
+    .premium-card {
+        background: rgba(17, 28, 53, 0.4);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        margin-bottom: 30px;
+        overflow: hidden;
+    }
+
+    .form-container {
+        padding: 24px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .form-label {
+        color: #94a3b8;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 8px;
+    }
+
+    .form-control {
+        background: rgba(0, 0, 0, 0.2) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        color: white !important;
+        border-radius: 8px;
+        font-size: 14px;
+        padding: 12px 15px;
+    }
+
+    .form-control:focus {
+        border-color: #1a6ef5 !important;
+        box-shadow: 0 0 0 4px rgba(26, 110, 245, 0.2) !important;
+    }
+
+    .btn-create {
+        background: #1a6ef5;
+        color: white;
+        border: none;
+        padding: 10px 24px;
+        border-radius: 10px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-create:hover {
+        background: #3b82f6;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(26, 110, 245, 0.4);
+    }
+
+    /* Table Styles */
+    .premium-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .premium-table thead th {
+        background: rgba(255, 255, 255, 0.03);
+        padding: 18px 24px;
+        color: #64748b;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .premium-table tbody td {
+        padding: 20px 24px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        color: #cbd5e1;
+        font-size: 14px;
+    }
+
+    .premium-table tbody tr:hover td {
+        background: rgba(26, 110, 245, 0.03);
+    }
+
+    .category-badge {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 11px;
+        background: rgba(26, 110, 245, 0.1);
+        color: #1a6ef5;
+        padding: 4px 10px;
+        border-radius: 6px;
+        border: 1px solid rgba(26, 110, 245, 0.2);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h3 class="text-white fw-bold mb-1">Policy Categories</h3>
+                <p class="text-muted small mb-0">Define and manage the classification segments for policy plans.</p>
+            </div>
+            <a href="{% url 'policy:admin_list' %}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left me-1"></i> Back to Inventory
+            </a>
+        </div>
+
+        <!-- CREATE NEW CATEGORY -->
+        <div class="premium-card">
+            <div class="card-header border-0 bg-transparent py-3 px-4">
+                <h6 class="text-white mb-0 mt-2"><i class="bi bi-plus-square me-2 text-primary"></i>Define New Category</h6>
+            </div>
+            <div class="form-container">
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Category Name</label>
+                            <input type="text" name="name" class="form-control" placeholder="e.g. Life Insurance" required>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">System Code</label>
+                            <input type="text" name="code" class="form-control" placeholder="e.g. life-ins" required>
+                        </div>
+                        <div class="col-md-5">
+                            <label class="form-label">Description (Optional)</label>
+                            <input type="text" name="description" class="form-control" placeholder="Brief overview of this category...">
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="submit" class="btn-create w-100">
+                                Create
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- CATEGORIES LIST -->
+        <div class="premium-card">
+            <div class="table-responsive">
+                <table class="premium-table">
+                    <thead>
+                        <tr>
+                            <th>Category Name</th>
+                            <th>Code</th>
+                            <th>Description</th>
+                            <th class="text-end">Plans Count</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for cat in categories %}
+                        <tr>
+                            <td>
+                                <div class="fw-bold text-white">{{ cat.name }}</div>
+                            </td>
+                            <td>
+                                <span class="category-badge">{{ cat.code }}</span>
+                            </td>
+                            <td class="text-muted small">
+                                {{ cat.description|default:"No description provided." }}
+                            </td>
+                            <td class="text-end fw-bold">
+                                {{ cat.policyplan_set.count }}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center py-5 text-muted">
+                                <i class="bi bi-folder2-open fs-2 d-block mb-3 opacity-25"></i>
+                                No categories defined in the system.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
