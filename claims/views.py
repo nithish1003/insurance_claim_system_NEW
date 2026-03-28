@@ -1,9 +1,16 @@
 import datetime
 import mimetypes
 import os
+import json
 from decimal import Decimal, InvalidOperation
+from django.utils.crypto import get_random_string
+import logging
 
-from django.http import FileResponse, Http404, JsonResponse
+# 🛡️ Initialize Auditor logging
+logger = logging.getLogger(__name__)
+
+
+from django.db import transaction
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -12,7 +19,9 @@ from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
 from django.conf import settings
 
+from accounts.decorators import role_required, admin_only, staff_or_admin
 from policy.models import PolicyHolder, Policy, UserPolicy, Payment
+from reports.models import ActivityLog
 from accounts.utils import mask_phone, mask_email
 from django.db.models import Q, Sum
 from .models import (
@@ -25,7 +34,7 @@ from .models import (
     DOCUMENT_EXTENSION_VALIDATOR
 )
 
-from .forms import StaffNoteForm, ClaimAssessmentForm
+from .forms import StaffNoteForm, ClaimAssessmentForm, ClaimFilterForm
 from .utils import compare_vehicle_numbers
 
 # 🔥 AI IMPORTS
@@ -57,44 +66,102 @@ def user_has_policy(user, policy):
 def claim_list(request):
     is_admin_or_staff = request.user.is_superuser or request.user.role in ["admin", "staff"]
     
-    # Base queryset
+    # Base queryset with optimization
     claims = Claim.objects.select_related("policy", "assigned_to", "created_by")
 
-    if is_admin_or_staff:
-        # Admins/Staff see all claims by default (not excluding anything)
-        pass
-    else:
-        # Filter by identifying the user's specific policy instances
-        # and include claims either submitted by them OR linked to their owned policies
+    # 1. Base Role-Based Filtering
+    if not is_admin_or_staff:
         user_policies = UserPolicy.objects.filter(user=request.user)
         owned_policy_ids = list(user_policies.values_list('policy_id', flat=True))
         owned_vehicles = list(user_policies.exclude(vehicle_number=None).values_list('vehicle_number', flat=True))
 
-        # 1. Base filter: User submitted OR policy matches one of their owned plans
         claims_q = Q(created_by=request.user) | Q(policy_id__in=owned_policy_ids)
-        claims = claims.filter(claims_q).distinct()
-
-        # 2. Refine Motor claims: If it's a motor claim, it MUST match the user's vehicle
-        # to prevent User A from seeing User B's claims on the same 'Basic Car Plan'
+        
+        # Motor Privacy Shield: Only show motor claims if vehicle matches
         if owned_vehicles:
             claims = claims.filter(
-                Q(created_by=request.user) | 
-                Q(vehicle_number__isnull=True) | 
-                Q(vehicle_number="") |
-                Q(vehicle_number__in=owned_vehicles)
-            )
+                claims_q & (
+                    Q(created_by=request.user) | 
+                    Q(vehicle_number__isnull=True) | 
+                    Q(vehicle_number="") |
+                    Q(vehicle_number__in=owned_vehicles)
+                )
+            ).distinct()
         else:
-            # If the user has NO motor policies, enforce created_by for any motor claims they see
             claims = claims.filter(
-                Q(vehicle_number__isnull=True) | 
-                Q(vehicle_number="") |
-                Q(created_by=request.user)
-            )
-        
-        # 3. Final: Exclude finalized claims from the main tracking list
-        claims = claims.exclude(status__in=['settled', 'closed'])
+                claims_q & (
+                    Q(vehicle_number__isnull=True) | 
+                    Q(vehicle_number="") |
+                    Q(created_by=request.user)
+                )
+            ).distinct()
 
-    return render(request, "claims/claim_list.html", {"claims": claims})
+    # 2. Filter Setup
+    all_user_claims = list(claims)
+    claim_choices = [('', 'All Claims')] + [(c.claim_number, c.claim_number) for c in all_user_claims]
+    claims_data_json = json.dumps({
+        c.claim_number: {
+            'type': c.claim_type,
+            'status': c.status,
+            'date': c.incident_date.isoformat() if c.incident_date else None
+        } for c in all_user_claims
+    })
+
+    # 3. Filter Execution
+    filter_form = ClaimFilterForm(request.GET or None, claim_choices=claim_choices)
+    is_filtered = False
+    
+    # Status Definition
+    active_states = ['submitted', 'under_review', 'investigation', 'approved']
+    
+    if filter_form.is_valid() and any(request.GET.values()):
+        data = filter_form.cleaned_data
+        if data.get('claim_number'):
+            claims = claims.filter(claim_number__icontains=data['claim_number'])
+            is_filtered = True
+        if data.get('claim_type'):
+            claims = claims.filter(claim_type=data['claim_type'])
+            is_filtered = True
+        if data.get('status'):
+            claims = claims.filter(status=data['status'])
+            is_filtered = True
+        if data.get('date_from'):
+            claims = claims.filter(incident_date__gte=str(data['date_from']))
+            is_filtered = True
+        if data.get('date_to'):
+            claims = claims.filter(incident_date__lte=str(data['date_to']))
+            is_filtered = True
+
+    # 4. KPI Summary calculation (NOW DYNAMIC)
+    summary = {
+        'total': claims.count(),
+        'submitted': claims.filter(status='submitted').count(),
+        'under_review': claims.filter(status='under_review').count(),
+        'investigation': claims.filter(status='investigation').count(),
+        'approved': claims.filter(status__in=['approved', 'partially_approved']).count(),
+        'rejected': claims.filter(status='rejected').count(),
+        'settled': claims.filter(status='settled').count(),
+    }
+            
+    if not is_filtered:
+        # Default view: Only active dossiers (Requirement #1)
+        claims = claims.filter(status__in=active_states)
+
+    # 5. Presentation
+    claims = claims.order_by("-created_at")
+
+    context = {
+        "claims": claims,
+        "summary": summary,
+        "filter_form": filter_form,
+        "claims_data_json": claims_data_json,
+        "is_filtered": is_filtered,
+        "has_claims_at_all": len(all_user_claims) > 0,
+        "total_active_count": claims.count()
+    }
+
+    return render(request, "claims/claim_list.html", context)
+
 
 
 # =====================================
@@ -112,8 +179,12 @@ def claim_submit(request):
         # Pass the actual UserPolicy objects so we can access remaining_sum_insured property
         policies = UserPolicy.objects.filter(
             user=request.user,
-            status='active'
+            status__in=['active', 'grace']
         ).select_related('policy')
+        
+        # 🔥 PROACTIVE BALANCE SYNC: Refresh available coverage before rendering dropdown
+        for p in policies:
+            p.sync_status_with_premiums()
 
     if request.method == "POST":
 
@@ -512,8 +583,7 @@ def claim_delete(request, id):
 # REVIEW CLAIM
 # =====================================
 
-@login_required
-@login_required
+@staff_or_admin
 def staff_claim_review(request, id):
     """
     Dedicated review page for Staff users.
@@ -521,11 +591,23 @@ def staff_claim_review(request, id):
     Restrictions: Cannot Mark as Settled.
     """
     claim = get_object_or_404(Claim, id=id)
+    
+    # ── AUTO-ASSIGNMENT LOGIC ───────────────────────────────────────────
+    # If the dossier is unassigned and a staff member initiates the review, 
+    # we dynamically bind them as the lead auditor for audit traceability.
+    if not claim.assigned_to and request.user.role == 'staff':
+        claim.assigned_to = request.user
+        # Save with skip_workflow_check=True because we aren't changing the claim status yet
+        claim.save(update_fields=['assigned_to'], skip_workflow_check=True)
+        
+        ClaimAuditLog.objects.create(
 
-    # Security check: Only staff can access this page
-    if not (request.user.role == "staff" or request.user.is_superuser):
-        messages.error(request, "You are not authorized to access this review page.")
-        return redirect("accounts:login")
+            claim=claim,
+            action="Lead Auditor Binding",
+            description=f"System automatically assigned dossier processing to {request.user.get_full_name() or request.user.username}.",
+            performed_by=request.user
+        )
+
 
     if request.method == "POST":
         action = request.POST.get("action")
@@ -626,16 +708,20 @@ def staff_claim_review(request, id):
             except Exception as e:
                 logger.error(f"⚠️ Failed to update AI feedback loop: {e}")
 
-            # Final Save with Audit Log
-            claim.save()
-            ClaimAuditLog.objects.create(
-                claim=claim,
-                performed_by=request.user,
-                action=f"Staff finalizing assessment with action: {action.upper()}."
-            )
-            
-            messages.success(request, f"Claim status updated to {claim.get_status_display()}.")
-            return redirect("accounts:staff_dashboard")
+            # 🔄 Final Save (Workflow Validated)
+            try:
+                claim.save(user=request.user)
+                ClaimAuditLog.objects.create(
+                    claim=claim,
+                    performed_by=request.user,
+                    action=f"Staff finalizing assessment with action: {action.upper()}."
+                )
+                messages.success(request, f"Claim status updated to {claim.get_status_display()}.")
+                return redirect("accounts:staff_dashboard")
+            except ValidationError as e:
+                msg = ", ".join(e.messages) if hasattr(e, 'messages') else str(e)
+                messages.error(request, f"Workflow Restriction: {msg}")
+                return redirect("claim:staff_review", id=id)
         
         elif action == "flag":
             claim.status = "investigation"
@@ -653,7 +739,12 @@ def staff_claim_review(request, id):
         else:
             msg = None
 
-        claim.save()
+        try:
+            claim.save(user=request.user)
+        except ValidationError as e:
+            msg = ", ".join(e.messages) if hasattr(e, 'messages') else str(e)
+            messages.error(request, f"Workflow Restriction: {msg}")
+            return redirect("claim:staff_review", id=id)
 
         if msg:
             ClaimAuditLog.objects.create(
@@ -718,17 +809,11 @@ def staff_claim_review(request, id):
     return render(request, "claims/staff_claim_review.html", context)
 
 
+@admin_only
 def claim_review(request, id):
     claim = get_object_or_404(Claim, id=id)
 
-    if not (request.user.is_superuser or request.user.role in ["admin", "staff"]):
-        return render(request, "accounts/unauthorized.html")
-
     if request.method == "POST":
-        if not (request.user.is_superuser or request.user.role == "admin"):
-            messages.error(request, "Only Administrators/Admins can perform final approval/rejection.")
-            return redirect("claim:review", id=id)
-
         action = request.POST.get("action")
         comment = request.POST.get("admin_comment", "").strip()
 
@@ -738,14 +823,19 @@ def claim_review(request, id):
             if comment:
                 audit_msg += f" Note: {comment}"
                 
-            claim.save()
-            ClaimAuditLog.objects.create(
-                claim=claim,
-                performed_by=request.user,
-                action=audit_msg
-            )
-            messages.success(request, f"Claim {claim.claim_number} has been approved. You can now proceed to settlement.")
-            return redirect("claim:settlement", claim_id=claim.id)
+            try:
+                claim.save(user=request.user)
+                ClaimAuditLog.objects.create(
+                    claim=claim,
+                    performed_by=request.user,
+                    action=audit_msg
+                )
+                messages.success(request, f"Claim {claim.claim_number} has been approved. You can now proceed to settlement.")
+                return redirect("claim:settlement", claim_id=claim.id)
+            except ValidationError as e:
+                msg = ", ".join(e.messages) if hasattr(e, 'messages') else str(e)
+                messages.error(request, f"Workflow Restriction: {msg}")
+                return redirect("claim:review", id=id)
             
         elif action == "reject":
             claim.status = "rejected"
@@ -753,14 +843,19 @@ def claim_review(request, id):
             if comment:
                 audit_msg += f" Reason: {comment}"
                 
-            claim.save()
-            ClaimAuditLog.objects.create(
-                claim=claim,
-                performed_by=request.user,
-                action=audit_msg
-            )
-            messages.success(request, f"Claim {claim.claim_number} has been rejected.")
-            return redirect("claim:review", id=id)
+            try:
+                claim.save(user=request.user)
+                ClaimAuditLog.objects.create(
+                    claim=claim,
+                    performed_by=request.user,
+                    action=audit_msg
+                )
+                messages.success(request, f"Claim {claim.claim_number} has been rejected.")
+                return redirect("claim:review", id=id)
+            except ValidationError as e:
+                msg = ", ".join(e.messages) if hasattr(e, 'messages') else str(e)
+                messages.error(request, f"Workflow Restriction: {msg}")
+                return redirect("claim:review", id=id)
 
     # 📊 Calculate derived view data
     days_since_incident = (timezone.now().date() - claim.incident_date).days
@@ -859,7 +954,8 @@ def claim_review(request, id):
 def claim_history(request, claim_id):
     claim = get_object_or_404(Claim, id=claim_id)
 
-    if not (request.user.is_superuser or request.user.role in ["admin", "staff"]):
+    # 🛡️ Access Control: Staff/Admin see all. Users see only their own.
+    if not (request.user.role in ['admin', 'staff'] or request.user.is_superuser):
         if not user_has_policy(request.user, claim.policy):
             return render(request, "accounts/unauthorized.html")
 
@@ -871,14 +967,23 @@ def claim_history(request, claim_id):
 # CLAIM SETTLEMENT
 # =====================================
 
-@login_required
+@admin_only
 def claim_settlement(request, claim_id):
+    """
+    Final settlement and financial payout processing.
+    Reserved for Admin role to ensure strictly controlled financial distribution.
+    """
     claim = get_object_or_404(Claim, id=claim_id)
+    
+    # 🛡️ Workflow Safety: Settlement can ONLY proceed from 'approved' state
+    if claim.status != 'approved':
+        messages.error(request, f"Workflow Violation: Claim {claim.claim_number} is currently '{claim.get_status_display()}'. Dossiers must be FINAL APPROVED before settlement can be initiated.")
+        return redirect("claim:review", id=claim.id)
 
-    # Only Admins and Superusers can process final settlement
-    if not (request.user.is_superuser or request.user.role == "admin"):
-        messages.error(request, "Only Administrators can process final settlement.")
-        return render(request, "accounts/unauthorized.html")
+    # 🛡️ Safety Guard: Prevent Duplicate Settlement Records (OneToOne Constraint)
+    if hasattr(claim, 'settlement'):
+        messages.warning(request, f"Record Integrity Check: A settlement dossier already exists for claim {claim.claim_number}. Operation halted to prevent duplicates.")
+        return redirect("claim:detail", id=claim.id)
 
     if request.method == "POST":
         # Use automatic Ledger ID generation logic from Payment model (TXN-SETL prefix)
@@ -917,56 +1022,77 @@ def claim_settlement(request, claim_id):
         print(f"SETTLED (FINAL): {final_payable}")
         print(f"LIMIT (NET): {claim.net_claimable}")
 
-        # Create settlement record
-        settlement = ClaimSettlement.objects.create(
-            claim=claim,
-            settlement_date=request.POST.get("settlement_date") or timezone.now().date(),
-            payment_mode=request.POST.get("payment_mode", "neft"),
-            transaction_reference=txn_ref,
-            settled_amount=final_payable, # MUST be approved_amount
-            payee_name=request.POST.get("payee_name", ""),
-            bank_account=request.POST.get("bank_account", ""),
-            bank_ifsc=request.POST.get("bank_ifsc", ""),
-            bank_name=request.POST.get("bank_name", ""),
-            remarks=request.POST.get("remarks", ""),
-            processed_by=request.user
-        )
+        txn_ref = request.POST.get("transaction_reference") or get_random_string(12).upper()
 
-        # Update claim status and sync financial fields
-        claim.status = "settled"
-        claim.settled_amount = final_payable
-        
-        # 🔗 Safety Check: Ensure transaction amount matches settled amount
-        if settlement.settled_amount != claim.settled_amount:
-            raise Exception(f"Transaction mismatch with settled claim: {settlement.settled_amount} != {claim.settled_amount}")
-            
-        claim.save()
+        # 🛡️ Use atomic transaction to ensure financial consistency
+        # 🛡️ Use atomic transaction to ensure financial consistency
+        try:
+            with transaction.atomic():
+                # Create settlement record
+                settlement = ClaimSettlement.objects.create(
+                    claim=claim,
+                    settlement_date=request.POST.get("settlement_date") or timezone.now().date(),
+                    payment_mode=request.POST.get("payment_mode", "neft"),
+                    transaction_reference=txn_ref,
+                    settled_amount=final_payable, # MUST be approved_amount
+                    payee_name=request.POST.get("payee_name", ""),
+                    bank_account=request.POST.get("bank_account", ""),
+                    bank_ifsc=request.POST.get("bank_ifsc", ""),
+                    bank_name=request.POST.get("bank_name", ""),
+                    remarks=request.POST.get("remarks", ""),
+                    processed_by=request.user
+                )
 
-        # 🔗 Real Insurance Lifecycle Sync: Update UserPolicy status (checks for exhaustion)
-        user_policy = UserPolicy.objects.filter(user=claim.created_by, policy=claim.policy).first()
-        if user_policy:
-            user_policy.sync_status_with_premiums()
+                # Update claim status and sync financial fields
+                claim.status = "settled"
+                claim.settled_amount = final_payable
+                
+                # 🔄 Final Save (Workflow Validated)
+                claim.save(user=request.user)
 
-        ClaimAuditLog.objects.create(
-            claim=claim,
-            action=f"Claim settled through {request.POST.get('payment_mode', 'standard')} channel. Reference: {txn_ref}",
-            performed_by=request.user
-        )
+                # 🔗 Real Insurance Lifecycle Sync: Update UserPolicy status
+                user_policy = UserPolicy.objects.filter(user=claim.created_by, policy=claim.policy).first()
+                if user_policy:
+                    user_policy.sync_status_with_premiums()
 
-        # 💸 Sync with Unified Ledger: Create Payment entry for the payout (DEBIT)
-        Payment.objects.create(
-            user_policy=user_policy,
-            claim=claim,
-            amount=final_payable,
-            payment_status='completed',
-            payment_type='CLAIM_SETTLEMENT',
-            direction='DEBIT',
-            payment_method=request.POST.get("payment_mode", "neft").lower(),
-            transaction_id="", # Let the model's save() generate the TXN-SETL- ID
-            gateway_reference=txn_ref, # Store the actual Cheque/UPI ID here
-            description=f"Claim Payout Settlement - {claim.claim_number}",
-            notes=f"Processed by {request.user.username}. Payee: {request.POST.get('payee_name', '')}"
-        )
+                ClaimAuditLog.objects.create(
+                    claim=claim,
+                    action=f"Claim settled through {request.POST.get('payment_mode', 'standard')} channel. Reference: {txn_ref}",
+                    performed_by=request.user
+                )
+
+                # 💸 Sync with Unified Ledger: Create Payment entry for the payout (DEBIT)
+                Payment.objects.create(
+                    user_policy=user_policy,
+                    claim=claim,
+                    amount=final_payable,
+                    payment_status='completed',
+                    payment_type='CLAIM_SETTLEMENT',
+                    direction='DEBIT',
+                    payment_method=request.POST.get("payment_mode", "neft").lower(),
+                    transaction_id="", # Model generates TXN-SETL- ID
+                    gateway_reference=txn_ref,
+                    description=f"Claim Payout Settlement - {claim.claim_number}",
+                    notes=f"Processed by {request.user.username}."
+                )
+
+                # 🛡️ Record activity in system ledger for Admin Analytics
+                ActivityLog.objects.create(
+                    title=f"Claim Payout Dispatched: #{claim.claim_number}",
+                    description=f"Payment of ₹{final_payable:,.2f} finalized for {claim.created_by.username}. Txn: {txn_ref}",
+                    log_type='payment',
+                    status='success',
+                    user=request.user,
+                    claim=claim
+                )
+
+        except ValidationError as e:
+            msg = ", ".join(e.messages) if hasattr(e, 'messages') else str(e)
+            messages.error(request, f"Financial Workflow Error: {msg}. Settlement rolled back.")
+            return redirect("claim:settlement", claim_id=claim.id)
+        except Exception as e:
+            messages.error(request, f"System Integrity Error: {str(e)}. Payout distribution aborted.")
+            return redirect("claim:settlement", claim_id=claim.id)
 
         messages.success(request, f"Settlement Successful! Payout of ₹{final_payable:,.2f} has been dispatched for claim {claim.claim_number}.")
         return redirect("claim:detail", id=claim.id)
@@ -1276,3 +1402,88 @@ def claim_assessment(request, claim_id):
         return redirect("claim:detail", id=claim.id)
 
     return render(request, "claims/claim_assessment.html", {"form": form, "claim": claim})
+
+
+# =====================================
+# INTERNAL DISCUSSION & NOTES
+# =====================================
+
+@login_required
+@staff_or_admin
+def add_claim_note(request, claim_id):
+    """
+    Securely appends an internal or customer note to the claim dossier.
+    Only authorized staff/admin can contribute to the audit discussion.
+    """
+    claim = get_object_or_404(Claim, id=claim_id)
+    
+    if request.method == "POST":
+        # Form field can be 'content' or 'message' depending on the template origin
+        message = request.POST.get('content') or request.POST.get('message')
+        note_type = request.POST.get('note_type', 'internal')
+        is_important = request.POST.get('is_important') == 'on'
+        
+        if message and message.strip():
+            # Create the note in the audit trail
+            ClaimNote.objects.create(
+                claim=claim,
+                created_by=request.user,
+                message=message.strip(),
+                note_type=note_type,
+                is_important=is_important
+            )
+            
+            # Log the action for regulatory compliance
+            ClaimAuditLog.objects.create(
+                claim=claim,
+                action="NOTE_ADDED",
+                performed_by=request.user,
+                description=f"Added {note_type} note: {message[:50]}..."
+            )
+            
+            messages.success(request, "Discussion note archived.")
+        else:
+            messages.warning(request, "Discussion archiving requires content.")
+
+    # Redirect back to the source of the interaction
+    redirect_url = request.META.get('HTTP_REFERER') or f'/claims/{claim_id}/'
+    return redirect(redirect_url)
+
+
+@login_required
+@staff_or_admin
+def delete_claim_note(request, note_id):
+    """
+    Removes a note from the discussion history. 
+    Maintains lead auditor override permissions.
+    """
+    note = get_object_or_404(ClaimNote, id=note_id)
+
+    claim_id = note.claim.id
+    
+    # Audit trail creation BEFORE deletion for traceability
+    ClaimAuditLog.objects.create(
+        claim=note.claim,
+        action="NOTE_DELETED",
+        performed_by=request.user,
+        description=f"Deleted note by {note.created_by.username} from {note.created_at}"
+    )
+    
+    note.delete()
+    messages.info(request, "Audit note has been removed from discourse.")
+    
+    redirect_url = request.META.get('HTTP_REFERER') or f'/claims/{claim_id}/'
+    return redirect(redirect_url)
+
+
+@login_required
+@staff_or_admin
+def claim_notes_list(request, claim_id):
+    """Returns a focused view of the discussion history for a claim."""
+    claim = get_object_or_404(Claim, id=claim_id)
+    notes = claim.notes.all().order_by('-created_at')
+    return render(request, "claims/claim_notes.html", {
+        "claim": claim,
+        "notes": notes
+    })
+

@@ -23,6 +23,7 @@ from .models import (
     PolicyApplication,
     Payment,
 )
+from reports.models import ActivityLog
 from premiums.models import PremiumSchedule
 from accounts.utils import mask_phone, mask_email, log_sensitive_data_access
 
@@ -132,7 +133,7 @@ def _approve_policy_application(application, reviewer, admin_remarks=""):
                     for i in range(user_schedule.total_installments)
                 ])
 
-            amount = user_schedule.gross_premium
+            amount = user_schedule.installment_amount
         else:
             base_prem = application.policy.sum_insured * Decimal("0.02")
             gst_pct = Decimal("18.0")
@@ -146,7 +147,7 @@ def _approve_policy_application(application, reviewer, admin_remarks=""):
             description=f"Policy Activation Premium - {application.policy.policy_number}",
             defaults={
                 "amount": amount,
-                "payment_status": "completed",
+                "payment_status": "pending",
                 "payment_method": "cash",
                 "notes": "Initial premium record upon approval.",
             },
@@ -170,6 +171,16 @@ def _approve_policy_application(application, reviewer, admin_remarks=""):
                 ),
             )
 
+            # 🛡️ Record activity in system ledger for Admin Analytics
+            ActivityLog.objects.create(
+                title=f"Policy Activated: {application.policy.policy_number}",
+                description=f"Membership finalized for {application.user.username}. Application ID: {application.id}",
+                log_type='claim',  # Treat as a 'claim/case' type for management
+                status='success',
+                user=reviewer,
+                related_id=str(application.id)
+            )
+
         return created
 
 
@@ -181,15 +192,26 @@ def policy_list(request):
     if request.user.is_superuser or request.user.role in ["admin", "staff"]:
         return redirect("policy:admin_list")
 
-    if request.user.role != "policyholder":
+    if request.user.role != "user":
         return render(request, "accounts/unauthorized.html")
 
+
+    # Fetching active/grace/lapsed policies
     user_policies = UserPolicy.objects.filter(
         user=request.user,
-        status='active',
+        status__in=['active', 'grace', 'lapsed'],
     ).select_related("policy", "premium_schedule").order_by("-assigned_at")
 
-    return render(request, "policy/my_policies.html", {"user_policies": user_policies})
+    # 🔥 UNIFIED VIEW: Also fetch pending applications to show in the same dashboard
+    pending_applications = PolicyApplication.objects.filter(
+        user=request.user,
+        status='pending'
+    ).select_related("policy")
+
+    return render(request, "policy/my_policies.html", {
+        "user_policies": user_policies,
+        "pending_applications": pending_applications,
+    })
 
 
 # =============================================================================
@@ -377,9 +399,10 @@ def manage_categories(request):
 # =============================================================================
 @login_required
 def browse_policies(request):
-    if request.user.role != "policyholder":
+    if request.user.role != "user":
         messages.error(request, "Access denied. Only policyholders can browse policies.")
         return redirect("accounts:login")
+
 
     # Only show admin-created catalog policies
     policies = Policy.objects.filter(is_active=True).order_by("-created_at")
@@ -401,9 +424,10 @@ def browse_policies(request):
 # =============================================================================
 @login_required
 def apply_policy(request, policy_id):
-    if request.user.role != "policyholder":
+    if request.user.role != "user":
         messages.error(request, "Access denied. Only policyholders can apply for policies.")
         return redirect("accounts:login")
+
 
     policy = get_object_or_404(Policy, id=policy_id, is_active=True)
     is_motor = "motor" in (policy.policy_type or "").lower()
@@ -423,11 +447,13 @@ def apply_policy(request, policy_id):
     if existing:
         if existing.status == "pending":
             messages.warning(request, "You already have a pending application for this policy. Please wait for admin review.")
+            return redirect("policy:my_applications")
         elif existing.status == "approved":
-            messages.info(request, "Your application for this policy has already been approved!")
+            messages.info(request, "Your application for this policy has already been approved! Viewing your policy now.")
+            return redirect("policy:detail", id=policy.id)
         elif existing.status == "rejected":
             messages.error(request, "Your previous application for this policy was rejected. Contact support for more details.")
-        return redirect("policy:my_applications")
+            return redirect("policy:my_applications")
 
     # ── 3. Premium calculation ────────────────────────────────────────────────
     schedule = getattr(policy, "premium_schedule", None)
@@ -493,8 +519,9 @@ def apply_policy(request, policy_id):
 # =============================================================================
 @login_required
 def my_applications(request):
-    if request.user.role != "policyholder":
+    if request.user.role != "user":
         return render(request, "accounts/unauthorized.html")
+
 
     qs = PolicyApplication.objects.filter(user=request.user)
     applications = qs.select_related("policy", "reviewed_by").order_by("-created_at")
@@ -653,7 +680,7 @@ def admin_review_application(request, application_id):
                         status="upcoming"
                     ))
                 PremiumPayment.objects.bulk_create(new_payments)
-                amount = user_schedule.gross_premium
+                amount = user_schedule.installment_amount
             else:
                 # Fallback calculation if no plan template exists
                 base_prem = application.policy.sum_insured * Decimal("0.02")
@@ -667,7 +694,7 @@ def admin_review_application(request, application_id):
             Payment.objects.create(
                 user_policy=user_policy,
                 amount=amount,
-                payment_status='completed',
+                payment_status='pending',
                 payment_method='cash',
                 description=f"Policy Activation Premium - {application.policy.policy_number}",
                 notes=f"Initial premium record upon approval."
@@ -788,7 +815,8 @@ def payment_list(request):
         )
 
     return render(request, "policy/payment_list.html", {
-        "payments": payments_qs,
+        "credit_payments": payments_qs.filter(Q(direction='CREDIT') | Q(direction__isnull=True)),
+        "debit_payments": payments_qs.filter(direction='DEBIT'),
         "settlements": settlements_qs,
         "all_claims": all_claims,
         "selected_claim_settlements": selected_claim_settlements,
@@ -808,6 +836,18 @@ def manage_payment(request, payment_id):
     payment = get_object_or_404(Payment, id=payment_id)
 
     if request.method == "POST":
+        action = request.POST.get("action")
+        
+        # 🛡️ SECURITY: Only allow deletion for superusers or admins (not staff)
+        if action == "delete":
+            if request.user.is_superuser or request.user.role == "admin":
+                txn_id = payment.transaction_id
+                payment.delete()
+                messages.success(request, f"Transaction {txn_id} has been voided and removed from the ledger.")
+                return redirect("policy:payment_list")
+            else:
+                messages.error(request, "Permission Denied: Only Administrators can void transactions.")
+
         status = request.POST.get("payment_status")
         method = request.POST.get("payment_method")
         gateway_ref = request.POST.get("gateway_reference")
@@ -816,8 +856,6 @@ def manage_payment(request, payment_id):
 
         if status in [choice[0] for choice in Payment.PAYMENT_STATUS_CHOICES]:
             payment.payment_status = status
-            
-            # Set completed_at timestamp when payment is completed
             if status == 'completed' and not payment.completed_at:
                 payment.completed_at = timezone.now()
             elif status != 'completed':
@@ -833,6 +871,7 @@ def manage_payment(request, payment_id):
 
         messages.success(request, f"Payment {payment.transaction_id} updated successfully.")
         return redirect("policy:payment_list")
+
 
     return render(request, "policy/manage_payment.html", {
         "payment": payment,

@@ -2,11 +2,14 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from .forms import RegisterForm, ProfileEditForm
+from .forms import RegisterForm, ProfileEditForm, CustomPasswordResetForm, CustomSetPasswordForm
 from .models import User, UserProfile
+from .decorators import admin_only, staff_or_admin, role_required, staff_only
 from policy.models import Policy, PolicyHolder, PolicyApplication, UserPolicy, Payment
 from premiums.models import PremiumSchedule, PremiumPayment
+from django.core.exceptions import ValidationError
 from django.db import models
+
 from django.db.models import Sum, Count, Prefetch, Q, Value
 from django.db.models.functions import Coalesce
 from datetime import date, timedelta
@@ -25,56 +28,77 @@ def register_view(request):
         form = RegisterForm(request.POST, request.FILES)
 
         if form.is_valid():
+            from django.db import transaction
+            try:
+                with transaction.atomic():
+                    user = form.save(commit=False)
 
-            user = form.save(commit=False)
+                    # 🛡️ SECURITY: Force lowest privilege role for public registration
+                    # This prevents any attempt at role escalation via untrusted forms/APIs
+                    user.role = 'user'
+                    user.is_staff = False
+                    user.is_superuser = False
 
-            password = form.cleaned_data["password"]
+                    password = form.cleaned_data["password"]
+                    user.set_password(password)
 
-            user.set_password(password)
+                    # Ensure phone and address are saved to the User model
+                    user.phone = form.cleaned_data.get("phone", "")
+                    user.address = form.cleaned_data.get("address", "")
 
-            # Ensure phone and address are saved to the User model
-            user.phone = form.cleaned_data.get("phone", "")
-            user.address = form.cleaned_data.get("address", "")
+                    user.save()
 
-            user.save()
-
-            # 🛡️ Create associated UserProfile
-            profile = UserProfile.objects.create(
-                user=user,
-                full_name=form.cleaned_data.get("full_name"),
-                aadhaar_number=form.cleaned_data.get("aadhaar_number"),
-                id_proof=request.FILES.get("id_proof")
-            )
-
-            # 🔍 Automated Identity Verification via OCR
-            if profile.id_proof:
-                try:
-                    from ai_features.services.ocr_service import verify_identity
-                    results = verify_identity(
-                        profile.id_proof.path, 
-                        profile.full_name, 
-                        profile.aadhaar_number
+                    # 🛡️ Create associated UserProfile
+                    profile = UserProfile.objects.create(
+                        user=user,
+                        full_name=form.cleaned_data.get("full_name"),
+                        aadhaar_number=form.cleaned_data.get("aadhaar_number"),
+                        id_proof=request.FILES.get("id_proof")
                     )
-                    
-                    if results.get("verified"):
-                        profile.is_verified = True
-                        profile.save()
-                        messages.success(request, f"Identity Verified: Aadhaar {profile.masked_aadhaar} linked to {profile.full_name}.")
-                    else:
-                        # Detailed feedback for transparency
-                        error_msg = "Identity verification pending manually. "
-                        if results.get("extracted_number"):
-                            error_msg += f"Found Aadhaar {results['extracted_number'][-4:].rjust(12, 'X')} on document."
-                        else:
-                            error_msg += "Aadhaar number not legible in uploaded document."
-                        messages.warning(request, error_msg)
-                except Exception as e:
-                    messages.info(request, "Registration successful. ID verification will be handled by staff.")
 
-            messages.success(request, "Registration completed successfully. Please login.")
-            return redirect("accounts:login")
+                    # 🔍 Automated Identity Verification via OCR (Hardened Governance)
+                    if profile.id_proof:
+                        from ai_features.services.ocr_service import verify_identity
+                        results = verify_identity(
+                            profile.id_proof.path, 
+                            profile.full_name, 
+                            profile.aadhaar_number
+                        )
+                        
+                        if results.get("verified"):
+                            profile.is_verified = True
+                            profile.verification_status = 'VERIFIED'
+                            profile.save()
+                            messages.success(request, f"Registration Successful. Identity Verified: Aadhaar {profile.masked_aadhaar} linked.")
+                            return redirect("accounts:login")
+                        else:
+                            # 🛡️ MISMATCH FLOW: Rollback user creation
+                            # Pass OCR extraction back to the form for field-level error display
+                            form = RegisterForm(
+                                request.POST, 
+                                request.FILES, 
+                                ocr_value=results.get('extracted_number'), 
+                                ocr_name=results.get('extracted_name')
+                            )
+                            # This triggers the form's 'clean' logic with OCR context
+                            form.is_valid()
+                            # Raising ANY exception here triggers the transaction rollback
+                            raise ValidationError("Dossier verification failed.")
+
+                return redirect("accounts:login")
+
+            except ValidationError as e:
+                # Deduplicate: only add the error message if it's not already reported via form.clean()
+                if not any(error == str(e) for error in form.non_field_errors()):
+                    form.add_error(None, e.message)
+            except Exception as e:
+
+                # Generic fallback if AI service fails - permit manual verification
+                messages.info(request, "Registration successful. ID verification will be handled by staff manually.")
+                return redirect("accounts:login")
 
         else:
+
 
             messages.warning(request, "Please fix the errors below")
 
@@ -87,7 +111,7 @@ def register_view(request):
 
 # DASHBOARDS
 
-@login_required
+@admin_only
 def admin_dashboard(request):
 
     total_policies = Policy.objects.count()
@@ -99,9 +123,13 @@ def admin_dashboard(request):
     print(f"[AI Audit] Dashboard Sync - Total: {total_claims} | Settled: {settled_claims}")
 
     # Admin dashboard should summarize all claims that are still in-process
-    pending_claims = Claim.objects.filter(status__in=["submitted", "under_review", "investigation"]).count()
+    submitted_claims = Claim.objects.filter(status="submitted").count()
+    review_claims = Claim.objects.filter(status="under_review").count()
+    investigation_claims = Claim.objects.filter(status="investigation").count()
+    
     # "Approved Claims" should include all claims that passed approval (legacy label)
-    approved_claims = Claim.objects.filter(status__in=["approved", "partially_approved", "settled"]).count()
+    approved_claims = Claim.objects.filter(status__in=["approved", "partially_approved"]).count()
+    settled_claims_count = Claim.objects.filter(status="settled").count()
     rejected_claims = Claim.objects.filter(status="rejected").count()
 
     total_staffs = User.objects.filter(role="staff").count()
@@ -191,16 +219,15 @@ def admin_dashboard(request):
     )["total"] or 0
 
     # 💳 Payment Statistics (Summing only successful transactions for actual revenue)
-    initial_successful_value = Payment.objects.filter(payment_status='completed').aggregate(total=Sum("amount"))["total"] or 0
-    initial_successful_count = Payment.objects.filter(payment_status='completed').count()
+    # Using Payment model as the Unified Source of Truth to avoid double-counting installments
+    successful_payments_qs = Payment.objects.filter(payment_status='completed', direction='CREDIT')
     
-    recurring_successful_value = PremiumPayment.objects.filter(status='paid').aggregate(total=Sum("amount"))["total"] or 0
-    recurring_successful_count = PremiumPayment.objects.filter(status='paid').count()
+    successful_payment_value = successful_payments_qs.aggregate(total=Sum("amount"))["total"] or 0
+    successful_payments_count = successful_payments_qs.count()
     
-    total_payments = initial_successful_value + recurring_successful_value
-    successful_payment_value = initial_successful_value + recurring_successful_value
-    successful_payments_count = initial_successful_count + recurring_successful_count
+    total_payments = successful_payment_value
     failed_payments = Payment.objects.filter(payment_status='failed').count()
+
 
     # Recent payment history for dashboard
     recent_payments = Payment.objects.select_related(
@@ -238,8 +265,10 @@ def admin_dashboard(request):
         "total_staffs": total_staffs,
         "total_policies": total_policies,
         "total_claims": total_claims,
-        "settled_claims": settled_claims,
-        "pending_claims": pending_claims,
+        "submitted_claims": submitted_claims,
+        "review_claims": review_claims,
+        "investigation_claims": investigation_claims,
+        "settled_claims": settled_claims_count,
         "approved_claims": approved_claims,
         "rejected_claims": rejected_claims,
         "total_premium": total_premium,
@@ -263,8 +292,9 @@ def admin_dashboard(request):
     return render(request, "accounts/dashboard_admin.html", context)
 
 
-@login_required
+@staff_or_admin
 def staff_dashboard(request):
+
     # Initial Queryset - Sorted by AI Priority Score to help staff focus
     claims_qs = Claim.objects.select_related('assessment', 'policy', 'created_by').order_by('-priority_score', '-created_at').distinct()
 
@@ -311,8 +341,10 @@ def staff_dashboard(request):
     # Specific KPI for top cards (Workflow aligned)
     kpi = {
         'total_claims': total_claims,
-        'pending_claims': Claim.objects.filter(status="submitted").count(),
-        'forwarded_claims': Claim.objects.filter(status__in=["under_review", "investigation"]).count(),
+        'submitted_claims': Claim.objects.filter(status="submitted").count(),
+        'review_claims': Claim.objects.filter(status="under_review").count(),
+        'investigation_claims': Claim.objects.filter(status="investigation").count(),
+        'settled_claims': Claim.objects.filter(status="settled").count(),
         'processed_claims': Claim.objects.filter(status__in=["approved", "rejected", "settled"]).count(),
     }
     
@@ -367,8 +399,9 @@ def staff_dashboard(request):
     now = timezone.now()
     enhanced_claims = []
     for claim in claims_qs:
-        # SLA tracking
-        days_old = (now.date() - claim.reported_date).days
+        # SLA tracking (Ensuring type safety for date subtraction)
+        days_old = (now.date() - claim.reported_date.date()).days
+
         sla_status = 'on-track'
         if days_old > 7: sla_status = 'overdue'
         elif days_old > 3: sla_status = 'warning'
@@ -455,12 +488,28 @@ def staff_dashboard(request):
     # Separate claims for different dashboard sections
     waiting_claims = [c for c in enhanced_claims if c.status in ["submitted", "under_review", "investigation"]]
     processed_claims = [c for c in enhanced_claims if c.status in ["approved", "rejected", "settled", "closed", "partially_approved"]]
+    workspace_metrics = {
+        'pending_count': len(waiting_claims),
+        'completed_count': len(processed_claims),
+        'overdue_count': sum(1 for c in waiting_claims if getattr(c, 'sla_status', '') == 'overdue'),
+        'attention_count': sum(
+            1
+            for c in waiting_claims
+            if (
+                getattr(c, 'sla_status', '') != 'on-track'
+                or not getattr(c, 'is_policy_active', False)
+                or not getattr(c, 'is_premium_paid', False)
+                or getattr(c, 'fraud_flag', False)
+            )
+        ),
+    }
 
     context = {
         'claims': waiting_claims,  # Primary actionable list
         'waiting_claims': waiting_claims,
         'processed_claims': processed_claims,
         'recent_claims': processed_claims[:10], # Only show actually processed claims in history
+        'workspace_metrics': workspace_metrics,
         'kpi': kpi,
         'efficiency': round(efficiency, 1),
         'monthly_perf': monthly_perf,
@@ -475,8 +524,12 @@ def staff_dashboard(request):
 
 
 
-@login_required
+@role_required(allowed_roles=['user'])
 def policyholder_dashboard(request):
+    """
+    Enforces policyholder/user role access while allowing Admins to access for support.
+    """
+
 
     context: dict[str, Any] = {}
 
@@ -488,10 +541,18 @@ def policyholder_dashboard(request):
                 f"Policy {purchased_policy_number} purchased successfully."
             )
 
-        # Fetching all relevant policies (Active, Grace, or even Lapsed for visibility)
-        user_policies = UserPolicy.objects.filter(
+        # 1. Fetching all base user policies
+        user_policies_qs = UserPolicy.objects.filter(
             user=request.user,
-        ).exclude(status__in=['cancelled']).select_related("policy")
+        ).exclude(status='cancelled').select_related("policy", "policy__plan")
+
+        # 🔥 DYNAMIC SYNC: Re-evaluate policy health (Overdue/Grace/Lapsed) before calculations
+        # This ensures the KPI cards and Tables show accurate REAL-TIME status.
+        for up in user_policies_qs:
+            up.sync_status_with_premiums()
+        
+        # Fresh queryset with updated statuses from DB
+        user_policies = user_policies_qs.all()
 
         # Claims relevant to this user
         # Heuristic: User identifies themselves as 'created_by' 
@@ -524,7 +585,7 @@ def policyholder_dashboard(request):
         open_claims = claims.filter(status__in=['submitted', 'under_review', 'investigation', 'partially_approved'])
 
         # 3. Total Sum Insured (Available across all non-cancelled policies)
-        total_sum = user_policies.aggregate(total=Sum('policy__sum_insured'))['total'] or 0
+        total_sum = user_policies.aggregate(total=Sum('sum_insured_remaining'))['total'] or 0
         
         # 4. Total Settled Amount (Ensuring null safety across financial fields)
         total_settled = claims.filter(
@@ -591,15 +652,20 @@ def policyholder_dashboard(request):
         context['policy_applications'] = policy_applications_qs[:5]
 
         try:
-            today_date = timezone.now().date()
-
-            # Find all schedules specifically linked to this individual user-policy
+            from premiums.views import normalize_overdue
+            
+            # Find all schedules specifically linked to this individual user-policy or legacy purchase
             base_payments = PremiumPayment.objects.filter(
-                schedule__user_policy__user=request.user
-            ).select_related("schedule", "schedule__policy")
+                Q(schedule__policy__purchases__user=request.user) |
+                Q(schedule__user_policy__user=request.user)
+            ).distinct().select_related("schedule", "schedule__policy")
 
+            # 🔥 DYNAMIC STATUS UPDATE: Ensure overdue/lapsed states are captured before rendering
+            normalize_overdue(base_payments)
+
+            # Show overdue, upcoming, and lapsed payments in the "Pending" section
             pending_payments = base_payments.filter(
-                status__in=["overdue", "upcoming"]
+                status__in=["overdue", "upcoming", "lapsed"]
             ).order_by("status", "due_date")
 
             payment_history = base_payments.filter(
@@ -638,11 +704,11 @@ def policyholder_dashboard(request):
 
 @login_required
 def profile_view(request):
-    if request.user.is_superuser or request.user.role == "admin":
+    if request.user.is_admin:
         return render(request, "accounts/profile_admin.html")
-    elif request.user.role == "staff":
+    elif request.user.is_staff_member:
         return render(request, "accounts/profile_staff.html")
-    elif request.user.role == "policyholder":
+    elif request.user.is_user:
         return render(request, "accounts/profile_policyholder.html")
     else:
         return render(request, "accounts/profile.html")
@@ -676,17 +742,19 @@ def login_view(request):
         user = authenticate(request,username=username,password=password)
 
         if user is not None:
+            # 🛡️ IDENTITY GATING: Enforce Aadhaar verification status
+            if hasattr(user, 'profile'):
+                if user.profile.verification_status == 'MISMATCH':
+                    messages.error(request, "Your account verification failed due to Aadhaar mismatch. Please contact support or register again.")
+                    return render(request, "accounts/login.html")
+                
+                if not user.profile.is_verified and user.profile.verification_status == 'PENDING':
+                    messages.warning(request, "Account verification is currently pending. Please check back later.")
+                    return render(request, "accounts/login.html")
 
             login(request,user)
+            return redirect(user.dashboard_url)
 
-            if user.is_superuser or user.role == "admin":
-                return redirect("accounts:admin_dashboard")
-
-            elif user.role == "staff":
-                return redirect("accounts:staff_dashboard")
-
-            else:
-                return redirect("accounts:policyholder_dashboard")
 
         else:
 
@@ -709,13 +777,47 @@ def unauthorized_view(request):
     return render(request,"accounts/unauthorized.html")
 
 
+@admin_only
+def admin_create_staff(request):
+    """
+    SECURITY: Only administrators can create staff users.
+    Role assignment is hardcoded to 'staff' in the backend to prevent escalation.
+    """
+    if request.method == "POST":
+        form = StaffCreationForm(request.POST) # Uses secure staff form
+        if form.is_valid():
+            user = form.save(commit=False)
+            
+            # 🛡️ Hardened Staff Assignment (Forces role, prevents shadow escalation)
+            user.role = 'staff'
+            user.is_staff = True
+            user.is_superuser = False
+            
+            user.set_password(form.cleaned_data["password"])
+            user.save()
+            
+            # 🏙️ Create Staff Profile (Admin Provisioned)
+            # Aadhaar is forced to a unique 12-digit dummy to satisfy DB constraint
+            UserProfile.objects.create(
+                user=user,
+                full_name=form.cleaned_data.get("full_name"),
+                aadhaar_number=str(100000000000 + user.id), 
+                is_verified=True # Pre-verified by Admin
+            )
+            
+            messages.success(request, f"Processing Staff account for '{user.username}' provisioning complete.")
+            return redirect("accounts:admin_dashboard")
+    else:
+        form = StaffCreationForm()
+    
+    return render(request, "accounts/admin_create_staff.html", {"form": form})
 
 from django.contrib.auth import views as auth_views
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views.decorators.debug import sensitive_post_parameters
 from django.views.decorators.cache import never_cache
-from .forms import RegisterForm, ProfileEditForm, CustomPasswordResetForm, CustomSetPasswordForm
+from .forms import RegisterForm, ProfileEditForm, CustomPasswordResetForm, CustomSetPasswordForm, StaffCreationForm
 from .models import User, PasswordResetAttempt
 
 # FORGOT PASSWORD FLOW

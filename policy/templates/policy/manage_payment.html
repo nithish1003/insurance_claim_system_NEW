@@ -121,8 +121,10 @@
                     <h5 class="mb-0 text-white"><i class="bi bi-pencil-square me-2"></i>Update Payment Status</h5>
                 </div>
                 <div class="manage-body">
-                    <form method="POST">
+                    <form id="paymentForm" method="POST">
                         {% csrf_token %}
+                        <input type="hidden" name="action" id="formAction" value="update">
+                        
                         <div class="row g-3">
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Payment Status</label>
@@ -145,7 +147,7 @@
 
                         <div class="mb-3">
                             <label class="form-label">Gateway Reference / Transaction REF</label>
-                            <input type="text" name="gateway_reference" class="form-control" value="{{ payment.gateway_reference }}" placeholder="e.g. PAY-82937402">
+                            <input type="text" name="gateway_reference" class="form-control" value="{{ payment.gateway_reference|default:'' }}" placeholder="e.g. PAY-82937402">
                         </div>
 
                         <div class="mb-3">
@@ -155,17 +157,34 @@
 
                         <div class="mb-4">
                             <label class="form-label">Internal Notes</label>
-                            <textarea name="notes" class="form-control" rows="3" placeholder="Admin notes about this payment...">{{ payment.notes }}</textarea>
+                            <textarea name="notes" class="form-control" rows="3" placeholder="Admin notes about this payment...">{{ payment.notes|default:'' }}</textarea>
                         </div>
 
                         <div class="d-grid mt-4">
-                            <button type="submit" class="btn btn-save">
+                            <button type="submit" class="btn btn-save" onclick="document.getElementById('formAction').value='update'">
                                 <i class="bi bi-check-circle me-1"></i> Update Payment Record
                             </button>
                         </div>
                     </form>
+
+                    {% if request.user.is_superuser or request.user.role == "admin" %}
+                    <div class="mt-5 pt-4 border-top border-secondary border-opacity-10">
+                        <div class="small info-label text-danger opacity-75 mb-3">⚠️ Administrative Override (DANGER ZONE)</div>
+                        <p class="x-small text-muted mb-4">Deleting this record will permanently remove it from the transaction ledger. This should only be used to correct erroneous or duplicate system entries.</p>
+                        <form method="POST" onsubmit="return confirm('CRITICAL: Permanent Deletion. Proceed with voiding this transaction?')">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="delete">
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-outline-danger btn-sm py-2">
+                                    <i class="bi bi-trash-fill me-2"></i> Void & Delete Transaction
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
+
         </div>
     </div>
 </div>

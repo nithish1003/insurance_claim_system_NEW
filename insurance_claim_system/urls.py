@@ -15,6 +15,7 @@ urlpatterns = [
 
     path('claims/', include('claims.urls')),
     path('reports/', include('reports.urls')),
+    path('notifications/', include('notifications.urls', namespace='notifications')),
 
     path('', lambda request: redirect('accounts:login'), name='home'),
 

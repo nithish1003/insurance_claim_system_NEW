@@ -149,37 +149,102 @@
 {% endblock %}
 
 {% block content %}
-<div class="row g-4 mb-4" data-aos="fade-up">
-    <!-- Claims Summary -->
-    <div class="col-md-3">
-        <div class="report-card hover-scale" data-aos="zoom-in" data-aos-delay="100">
+<!-- KPI METRICS HUB -->
+<div class="row g-4 mb-5" data-aos="fade-up">
+    {% if total_claims_count == 0 %}
+    <div class="col-12">
+        <div class="alert alert-info border-0 shadow-sm bg-primary bg-opacity-10 text-primary p-4 rounded-4 text-center">
+            <i class="bi bi-info-circle-fill fs-3 mb-2 d-inline-block"></i>
+            <p class="mb-0 fw-bold">System Status: No claims data available yet. Metrics will activate upon ingestion.</p>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Status Cards -->
+    <div class="col-lg-2 col-md-4 col-sm-6">
+        <div class="report-card h-100" data-aos="zoom-in" data-aos-delay="100">
             <div class="stat-label">Total Claims</div>
             <div class="stat-val text-white">{{ total_claims_count }}</div>
             <div class="skp-accent bg-primary"></div>
+            <i class="bi bi-layers-fill position-absolute end-0 bottom-0 p-3 opacity-10 fs-1"></i>
+        </div>
+    </div>
+    <div class="col-lg-2 col-md-4 col-sm-6">
+        <div class="report-card h-100" data-aos="zoom-in" data-aos-delay="200">
+            <div class="stat-label">Approved</div>
+            <div class="stat-val text-success">{{ approved_count }}</div>
+            <div class="skp-accent bg-success"></div>
+            <i class="bi bi-check-circle-fill position-absolute end-0 bottom-0 p-3 opacity-10 fs-1 text-success"></i>
+        </div>
+    </div>
+    <div class="col-lg-2 col-md-4 col-sm-6">
+        <div class="report-card h-100" data-aos="zoom-in" data-aos-delay="300">
+            <div class="stat-label">Rejected</div>
+            <div class="stat-val text-danger">{{ rejected_count }}</div>
+            <div class="skp-accent bg-danger"></div>
+            <i class="bi bi-x-circle-fill position-absolute end-0 bottom-0 p-3 opacity-10 fs-1 text-danger"></i>
+        </div>
+    </div>
+    <div class="col-lg-2 col-md-4 col-sm-6">
+        <div class="report-card h-100" data-aos="zoom-in" data-aos-delay="400">
+            <div class="stat-label">Pending Review</div>
+            <div class="stat-val text-warning">{{ pending_count }}</div>
+            <div class="skp-accent bg-warning"></div>
+            <i class="bi bi-clock-history position-absolute end-0 bottom-0 p-3 opacity-10 fs-1 text-warning"></i>
+        </div>
+    </div>
+    <div class="col-lg-4 col-md-12">
+        <div class="report-card h-100" data-aos="zoom-in" data-aos-delay="500">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-label">Audit Efficiency</div>
+                    <div class="stat-val text-info-premium">{{ efficiency_score }}%</div>
+                </div>
+                <div class="bg-info bg-opacity-10 text-info p-2 rounded-3">
+                    <i class="bi bi-lightning-charge-fill"></i>
+                </div>
+            </div>
+            <div class="progress mt-2" style="height: 6px; background: rgba(255,255,255,0.05);">
+                <div class="progress-bar bg-info shadow-sm" style="width: {{ efficiency_score }}%"></div>
+            </div>
+            <div class="skp-accent bg-info"></div>
+        </div>
+    </div>
+</div>
+
+<h6 class="text-muted small fw-bold mb-3" data-aos="fade-right"><i class="bi bi-currency-rupee me-2"></i>Financial & Risk Summary</h6>
+<div class="row g-4 mb-5" data-aos="fade-up">
+    <!-- Claims Summary (Financial) -->
+    <div class="col-md-3">
+        <div class="report-card hover-scale" data-aos="zoom-in" data-aos-delay="100">
+            <div class="stat-label">Approved Payouts</div>
+            <div class="stat-val text-white">₹{{ financials.total_approved|default:0|intcomma }}</div>
+            <div class="skp-accent bg-success opacity-50"></div>
         </div>
     </div>
     <div class="col-md-3">
         <div class="report-card hover-scale" data-aos="zoom-in" data-aos-delay="200">
-            <div class="stat-label">Approved Amount</div>
-            <div class="stat-val text-success">₹{{ financials.total_approved|default:0|intcomma }}</div>
-            <div class="skp-accent bg-success"></div>
+            <div class="stat-label">Requested Value</div>
+            <div class="stat-val text-info-premium">₹{{ financials.total_claimed|default:0|intcomma }}</div>
+            <div class="skp-accent bg-info opacity-50"></div>
         </div>
     </div>
     <div class="col-md-3">
         <div class="report-card hover-scale" data-aos="zoom-in" data-aos-delay="300">
-            <div class="stat-label">Claimed Volume</div>
-            <div class="stat-val text-info">₹{{ financials.total_claimed|default:0|intcomma }}</div>
-            <div class="skp-accent bg-info"></div>
+            <div class="stat-label">Loss Avoidance (Rejected)</div>
+            <div class="stat-val text-danger">₹{{ financials.total_rejected|default:0|intcomma }}</div>
+            <div class="skp-accent bg-danger opacity-50"></div>
         </div>
     </div>
     <div class="col-md-3">
         <div class="report-card hover-scale" data-aos="zoom-in" data-aos-delay="400">
-            <div class="stat-label">Rejected Volume</div>
-            <div class="stat-val text-danger">₹{{ financials.total_rejected|default:0|intcomma }}</div>
-            <div class="skp-accent bg-danger"></div>
+            <div class="stat-label">System Exposure</div>
+            <div class="stat-val text-warning">₹{{ financials.total_claimed|default:0|intcomma }}</div>
+            <div class="skp-accent bg-warning opacity-50"></div>
         </div>
     </div>
 </div>
+
 
 <div class="row g-4 mb-4" data-aos="fade-up" data-aos-delay="200">
     <!-- Chart Section -->
@@ -319,12 +384,12 @@
                                       {% if act.status == 'error' %}onclick="alert('Error Details: {{ act.description|escapejs }}')"{% endif %}>
                                     {{ act.title }}
                                 </span>
-                                <small class="text-muted">{{ act.created_at|naturaltime }}</small>
+                                <small class="text-muted">{{ act.time_ago }}</small>
                             </div>
                             <div class="text-muted small mt-1">
                                 {{ act.description|truncatechars:100 }}
-                                {% if act.claim %}<span class="badge bg-dark border border-secondary ms-1">{{ act.claim.claim_number }}</span>{% endif %}
-                                {% if act.user %}<span class="ms-1 text-info-premium x-small">By: {{ act.user.username }}</span>{% endif %}
+                                {% if act.claim_number %}<span class="badge bg-dark border border-secondary ms-1">{{ act.claim_number }}</span>{% endif %}
+                                {% if act.user_name %}<span class="ms-1 text-info-premium x-small">By: {{ act.user_name }}</span>{% endif %}
                             </div>
                         </div>
                     </div>
@@ -456,7 +521,7 @@
                              act.type === 'error' ? 'bi-x-circle' : 'bi-cpu';
             
             const html = `
-                <div class="timeline-item activity-item animate-fadeIn">
+                <div class="timeline-item activity-item animate-fadeIn" data-type="${act.type}">
                     <div class="d-flex align-items-start gap-3">
                         <div class="activity-icon status-${act.status}">
                             <i class="bi ${iconClass}"></i>

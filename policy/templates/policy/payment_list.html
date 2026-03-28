@@ -177,7 +177,7 @@
     <div class="stat-bar">
         <div class="stat-item">
             <span class="stat-label">Total Transactions</span>
-            <span class="stat-value text-white">{{ payments|length }}</span>
+            <span class="stat-value text-white">{{ credit_payments.count|add:debit_payments.count }}</span>
         </div>
         <div class="stat-item" style="border-left: 1px solid rgba(255,255,255,0.05); padding-left: 30px;">
             <span class="stat-label">Success Rate</span>
@@ -285,8 +285,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for payment in payments %}
-                      {% if payment.direction == 'CREDIT' or not payment.direction %}
+                    {% for payment in credit_payments %}
                     <tr>
                         <td class="ps-4">
                             <span class="mono-id fw-bold">{{ payment.transaction_id }}</span>
@@ -331,7 +330,6 @@
                             </a>
                         </td>
                     </tr>
-                      {% endif %}
                     {% empty %}
                     <tr><td colspan="8" class="text-center py-4 text-muted small">No credit transactions recorded.</td></tr>
                     {% endfor %}
@@ -364,8 +362,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for payment in payments %}
-                      {% if payment.direction == 'DEBIT' %}
+                    {% for payment in debit_payments %}
                     <tr>
                         <td class="ps-4">
                             <span class="mono-id fw-bold text-danger">{{ payment.transaction_id }}</span>
@@ -404,7 +401,6 @@
                             </a>
                         </td>
                     </tr>
-                      {% endif %}
                     {% empty %}
                     <tr><td colspan="8" class="text-center py-4 text-muted small">No debit transactions recorded.</td></tr>
                     {% endfor %}

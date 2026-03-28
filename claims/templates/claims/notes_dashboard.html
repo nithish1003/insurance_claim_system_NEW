@@ -2,6 +2,44 @@
 
 {% block title %}Notes Dashboard{% endblock %}
 
+{% block sidebar_items %}
+{% if request.user.is_superuser or request.user.role == "admin" %}
+<a href="{% url 'accounts:admin_dashboard' %}">
+    <i class="bi bi-speedometer2"></i> Dashboard
+</a>
+<a href="{% url 'policy:admin_list' %}">
+    <i class="bi bi-file-earmark-text"></i> Policies
+</a>
+{% elif request.user.role == "staff" %}
+<a href="{% url 'accounts:staff_dashboard' %}">
+    <i class="bi bi-speedometer2"></i> Staff Dashboard
+</a>
+<a href="{% url 'policy:admin_list' %}">
+    <i class="bi bi-file-earmark-text"></i> Policies
+</a>
+{% endif %}
+
+<a href="{% url 'claim:list' %}">
+    <i class="bi bi-shield-exclamation"></i> Claims
+</a>
+
+<a href="{% url 'claim:notes_dashboard' %}" style="background: rgba(26, 110, 245, 0.15); color: white; border-left: 3px solid #1a6ef5; padding-left: 24px;">
+    <i class="bi bi-chat-text"></i> Notes Hub
+</a>
+
+{% if request.user.is_superuser or request.user.role == "admin" or request.user.role == "staff" %}
+<a href="{% url 'reports:dashboard' %}">
+    <i class="bi bi-bar-chart-line"></i> Reports & Analytics
+</a>
+{% endif %}
+
+<a href="{% url 'accounts:logout' %}" class="sidebar-logout">
+    <i class="bi bi-box-arrow-right"></i> Logout
+</a>
+{% endblock %}
+
+{% block breadcrumb %}Notes Hub{% endblock %}
+
 {% block content %}
 <div class="container-fluid">
     <div class="row">
@@ -9,7 +47,7 @@
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2>
                     <i class="bi bi-chat-text"></i> Notes Dashboard
-                    <span class="badge bg-primary ms-2">{{ notes.count }}</span>
+                    <span class="badge bg-primary ms-2">{{ total_notes }}</span>
                 </h2>
                 
                 <div class="d-flex gap-2">
@@ -164,7 +202,7 @@
                 <div class="col-md-3">
                     <div class="card bg-primary text-white">
                         <div class="card-body text-center">
-                            <h4>{{ notes.filter(note_type='customer').count }}</h4>
+                            <h4>{{ customer_notes_count }}</h4>
                             <p class="mb-0">Customer Notes</p>
                         </div>
                     </div>
@@ -172,7 +210,7 @@
                 <div class="col-md-3">
                     <div class="card bg-secondary text-white">
                         <div class="card-body text-center">
-                            <h4>{{ notes.filter(note_type='internal').count }}</h4>
+                            <h4>{{ internal_notes_count }}</h4>
                             <p class="mb-0">Internal Notes</p>
                         </div>
                     </div>
@@ -180,7 +218,7 @@
                 <div class="col-md-3">
                     <div class="card bg-warning text-dark">
                         <div class="card-body text-center">
-                            <h4>{{ notes.filter(is_important=True).count }}</h4>
+                            <h4>{{ important_notes_count }}</h4>
                             <p class="mb-0">Important Notes</p>
                         </div>
                     </div>
@@ -188,7 +226,7 @@
                 <div class="col-md-3">
                     <div class="card bg-info text-white">
                         <div class="card-body text-center">
-                            <h4>{{ notes.distinct.count }}</h4>
+                            <h4>{{ unique_claims_count }}</h4>
                             <p class="mb-0">Unique Claims</p>
                         </div>
                     </div>

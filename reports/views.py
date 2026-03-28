@@ -5,6 +5,7 @@ from django.utils import timezone
 from datetime import timedelta
 from claims.models import Claim, ClaimAuditLog
 from .models import ActivityLog
+from policy.models import Payment
 from django.utils.timesince import timesince
 from accounts.models import User
 from django.http import JsonResponse
@@ -15,6 +16,128 @@ def is_admin(user):
 
 def is_staff(user):
     return user.is_authenticated and (user.role == 'staff' or user.role == 'admin' or user.is_superuser)
+
+
+def _get_activity_user_label(activity_user, fallback_user):
+    user = activity_user or fallback_user
+    return user.username if user else "System"
+
+
+def _get_payment_activity_status(payment):
+    if payment.payment_status == "completed":
+        return "success"
+    if payment.payment_status in {"failed", "cancelled"}:
+        return "error"
+    if payment.payment_status == "refunded":
+        return "info"
+    return "warning"
+
+
+def _serialize_activity_log(log):
+    return {
+        "id": log.id,
+        "title": log.title,
+        "description": log.description or "",
+        "log_type": log.log_type,
+        "status": log.status,
+        "user_name": _get_activity_user_label(log.user, None),
+        "claim_number": log.claim.claim_number if log.claim else None,
+        "created_at": log.created_at,
+        "time_ago": f"{timesince(log.created_at).split(',')[0]} ago",
+    }
+
+
+def _serialize_payment_activity(payment):
+    user = payment.user or getattr(payment.user_policy, "user", None)
+    policy = getattr(payment.user_policy, "policy", None)
+    claim = payment.claim
+    is_credit = payment.direction == "CREDIT"
+
+    if payment.payment_status == "completed" and is_credit:
+        title = f"Premium Payment Received: {policy.policy_number if policy else payment.transaction_id}"
+    elif payment.payment_status == "completed":
+        title = f"Claim Payout Dispatched: {claim.claim_number if claim else payment.transaction_id}"
+    else:
+        title = f"Payment {payment.get_payment_status_display()}: {payment.transaction_id}"
+
+    description_bits = [
+        f"{payment.get_payment_type_display() or payment.payment_type} {payment.direction.lower()}",
+        f"Rs.{payment.amount:,.2f}",
+    ]
+    if policy:
+        description_bits.append(f"Policy {policy.policy_number}")
+    if claim:
+        description_bits.append(f"Claim {claim.claim_number}")
+    description_bits.append(f"Txn {payment.transaction_id}")
+    if payment.gateway_reference:
+        description_bits.append(f"Ref {payment.gateway_reference}")
+    if payment.description:
+        description_bits.append(payment.description)
+
+    return {
+        "id": payment.id,
+        "title": title,
+        "description": " | ".join(description_bits),
+        "log_type": "payment",
+        "status": _get_payment_activity_status(payment),
+        "user_name": _get_activity_user_label(user, None),
+        "claim_number": claim.claim_number if claim else None,
+        "created_at": payment.created_at,
+        "time_ago": f"{timesince(payment.created_at).split(',')[0]} ago",
+    }
+
+
+def _build_activity_feed(log_type="all", q=""):
+    activity_queryset = ActivityLog.objects.select_related("user", "claim").exclude(log_type="payment")
+    if log_type == "payment":
+        activity_queryset = activity_queryset.none()
+    elif log_type in {"claim", "error", "system"}:
+        activity_queryset = activity_queryset.filter(log_type=log_type)
+
+    if q:
+        activity_queryset = activity_queryset.filter(
+            Q(claim__claim_number__icontains=q)
+            | Q(title__icontains=q)
+            | Q(description__icontains=q)
+            | Q(log_type__icontains=q)
+            | Q(user__username__icontains=q)
+        )
+
+    feed = [_serialize_activity_log(log) for log in activity_queryset]
+
+    if log_type in {"all", "payment"}:
+        payments_queryset = Payment.objects.select_related(
+            "user",
+            "user_policy__user",
+            "user_policy__policy",
+            "claim",
+        ).filter(
+            claim__isnull=True,
+            direction="CREDIT",
+            payment_status="completed",
+        ).order_by("-created_at")
+
+        if q:
+            payments_queryset = payments_queryset.filter(
+                Q(transaction_id__icontains=q)
+                | Q(gateway_reference__icontains=q)
+                | Q(description__icontains=q)
+                | Q(payment_status__icontains=q)
+                | Q(payment_type__icontains=q)
+                | Q(payment_method__icontains=q)
+                | Q(direction__icontains=q)
+                | Q(user__username__icontains=q)
+                | Q(user_policy__user__username__icontains=q)
+                | Q(user_policy__user__first_name__icontains=q)
+                | Q(user_policy__user__last_name__icontains=q)
+                | Q(user_policy__policy__policy_number__icontains=q)
+                | Q(claim__claim_number__icontains=q)
+            )
+
+        feed.extend(_serialize_payment_activity(payment) for payment in payments_queryset)
+
+    feed.sort(key=lambda item: item["created_at"], reverse=True)
+    return feed
 
 @login_required
 def reports_dashboard(request):
@@ -35,10 +158,16 @@ def admin_reports(request):
 
     # 1. Total Claims by Status
     status_counts = Claim.objects.values('status').annotate(total=Count('id'))
-    total_claims_count = Claim.objects.count()
+    # 2. KPI Summary Analytics
+    total_claims = Claim.objects.count()
+    approved_claims = Claim.objects.filter(status__in=['approved', 'settled', 'partially_approved']).count()
+    rejected_claims = Claim.objects.filter(status='rejected').count()
+    pending_claims = Claim.objects.filter(status__in=['submitted', 'under_review', 'investigation']).count()
     
-    # 2. Financial Summary - using Coalesce to avoid None values
-    # We take settled_amount if available, otherwise approved_amount
+    reviewed_total = approved_claims + rejected_claims
+    efficiency = (approved_claims / reviewed_total * 100) if reviewed_total > 0 else 0
+
+    # 3. Financial Summary - using Coalesce to avoid None values
     financials = Claim.objects.aggregate(
         total_claimed=Coalesce(Sum('claimed_amount'), Value(0), output_field=DecimalField()),
         total_approved=Coalesce(
@@ -62,6 +191,7 @@ def admin_reports(request):
             output_field=DecimalField()
         )
     )
+
 
     # 3. Monthly Claim Distribution (last 6 months)
     six_months_ago = timezone.now() - timedelta(days=180)
@@ -120,10 +250,14 @@ def admin_reports(request):
     missing_docs = Claim.objects.filter(documents__isnull=True).distinct()[:5]
 
     # 6. Recent Activity (Centralized System Logs)
-    recent_activity = ActivityLog.objects.select_related('claim', 'user').order_by('-created_at')[:5]
+    recent_activity = _build_activity_feed()[:5]
 
     context = {
-        'total_claims_count': total_claims_count,
+        'total_claims_count': total_claims,
+        'approved_count': approved_claims,
+        'rejected_count': rejected_claims,
+        'pending_count': pending_claims,
+        'efficiency_score': round(efficiency, 1),
         'status_counts': status_counts,
         'financials': financials,
         'monthly_data': monthly_stats,
@@ -133,6 +267,7 @@ def admin_reports(request):
         'recent_activity': recent_activity,
         'is_admin_view': True
     }
+
     return render(request, 'reports/admin_dashboard.html', context)
 
 @login_required
@@ -241,33 +376,25 @@ def get_activity_logs(request):
     q = request.GET.get("q", "")
     
     offset = (page - 1) * limit
-    
-    queryset = ActivityLog.objects.all().select_related('user', 'claim').order_by('-created_at')
-    
-    if log_type != "all":
-        queryset = queryset.filter(log_type=log_type)
-        
-    if q:
-        queryset = queryset.filter(Q(claim__claim_number__icontains=q) | Q(title__icontains=q) | Q(description__icontains=q))
-        
-    total_count = queryset.count()
-    logs = queryset[offset:offset+limit]
+    feed = _build_activity_feed(log_type=log_type, q=q)
+    total_count = len(feed)
+    logs = feed[offset:offset + limit]
     has_more = total_count > (offset + limit)
-    
+
     data = []
     for log in logs:
         data.append({
-            "id": log.id,
-            "title": log.title,
-            "description": log.description,
-            "type": log.log_type,
-            "status": log.status,
-            "user": log.user.username if log.user else "System",
-            "claim_number": log.claim.claim_number if log.claim else None,
-            "created_at": log.created_at.isoformat(),
-            "time_ago": f"{timesince(log.created_at).split(',')[0]} ago"
+            "id": log["id"],
+            "title": log["title"],
+            "description": log["description"],
+            "type": log["log_type"],
+            "status": log["status"],
+            "user": log["user_name"],
+            "claim_number": log["claim_number"],
+            "created_at": log["created_at"].isoformat(),
+            "time_ago": log["time_ago"],
         })
-    
+
     return JsonResponse({"data": data, "has_more": has_more})
 
 @login_required

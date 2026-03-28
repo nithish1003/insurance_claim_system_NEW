@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Admin — Create Staff Identity{% endblock %}
+
+{% block extra_css %}
+<style>
+    .admin-card {
+        background: radial-gradient(circle at top right, rgba(26, 110, 245, 0.08), transparent 45%),
+                    rgba(15, 23, 42, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 20px;
+        padding: 50px 40px;
+        max-width: 650px;
+        margin: 60px auto;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(20px);
+        transform-style: preserve-3d;
+        transition: transform 0.3s ease;
+    }
+    .admin-card:hover {
+        border-color: rgba(26, 110, 245, 0.25);
+    }
+    .form-label {
+        color: #94a3b8;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 10px;
+        display: block;
+    }
+    .form-control {
+        background: rgba(255, 255, 255, 0.03) !important;
+        border: 1px solid rgba(255, 255, 255, 0.06) !important;
+        color: white !important;
+        border-radius: 12px;
+        padding: 14px 18px;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        font-size: 14px;
+    }
+    .form-control:focus {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border-color: #1a6ef5 !important;
+        box-shadow: 0 0 0 4px rgba(26, 110, 245, 0.15);
+        transform: translateY(-1px);
+    }
+    .btn-provision {
+        background: linear-gradient(135deg, #1a6ef5 0%, #0d5ddb 100%);
+        color: white;
+        border: none;
+        padding: 16px;
+        border-radius: 12px;
+        font-weight: 800;
+        width: 100%;
+        margin-top: 30px;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        box-shadow: 0 10px 20px rgba(26, 110, 245, 0.2);
+    }
+    .btn-provision:hover {
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 15px 30px rgba(26, 110, 245, 0.4);
+        background: linear-gradient(135deg, #3b82f6 0%, #1a6ef5 100%);
+    }
+    .security-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        background: rgba(16, 185, 129, 0.1);
+        color: #10b981;
+        padding: 8px 18px;
+        border-radius: 50px;
+        font-size: 11px;
+        font-weight: 800;
+        margin-bottom: 30px;
+        letter-spacing: 0.5px;
+        border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+    .pos-relative { position: relative; }
+    .btn-back-header {
+        position: absolute;
+        top: 25px;
+        left: 25px;
+        color: #64748b;
+        font-size: 1rem;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        text-decoration: none !important;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .btn-back-header:hover {
+        background: rgba(26, 110, 245, 0.1);
+        color: white;
+        border-color: rgba(26, 110, 245, 0.3);
+        transform: translateX(-5px);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container pb-5">
+    <div class="admin-card pos-relative" data-aos="zoom-in" data-aos-duration="800">
+        <a href="{% url 'accounts:admin_dashboard' %}" class="btn-back-header" title="Back to Dashboard">
+            <i class="bi bi-arrow-left"></i>
+        </a>
+
+        <div class="text-center mb-5">
+            <div class="security-badge" data-aos="fade-down" data-aos-delay="200">
+                <i class="bi bi-shield-lock-fill"></i>
+                SECURE PROVISIONING ACTIVE
+            </div>
+            <h3 class="text-white fw-bold mb-2">Create Staff Identity</h3>
+            <p class="text-muted small px-lg-5">Provision high-privilege credentials for internal claim adjusters and auditors.</p>
+        </div>
+
+        <form method="POST">
+            {% csrf_token %}
+            
+            {% if form.non_field_errors %}
+                {% for error in form.non_field_errors %}
+                    <div class="alert alert-danger py-3 small rounded-3 mb-4">{{ error }}</div>
+                {% endfor %}
+            {% endif %}
+
+            <div class="row g-4">
+                <div class="col-md-12" data-aos="fade-up" data-aos-delay="300">
+                    <label class="form-label">Staff Full Name</label>
+                    {{ form.full_name }}
+                    {% if form.full_name.errors %}<div class="text-danger x-small mt-1">{{ form.full_name.errors.0 }}</div>{% endif %}
+                </div>
+
+
+                <div class="col-md-6" data-aos="fade-up" data-aos-delay="400">
+                    <label class="form-label">Username</label>
+                    {{ form.username }}
+                    {% if form.username.errors %}<div class="text-danger x-small mt-1">{{ form.username.errors.0 }}</div>{% endif %}
+                </div>
+
+                <div class="col-md-6" data-aos="fade-up" data-aos-delay="400">
+                    <label class="form-label">Contact Email</label>
+                    {{ form.email }}
+                    {% if form.email.errors %}<div class="text-danger x-small mt-1">{{ form.email.errors.0 }}</div>{% endif %}
+                </div>
+
+                <div class="col-md-12" data-aos="fade-up" data-aos-delay="500">
+                    <label class="form-label">Internal Phone Extension</label>
+                    {{ form.phone }}
+                    {% if form.phone.errors %}<div class="text-danger x-small mt-1">{{ form.phone.errors.0 }}</div>{% endif %}
+                </div>
+
+                <div class="col-md-6" data-aos="fade-up" data-aos-delay="600">
+                    <label class="form-label">Access Password</label>
+                    {{ form.password }}
+                    {% if form.password.errors %}<div class="text-danger x-small mt-1">{{ form.password.errors.0 }}</div>{% endif %}
+                </div>
+
+                <div class="col-md-6" data-aos="fade-up" data-aos-delay="600">
+                    <label class="form-label">Confirm Password</label>
+                    {{ form.confirm_password }}
+                    {% if form.confirm_password.errors %}<div class="text-danger x-small mt-1">{{ form.confirm_password.errors.0 }}</div>{% endif %}
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-provision" data-aos="fade-up" data-aos-delay="700">
+                <i class="bi bi-person-plus-fill me-2"></i> Provision Account
+            </button>
+
+            <div class="text-center mt-5" data-aos="fade-up" data-aos-delay="800">
+                <a href="{% url 'accounts:admin_dashboard' %}" class="text-muted small text-decoration-none hover-link">
+                    Cancel provisioning and return to hub
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

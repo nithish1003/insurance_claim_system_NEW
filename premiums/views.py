@@ -13,6 +13,7 @@ from django.utils.crypto import get_random_string
 
 from policy.models import Policy, PolicyHolder, UserPolicy, Payment
 from .models import PremiumSchedule, PremiumPayment
+from reports.models import ActivityLog
 
 
 def add_months(base_date: date, months: int) -> date:
@@ -144,6 +145,15 @@ def premium_create(request):
 
         action_msg = "created" if created else "updated"
         messages.success(request, f"Premium schedule successfully {action_msg}.")
+        
+        # 🛡️ Record activity in system ledger
+        ActivityLog.objects.create(
+            title=f"Premium Schedule {action_msg.capitalize()}",
+            description=f"Schedule set for {policy.policy_number} ({payment_frequency}). Base: ₹{base_premium:,.2f}",
+            log_type='system',
+            status='info',
+            user=request.user
+        )
         return redirect("premiums:list")
 
     return render(request, "premiums/premium_create.html", {
@@ -193,6 +203,8 @@ def premium_detail(request, id):
 
     if not is_admin_view:
         today = timezone.now().date()
+        # 🔥 FIX: Ensure policyholders see their FULL installment sequence (Timeline)
+        # Previously, future payments were hidden, making the table look empty.
         payments = payments.annotate(
             status_order=Case(
                 When(status="overdue", then=Value(0)),
@@ -200,8 +212,6 @@ def premium_detail(request, id):
                 default=Value(2),
                 output_field=IntegerField(),
             )
-        ).filter(
-            Q(status="overdue") | Q(status="upcoming", due_date__lte=today)
         ).order_by("status_order", "due_date")
 
     return render(
@@ -254,6 +264,15 @@ def premium_pay(request, payment_id):
                 transaction_id="", # Handled by model save() TXN-PREM- prefix
                 gateway_reference=transaction_reference, 
                 description=f"Premium Installment #{payment.installment_number} - {payment.schedule.policy.policy_number}"
+            )
+
+            # 🛡️ Record activity in system ledger for Admin Analytics
+            ActivityLog.objects.create(
+                title=f"Premium Payment Received: #{payment.installment_number}",
+                description=f"Payment of ₹{payment.amount:,.2f} received for {payment.schedule.policy.policy_number}. User: {request.user.username}",
+                log_type='payment',
+                status='success',
+                user=request.user
             )
 
         # 🔄 REACTIVATION: Sync policy status immediately after payment
