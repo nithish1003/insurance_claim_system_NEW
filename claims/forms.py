@@ -148,3 +148,65 @@ class ClaimAssessmentForm(forms.ModelForm):
             raise forms.ValidationError("Deductible amount cannot be negative.")
         
         return cleaned_data
+
+
+class ClaimFilterForm(forms.Form):
+    """
+    Filter form for Claim List dossiers.
+    """
+    claim_number = forms.ChoiceField(
+        required=False,
+        widget=forms.Select(attrs={
+            'class': 'form-select form-select-sm',
+            'id': 'id_claim_number'
+        })
+    )
+
+    def __init__(self, *args, **kwargs):
+        claim_choices = kwargs.pop('claim_choices', [('', 'All Claims')])
+        super().__init__(*args, **kwargs)
+        self.fields['claim_number'].choices = claim_choices
+    claim_type = forms.ChoiceField(
+        choices=[('', 'All Types')] + [
+            ("accident", "Accident"),
+            ("medical", "Medical"),
+            ("theft", "Theft"),
+            ("death", "Death"),
+            ("maturity", "Maturity"),
+            ("surrender", "Surrender"),
+            ("disability", "Disability"),
+            ("critical_illness", "Critical Illness"),
+            ("hospitalization", "Hospitalization"),
+            ("property_damage", "Property Damage"),
+            ("fire", "Fire"),
+            ("natural_disaster", "Natural Disaster"),
+            ("third_party", "Third Party Liability"),
+            ("other", "Other"),
+        ],
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-select form-select-sm', 'id': 'id_claim_type'})
+    )
+    status = forms.ChoiceField(
+        choices=[('', 'All Status')] + [
+            ("draft", "Draft"),
+            ("submitted", "Submitted"),
+            ("under_review", "Under Review"),
+            ("investigation", "Investigation"),
+            ("approved", "Approved"),
+            ("partially_approved", "Partially Approved"),
+            ("rejected", "Rejected"),
+            ("settled", "Settled"),
+            ("closed", "Closed"),
+            ("withdrawn", "Withdrawn"),
+        ],
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-select form-select-sm', 'id': 'id_claim_status'})
+    )
+    date_from = forms.DateField(
+        required=False,
+        widget=forms.DateInput(attrs={'class': 'form-control form-control-sm', 'type': 'date', 'id': 'id_date_from'})
+    )
+    date_to = forms.DateField(
+        required=False,
+        widget=forms.DateInput(attrs={'class': 'form-control form-control-sm', 'type': 'date', 'id': 'id_date_to'})
+    )

@@ -3,33 +3,7 @@
 
 {% block title %}My Policies{% endblock %}
 
-{% block sidebar_items %}
-{% if not request.user.is_superuser and request.user.role == "policyholder" %}
-<a href="{% url 'accounts:policyholder_dashboard' %}">
-    <i class="bi bi-house"></i> Dashboard
-</a>
-<a href="{% url 'policy:list' %}" class="active">
-    <i class="bi bi-shield-check"></i> My Policies
-</a>
-<a href="{% url 'policy:my_applications' %}">
-    <i class="bi bi-file-earmark-text"></i> My Applications
-</a>
-<a href="{% url 'policy:browse' %}">
-    <i class="bi bi-search"></i> Browse Plans
-</a>
-<a href="{% url 'claim:list' %}">
-    <i class="bi bi-shield-exclamation"></i> Claims
-</a>
-<a href="{% url 'claim:create' %}">
-    <i class="bi bi-plus-circle"></i> File Claim
-</a>
-<a href="{% url 'accounts:logout' %}" class="sidebar-logout">
-    <i class="bi bi-box-arrow-right"></i> Logout
-</a>
-{% else %}
-{{ block.super }}
-{% endif %}
-{% endblock %}
+
 
 {% block breadcrumb %}My Policies{% endblock %}
 
@@ -161,6 +135,10 @@
         transform: translateY(-1px);
         box-shadow: 0 10px 20px rgba(26, 110, 245, 0.18);
     }
+    .hover-blue:hover {
+        color: #60a5fa !important;
+        text-decoration: underline !important;
+    }
 </style>
 {% endblock %}
 
@@ -203,31 +181,35 @@
                     <th class="pe-4 text-end">Action</th>
                 </tr>
             </thead>
-            <tbody class="stagger-container">
+            <tbody class="stagger-container active">
                 {% for up in user_policies %}
                 <tr>
                     <td class="ps-4">
                         <span class="cert-badge">{{ up.certificate_number }}</span>
                     </td>
-                    <td class="fw-bold text-white">{{ up.policy.policy_number }}</td>
-                    <td><span class="badge bg-secondary opacity-75">{{ up.policy.policy_type|default:"General" }}</span></td>
+                    <td class="fw-bold text-white">
+                        <a href="{% url 'policy:detail' up.policy.id %}" class="text-white text-decoration-none hover-blue">
+                        {{ up.policy.policy_number }}
+                        </a>
+                    </td>
+                    <td><span class="badge bg-secondary opacity-75">{{ up.policy.policy_type|default:"General"|upper }}</span></td>
                     <td>
                         <span class="text-muted px-2 py-1 rounded small" style="background: rgba(255,255,255,0.03);">
-                            {{ up.policy.insurer_name|default:"—" }}
+                            {{ up.policy.insurer_name|default:"Standard Insurer" }}
                         </span>
                     </td>
                     <td class="small">
                         {% if up.start_date and up.end_date %}
-                        <span class="text-muted">{{ up.start_date|date:"M d, Y" }}</span>
+                        <span class="text-muted">{{ up.start_date|date:"d M, Y" }}</span>
                         <i class="bi bi-arrow-right mx-1 opacity-25"></i>
-                        <span class="text-muted">{{ up.end_date|date:"M d, Y" }}</span>
+                        <span class="text-muted">{{ up.end_date|date:"d M, Y" }}</span>
                         {% else %}
                         <span class="text-muted">—</span>
                         {% endif %}
                     </td>
                     <td class="fw-bold">₹{{ up.policy.sum_insured|default:0|floatformat:0|intcomma }}</td>
                     <td class="text-info">
-                        {% with schedule=up.policy.premium_schedule %}
+                        {% with schedule=up.premium_schedule %}
                         {% if schedule %}
                         ₹{{ schedule.gross_premium|default:0|floatformat:2|intcomma }}
                         {% else %}
@@ -242,15 +224,15 @@
                     </td>
                     <td class="pe-4 text-end">
                         <a href="{% url 'policy:detail' up.policy.id %}" class="btn-premium-sm hover-scale">
-                            Manage <i class="bi bi-chevron-right ms-1"></i>
+                            View Details <i class="bi bi-chevron-right ms-1"></i>
                         </a>
                     </td>
                 </tr>
                 {% empty %}
                 <tr class="table-empty-row">
-                    <td colspan="9" class="empty-state py-5 text-center">
-                        <i class="bi bi-file-earmark-lock fs-2 mb-3 d-block opacity-25"></i>
-                        You do not have any approved policies yet.<br>
+                    <td colspan="9" class="empty-state py-4 text-center">
+                        <i class="bi bi-shield-slash fs-3 mb-3 d-block opacity-25"></i>
+                        You do not have any active policies yet.<br>
                         {% if request.user.role == "policyholder" %}
                         <a href="{% url 'policy:browse' %}" class="btn btn-link text-info mt-2">Browse Available Plans</a>
                         {% endif %}
@@ -261,4 +243,54 @@
         </table>
     </div>
 </div>
+
+{% if pending_applications %}
+{# ── Shared Asset: Pending Applications Tracker ──────────────────────────── #}
+<div class="premium-card" data-aos="fade-up" data-aos-delay="200" style="--section-accent: #f59e0b;">
+    <div class="premium-card-header">
+        <h5><i class="bi bi-hourglass-split me-2 text-warning"></i>Applications Pending Review</h5>
+        <span class="text-muted small tracking-wider">{{ pending_applications|length }} APPLICATION{{ pending_applications|length|pluralize }} SUBMITTED</span>
+    </div>
+    <div class="premium-table-container">
+        <table class="premium-table">
+            <thead>
+                <tr>
+                    <th class="ps-4">Reference No.</th>
+                    <th>Selected Plan</th>
+                    <th>Type</th>
+                    <th>Application Date</th>
+                    <th>Sum Insured</th>
+                    <th>Status</th>
+                    <th class="pe-4 text-end">Action</th>
+                </tr>
+            </thead>
+            <tbody class="stagger-container active">
+                {% for app in pending_applications %}
+                <tr>
+                    <td class="ps-4">
+                        <span class="cert-badge text-warning" style="background: rgba(245,158,11,0.08); border-color: rgba(245,158,11,0.15);">
+                            {{ app.policy.policy_number }}
+                        </span>
+                    </td>
+                    <td class="fw-bold text-white">{{ app.policy.policy_number }}</td>
+                    <td><span class="badge bg-secondary opacity-75">{{ app.policy.policy_type|default:"General"|upper }}</span></td>
+                    <td><span class="text-muted small">{{ app.created_at|date:"d M, Y" }}</span></td>
+                    <td class="fw-bold">₹{{ app.policy.sum_insured|default:0|floatformat:0|intcomma }}</td>
+                    <td>
+                        <span class="badge-neon badge-pending">
+                            <i class="bi bi-clock-history me-1"></i>Under Review
+                        </span>
+                    </td>
+                    <td class="pe-4 text-end">
+                        <a href="{% url 'policy:my_applications' %}" class="btn-premium-sm hover-scale" style="color: #f59e0b; background: rgba(245,158,11,0.1); border-color: rgba(245,158,11,0.22);">
+                            Track Status <i class="bi bi-chevron-right ms-1"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
 {% endblock %}

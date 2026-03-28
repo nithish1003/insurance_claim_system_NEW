@@ -1,6 +1,13 @@
 from decimal import Decimal
 from django.db import models
 from django.conf import settings
+from django.core.validators import RegexValidator
+
+# 🛡️ AI GOVERNANCE: Input Validation Standards
+VEHICLE_NUMBER_VALIDATOR = RegexValidator(
+    regex=r'^[A-Z]{2}[0-9]{1,2}[A-Z]{1,2}[0-9]{4}$',
+    message="Invalid format. Expected like 'MH12AB1234' (Standard Indian Vehicle Format)."
+)
 
 
 # ------------------------------
@@ -116,32 +123,54 @@ class UserPolicy(models.Model):
     start_date = models.DateField(null=True, blank=True)
     end_date   = models.DateField(null=True, blank=True)
 
+    # 💰 NEW: Persistent coverage tracking
+    sum_insured_remaining = models.DecimalField(
+        max_digits=12, 
+        decimal_places=2, 
+        null=True, 
+        blank=True,
+        help_text="Initially set to policy sum_insured"
+    )
+
     # Motor-specific fields (copied from application if applicable)
-    vehicle_number = models.CharField(max_length=20, blank=True, null=True)
+    # 🛡️ GOVERNANCE: Input validation ensures zero tolerance for malformed vehicle IDs.
+    vehicle_number = models.CharField(
+        max_length=20, 
+        blank=True, 
+        null=True,
+        validators=[VEHICLE_NUMBER_VALIDATOR],
+        help_text="Format: MH12AB1234. AI Governance ensures only valid formats are processed."
+    )
     rc_upload      = models.FileField(upload_to='userpolicy_rc/', blank=True, null=True)
 
     def sync_status_with_premiums(self):
-        """Logic to maintain policy status based on financial health."""
-        if self.status in ['expired', 'cancelled']:
-            return self.status
+        """
+        Synchronizes policy status based on premium payment history and coverage exhaustion.
+        Returns the new status.
+        """
+        # 🔥 CRITICAL SYNC: Ensure the persistent sum_insured_remaining is UPDATED
+        # before we check for status or exhaustion.
+        total_payouts = self.total_settled_amount
+        self.sum_insured_remaining = max(Decimal('0.00'), (self.policy.sum_insured or Decimal('0.00')) - total_payouts)
 
         # 🛡️ Coverage Exhaustion Priority Check:
         # If the sum insured is 100% used, the policy is essentially dead for claims.
-        if self.remaining_sum_insured <= 0:
+        if self.sum_insured_remaining <= 0:
             self.status = 'expired'
-            self.save(update_fields=['status'])
+            self.save(update_fields=['status', 'sum_insured_remaining'])
             return self.status
 
         # Access the linked schedule
         schedule = getattr(self, 'premium_schedule', None)
         if not schedule:
+            self.save(update_fields=['sum_insured_remaining'])
             return self.status
 
         from django.utils import timezone
         from datetime import timedelta
         
         today = timezone.now().date()
-        grace_period = schedule.grace_period_days
+        grace_period = getattr(schedule, 'grace_period_days', 30)
         
         # Get all outstanding installments
         overdue_payments = schedule.payments.exclude(status='paid').filter(due_date__lt=today)
@@ -156,7 +185,7 @@ class UserPolicy(models.Model):
         else:
             self.status = 'active'
         
-        self.save(update_fields=['status'])
+        self.save(update_fields=['status', 'sum_insured_remaining'])
         return self.status
 
     @property
@@ -182,11 +211,16 @@ class UserPolicy(models.Model):
         result = claims_qs.aggregate(total=Sum('settled_amount'))
         return result['total'] or Decimal('0.00')
 
+    def save(self, *args, **kwargs):
+        # 🛡️ Initialize coverage balance from plan if not set
+        if self.sum_insured_remaining is None and self.policy:
+            self.sum_insured_remaining = self.policy.sum_insured
+        super().save(*args, **kwargs)
+
     @property
     def remaining_sum_insured(self):
-        """Returns how much money is left for future claims."""
-        from decimal import Decimal
-        return max(Decimal('0.00'), self.policy.sum_insured - self.total_settled_amount)
+        """Returns how much money is left for future claims (using the persistent field)."""
+        return self.sum_insured_remaining or Decimal('0.00')
 
     @property
     def coverage_usage_percentage(self):
@@ -248,13 +282,23 @@ class Payment(models.Model):
     ]
 
     # Links to the user policy this payment is for
+    # 🔗 FIX: Master User Integration (Newly Requested)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="financial_transactions"
+    )
+
+    # Relationship to specific policy link
     user_policy = models.ForeignKey(
         UserPolicy,
         on_delete=models.CASCADE,
         related_name='payments'
     )
 
-    # 🔗 Link to claim (only for claim settlement payouts)
+    # Relationship to claims (if settlement)
     claim = models.ForeignKey(
         'claims.Claim',
         on_delete=models.SET_NULL,
@@ -263,34 +307,35 @@ class Payment(models.Model):
         related_name="payments"
     )
 
-    # Payment details
+    # Payment details (Restored)
     amount = models.DecimalField(
         max_digits=12,
         decimal_places=2,
         help_text="Total amount paid including taxes"
     )
-    
+
     payment_status = models.CharField(
         max_length=20,
         choices=PAYMENT_STATUS_CHOICES,
         default='pending'
     )
-    
+
     payment_method = models.CharField(
         max_length=20,
         choices=PAYMENT_METHOD_CHOICES,
         default='credit_card'
     )
 
-    # Transaction type to distinguish premiums from claim payouts
+    # 💰 NEW: Transaction categorization
     PAYMENT_TYPE_CHOICES = [
-        ('PREMIUM_PAYMENT', 'Premium Payment'),
-        ('CLAIM_SETTLEMENT', 'Claim Settlement'),
+        ('PREMIUM', 'Premium Payment'),
+        ('SETTLEMENT', 'Claim Settlement'),
     ]
+
     payment_type = models.CharField(
         max_length=20,
         choices=PAYMENT_TYPE_CHOICES,
-        default='PREMIUM_PAYMENT',
+        default='PREMIUM',
         verbose_name="Transaction Title"
     )
 
@@ -493,6 +538,8 @@ class Policy(models.Model):
     ]
 
     policy_number = models.CharField(max_length=30, unique=True)
+    certificate_number = models.CharField(max_length=50, unique=True, null=True, blank=True)
+
 
     plan = models.ForeignKey(
         PolicyPlan,
@@ -569,8 +616,25 @@ class Policy(models.Model):
     )
 
     def save(self, *args, **kwargs):
-        # 🛡️ Deductible Calculation
+        # 🛡️ 1. AUTO-GENERATE CERTIFICATE NUMBER (Format: POL-YYYY-XXX)
+        # If no certificate_number exists, we generate a unique sequenced ID for audit trails.
+        if not self.certificate_number:
+            from django.utils import timezone
+            now = timezone.now()
+            year = now.year
+            
+            # Count existing policies for THIS specific year for sequence tracking
+            year_count = Policy.objects.filter(created_at__year=year).count() + 1
+            self.certificate_number = f"POL-{year}-{str(year_count).zfill(3)}"
+            
+            # Double-check uniqueness in case of race conditions
+            while Policy.objects.filter(certificate_number=self.certificate_number).exists():
+                year_count += 1
+                self.certificate_number = f"POL-{year}-{str(year_count).zfill(3)}"
+
+        # 🛡️ 2. Deductible Calculation
         if self.sum_insured:
+
             # Calculated Deductible = 3% of Sum Insured
             calc_deductible = Decimal(str(self.sum_insured)) * Decimal('0.03')
             # Min 5000, Max 25000

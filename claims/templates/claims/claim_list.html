@@ -4,6 +4,10 @@
 
 {% block title %}Claims Management{% endblock %}
 
+
+
+{% block breadcrumb %}Claims{% endblock %}
+
 {% block extra_css %}
 <style>
     .tracking-wider { letter-spacing: 0.05em; }
@@ -125,41 +129,47 @@ Manage and track your active insurance claims
 
     <!-- SUMMARY CARDS -->
     {% if summary %}
-    <div class="row g-4 mb-4" data-aos="fade-up" data-aos-delay="100">
-        <div class="col-6 col-md-2">
-            <div class="premium-card p-3 text-center mb-0 hover-scale">
-                <div class="fs-4 fw-bold text-white">{{ summary.total|default:0 }}</div>
-                <div class="small text-muted text-uppercase tracking-wider">Total</div>
+    <div class="row g-3 mb-4" data-aos="fade-up" data-aos-delay="100">
+        <div class="col-4 col-md">
+            <div class="premium-card p-2 text-center mb-0 hover-scale">
+                <div class="fs-5 fw-bold text-white">{{ summary.total|default:0 }}</div>
+                <div class="x-small text-muted text-uppercase tracking-wider">Total</div>
             </div>
         </div>
-        <div class="col-6 col-md-2">
-            <div class="premium-card p-3 text-center mb-0 hover-scale" style="border-left: 3px solid #f59e0b;">
-                <div class="fs-4 fw-bold text-warning">{{ summary.under_review|default:0 }}</div>
-                <div class="small text-muted text-uppercase tracking-wider">Review</div>
+        <div class="col-4 col-md">
+            <div class="premium-card p-2 text-center mb-0 hover-scale" style="border-bottom: 2px solid #3b82f6;">
+                <div class="fs-5 fw-bold text-info">{{ summary.submitted|default:0 }}</div>
+                <div class="x-small text-muted text-uppercase tracking-wider">Subm.</div>
             </div>
         </div>
-        <div class="col-6 col-md-2">
-            <div class="premium-card p-3 text-center mb-0 hover-scale" style="border-left: 3px solid #3b82f6;">
-                <div class="fs-4 fw-bold text-info">{{ summary.investigation|default:0 }}</div>
-                <div class="small text-muted text-uppercase tracking-wider">Investig.</div>
+        <div class="col-4 col-md">
+            <div class="premium-card p-2 text-center mb-0 hover-scale" style="border-bottom: 2px solid #f59e0b;">
+                <div class="fs-5 fw-bold text-warning">{{ summary.under_review|default:0 }}</div>
+                <div class="x-small text-muted text-uppercase tracking-wider">Review</div>
             </div>
         </div>
-        <div class="col-6 col-md-2">
-            <div class="premium-card p-3 text-center mb-0 hover-scale" style="border-left: 3px solid #10b981;">
-                <div class="fs-4 fw-bold text-success">{{ summary.approved|default:0 }}</div>
-                <div class="small text-muted text-uppercase tracking-wider">Approved</div>
+        <div class="col-4 col-md">
+            <div class="premium-card p-2 text-center mb-0 hover-scale" style="border-bottom: 2px solid #6366f1;">
+                <div class="fs-5 fw-bold" style="color: #6366f1;">{{ summary.investigation|default:0 }}</div>
+                <div class="x-small text-muted text-uppercase tracking-wider">Investig.</div>
             </div>
         </div>
-        <div class="col-6 col-md-2">
-            <div class="premium-card p-3 text-center mb-0 hover-scale" style="border-left: 3px solid #ef4444;">
-                <div class="fs-4 fw-bold text-danger">{{ summary.rejected|default:0 }}</div>
-                <div class="small text-muted text-uppercase tracking-wider">Rejected</div>
+        <div class="col-4 col-md">
+            <div class="premium-card p-2 text-center mb-0 hover-scale" style="border-bottom: 2px solid #10b981;">
+                <div class="fs-5 fw-bold text-success">{{ summary.approved|default:0 }}</div>
+                <div class="x-small text-muted text-uppercase tracking-wider">Approved</div>
             </div>
         </div>
-        <div class="col-6 col-md-2">
-            <div class="premium-card p-3 text-center mb-0 hover-scale" style="border-left: 3px solid #8b5cf6;">
-                <div class="fs-4 fw-bold" style="color: #8b5cf6;">{{ summary.settled|default:0 }}</div>
-                <div class="small text-muted text-uppercase tracking-wider">Settled</div>
+        <div class="col-4 col-md">
+            <div class="premium-card p-2 text-center mb-0 hover-scale" style="border-bottom: 2px solid #ef4444;">
+                <div class="fs-5 fw-bold text-danger">{{ summary.rejected|default:0 }}</div>
+                <div class="x-small text-muted text-uppercase tracking-wider">Rejected</div>
+            </div>
+        </div>
+        <div class="col-4 col-md">
+            <div class="premium-card p-2 text-center mb-0 hover-scale" style="border-bottom: 2px solid #8b5cf6;">
+                <div class="fs-5 fw-bold text-white">{{ summary.settled|default:0 }}</div>
+                <div class="x-small text-muted text-uppercase tracking-wider" style="color: #8b5cf6;">Settled</div>
             </div>
         </div>
     </div>
@@ -285,7 +295,37 @@ Manage and track your active insurance claims
                         </td>
                     </tr>
                     {% empty %}
-                    <tr class="table-empty-row"><td colspan="9" class="text-center py-5 text-muted small">No claims match the dynamic filter criteria.</td></tr>
+                    <tr class="table-empty-row">
+                        <td colspan="9" class="text-center py-5">
+                            <div class="mb-3">
+                                <i class="bi bi-shield-slash text-muted opacity-25" style="font-size: 3rem;"></i>
+                            </div>
+                            <div class="text-white fw-bold mb-1">
+                                {% if is_filtered %}
+                                    No claims match current filters
+                                {% elif not has_claims_at_all %}
+                                    No claims submitted yet
+                                {% else %}
+                                    No active claims to display
+                                {% endif %}
+                            </div>
+                            <div class="text-muted small mb-4">
+                                {% if is_filtered %}
+                                    Try adjusting your search criteria to find specific dossiers.
+                                {% elif not has_claims_at_all %}
+                                    You haven't filed any insurance claims yet. Your coverage is currently fully intact.
+                                {% else %}
+                                    All your claims have been processed or resolved.
+                                {% endif %}
+                            </div>
+                            
+                            {% if not has_claims_at_all and request.user.role == "policyholder" %}
+                            <a href="{% url 'claim:create' %}" class="btn btn-primary btn-sm px-4 hover-scale">
+                                <i class="bi bi-plus-circle me-1"></i> Submit New Claim
+                            </a>
+                            {% endif %}
+                        </td>
+                    </tr>
                     {% endfor %}
                 </tbody>
             </table>
@@ -294,4 +334,44 @@ Manage and track your active insurance claims
 
 </div>
 
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    (function () {
+        const claimSelect = document.getElementById("id_claim_number");
+        const typeSelect = document.getElementById("id_claim_type");
+        const statusSelect = document.getElementById("id_claim_status");
+        const dateFromInput = document.getElementById("id_date_from");
+        const dateToInput = document.getElementById("id_date_to");
+
+        // Load metadata from Django context
+        const claimsData = JSON.parse('{{ claims_data_json|escapejs }}');
+
+        if (claimSelect) {
+            claimSelect.addEventListener("change", function () {
+                const claimId = this.value;
+                if (claimId && claimsData[claimId]) {
+                    const data = claimsData[claimId];
+
+                    // 1. Auto-fill Type
+                    if (typeSelect && data.type) {
+                        typeSelect.value = data.type;
+                    }
+
+                    // 2. Auto-fill Status
+                    if (statusSelect && data.status) {
+                        statusSelect.value = data.status;
+                    }
+
+                    // 3. Auto-fill Date Range (Both From and To match the incident date)
+                    if (data.date) {
+                        if (dateFromInput) dateFromInput.value = data.date;
+                        if (dateToInput) dateToInput.value = data.date;
+                    }
+                }
+            });
+        }
+    })();
+</script>
 {% endblock %}

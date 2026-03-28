@@ -3,11 +3,49 @@
 
 {% block title %}Claim {{ claim.claim_number }}{% endblock %}
 
+{% block sidebar_items %}
+{% if not request.user.is_superuser and request.user.role == "policyholder" %}
+<a href="{% url 'accounts:policyholder_dashboard' %}">
+    <i class="bi bi-house"></i> Dashboard
+</a>
+<a href="{% url 'policy:list' %}">
+    <i class="bi bi-shield-check"></i> My Policies
+</a>
+<a href="{% url 'policy:my_applications' %}">
+    <i class="bi bi-file-earmark-text"></i> My Applications
+</a>
+<a href="{% url 'premiums:history' %}">
+    <i class="bi bi-receipt"></i> My Premiums
+</a>
+<a href="{% url 'policy:browse' %}">
+    <i class="bi bi-bag-plus"></i> Browse Policies
+</a>
+<a href="{% url 'claim:list' %}" class="active">
+    <i class="bi bi-shield-exclamation"></i> Claims
+</a>
+<a href="{% url 'claim:create' %}">
+    <i class="bi bi-plus-circle"></i> File Claim
+</a>
+<a href="{% url 'accounts:logout' %}" class="sidebar-logout">
+    <i class="bi bi-box-arrow-right"></i> Logout
+</a>
+{% else %}
+{{ block.super }}
+{% endif %}
+{% endblock %}
+
+{% block breadcrumb %}Claim Details{% endblock %}
+
 {% block extra_css %}
 <style>
-    .tracking-wider { letter-spacing: 0.05em; }
-    .x-small { font-size: 0.75rem; }
-    
+    .tracking-wider {
+        letter-spacing: 0.05em;
+    }
+
+    .x-small {
+        font-size: 0.75rem;
+    }
+
     /* Premium Card System */
     .premium-card {
         background: rgba(17, 28, 53, 0.4);
@@ -18,6 +56,7 @@
         margin-bottom: 24px;
         overflow: hidden;
     }
+
     .premium-card-header {
         padding: 16px 20px;
         background: rgba(255, 255, 255, 0.02);
@@ -26,23 +65,76 @@
         justify-content: space-between;
         align-items: center;
     }
-    .premium-card-header h6 { margin-bottom: 0; color: #f1f5f9; font-weight: 700; font-size: 0.9rem; }
-    .premium-card-body { padding: 20px; }
+
+    .premium-card-header h6 {
+        margin-bottom: 0;
+        color: #f1f5f9;
+        font-weight: 700;
+        font-size: 0.9rem;
+    }
+
+    .premium-card-body {
+        padding: 20px;
+    }
 
     /* Badges */
     .badge-premium {
-        font-size: 9px; padding: 4px 10px; border-radius: 20px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+        font-size: 9px;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
-    .badge-premium.status-approved, .badge-premium.status-settled { background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); }
-    .badge-premium.status-pending, .badge-premium.status-submitted { background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.2); }
-    .badge-premium.status-rejected { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
-    .badge-premium.status-investigation { background: rgba(59, 130, 246, 0.1); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.2); }
+
+    .badge-premium.status-approved,
+    .badge-premium.status-settled {
+        background: rgba(16, 185, 129, 0.1);
+        color: #10b981;
+        border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    .badge-premium.status-pending,
+    .badge-premium.status-submitted {
+        background: rgba(245, 158, 11, 0.1);
+        color: #f59e0b;
+        border: 1px solid rgba(245, 158, 11, 0.2);
+    }
+
+    .badge-premium.status-rejected {
+        background: rgba(239, 68, 68, 0.1);
+        color: #ef4444;
+        border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+
+    .badge-premium.status-investigation {
+        background: rgba(59, 130, 246, 0.1);
+        color: #3b82f6;
+        border: 1px solid rgba(59, 130, 246, 0.2);
+    }
 
     /* Financial Table */
-    .premium-data-table { width: 100%; color: #cbd5e1; font-size: 13px; }
-    .premium-data-table td { padding: 12px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.03); }
-    .premium-data-table tr:last-child td { border-bottom: none; }
-    .label-muted { color: #94a3b8; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .premium-data-table {
+        width: 100%;
+        color: #cbd5e1;
+        font-size: 13px;
+    }
+
+    .premium-data-table td {
+        padding: 12px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    }
+
+    .premium-data-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .label-muted {
+        color: #94a3b8;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
 
     /* Document Box */
     .doc-premium-box {
@@ -52,386 +144,490 @@
         padding: 16px;
         transition: all 0.3s ease;
     }
-    .doc-premium-box:hover { border-color: #1a6ef5; background: rgba(26, 110, 245, 0.05); }
+
+    .doc-premium-box:hover {
+        border-color: #1a6ef5;
+        background: rgba(26, 110, 245, 0.05);
+    }
 
     /* Progress bar */
-    .progress-premium { height: 6px; background: rgba(255, 255, 255, 0.05); border-radius: 10px; overflow: hidden; }
+    .progress-premium {
+        height: 6px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+        overflow: hidden;
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container-fluid px-4 py-3">
 
-<!-- Back Button -->
-<div class="mb-4">
-{% if request.user.role == 'staff' %}
-<a href="{% url 'accounts:staff_dashboard' %}" class="btn btn-outline-secondary btn-sm border-0 bg-dark opacity-75">
-{% elif request.user.role == 'admin' or request.user.is_superuser %}
-<a href="{% url 'accounts:admin_dashboard' %}" class="btn btn-outline-secondary btn-sm border-0 bg-dark opacity-75">
-{% else %}
-<a href="{% url 'claim:list' %}" class="btn btn-outline-secondary btn-sm border-0 bg-dark opacity-75">
-{% endif %}
-<i class="bi bi-arrow-left me-1"></i> Back to Control Center
-</a>
-</div>
+    <!-- Back Button -->
+    <div class="mb-4">
+        {% if request.user.role == 'staff' %}
+        <a href="{% url 'accounts:staff_dashboard' %}"
+            class="btn btn-outline-secondary btn-sm border-0 bg-dark opacity-75">
+            {% elif request.user.role == 'admin' or request.user.is_superuser %}
+            <a href="{% url 'accounts:admin_dashboard' %}"
+                class="btn btn-outline-secondary btn-sm border-0 bg-dark opacity-75">
+                {% else %}
+                <a href="{% url 'claim:list' %}" class="btn btn-outline-secondary btn-sm border-0 bg-dark opacity-75">
+                    {% endif %}
+                    <i class="bi bi-arrow-left me-1"></i> Back to Control Center
+                </a>
+    </div>
 
-<!-- HEADER -->
-<div class="d-flex justify-content-between align-items-start mb-4">
-    <div>
-        <h3 class="mb-1 text-white fw-bold">{{ claim.claim_number }}</h3>
-        <div class="d-flex gap-3 align-items-center flex-wrap mt-2">
-            <span class="badge-premium status-{{ claim.status }}">
-                {{ claim.get_status_display }}
-            </span>
-            <span class="text-info small fw-bold tracking-wider">
-                <i class="bi bi-shield-shaded me-1"></i>{{ claim.get_claim_type_display }}
-            </span>
-            <span class="text-muted small">
-                <i class="bi bi-calendar-event me-1"></i>Reported: {{ claim.reported_date|date:"d M Y" }}
-            </span>
-            {% if claim.fraud_flag %}
-                <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-2 py-1 small rounded-1">
+    <!-- HEADER -->
+    <div class="d-flex justify-content-between align-items-start mb-4">
+        <div>
+            <h3 class="mb-1 text-white fw-bold">{{ claim.claim_number }}</h3>
+            <div class="d-flex gap-3 align-items-center flex-wrap mt-2">
+                <span class="badge-premium status-{{ claim.status }}">
+                    {{ claim.get_status_display }}
+                </span>
+                <span class="text-info small fw-bold tracking-wider">
+                    <i class="bi bi-shield-shaded me-1"></i>{{ claim.get_claim_type_display }}
+                </span>
+                <span class="text-muted small">
+                    <i class="bi bi-calendar-event me-1"></i>Reported: {{ claim.reported_date|date:"d M Y" }}
+                </span>
+                {% if claim.fraud_flag %}
+                <span
+                    class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-2 py-1 small rounded-1">
                     <i class="bi bi-exclamation-triangle-fill me-1"></i>CRITICAL RISK
                 </span>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="d-flex gap-2">
+            {% if request.user.role == 'admin' or request.user.is_superuser %}
+                {% if claim.status != 'approved' and claim.status != 'rejected' and claim.status != 'settled' and claim.status != 'closed' and claim.status != 'withdrawn' %}
+                    <a href="{% url 'claim:review' claim.id %}" class="btn btn-warning btn-sm">Review</a>
+                    {% if request.user.role == 'admin' or request.user.is_admin %}
+                        <form method="post" action="{% url 'claim:update_status' claim.id %}" class="d-inline-block m-0">
+                {% csrf_token %}
+                <input type="hidden" name="status" value="approved">
+                <button type="submit" class="btn btn-success btn-sm">Approve</button>
+            </form>
+            <form method="post" action="{% url 'claim:update_status' claim.id %}" class="d-inline-block m-0">
+                {% csrf_token %}
+                <input type="hidden" name="status" value="rejected">
+                <button type="submit" class="btn btn-danger btn-sm">Reject</button>
+            </form>
+            <form method="post" action="{% url 'claim:delete' claim.id %}" class="d-inline-block m-0">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-danger btn-sm"
+                    onclick="return confirm('Are you sure you want to delete this claim?');">Delete</button>
+            </form>
             {% endif %}
+            {% endif %}
+            {% endif %}
+            <button class="btn btn-outline-secondary btn-sm" onclick="window.print()">
+                <i class="bi bi-download me-1"></i> Download PDF
+            </button>
         </div>
     </div>
 
-<div class="d-flex gap-2">
-{% if request.user.role == 'admin' or request.user.is_superuser %}
-    {% if claim.status != 'approved' and claim.status != 'rejected' and claim.status != 'settled' and claim.status != 'closed' and claim.status != 'withdrawn' %}
-        <a href="{% url 'claim:review' claim.id %}" class="btn btn-warning btn-sm">Review</a>
-        {% if request.user.role == 'admin' or request.user.is_admin %}
-        <form method="post" action="{% url 'claim:update_status' claim.id %}" class="d-inline-block m-0">
-          {% csrf_token %}
-          <input type="hidden" name="status" value="approved">
-          <button type="submit" class="btn btn-success btn-sm">Approve</button>
-        </form>
-        <form method="post" action="{% url 'claim:update_status' claim.id %}" class="d-inline-block m-0">
-          {% csrf_token %}
-          <input type="hidden" name="status" value="rejected">
-          <button type="submit" class="btn btn-danger btn-sm">Reject</button>
-        </form>
-        <form method="post" action="{% url 'claim:delete' claim.id %}" class="d-inline-block m-0">
-          {% csrf_token %}
-          <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('Are you sure you want to delete this claim?');">Delete</button>
-        </form>
-        {% endif %}
-    {% endif %}
-{% endif %}
-<button class="btn btn-outline-secondary btn-sm" onclick="window.print()">
-<i class="bi bi-download me-1"></i> Download PDF
-</button>
-</div>
-</div>
+    <div class="row g-4">
+        <!-- LEFT COLUMN -->
+        <div class="col-lg-8">
 
-<div class="row g-4">
-<!-- LEFT COLUMN -->
-<div class="col-lg-8">
-
-<!-- CLAIM DETAILS -->
-<div class="premium-card">
-    <div class="premium-card-header">
-        <h6><i class="bi bi-info-circle me-2"></i>Incident Dossier</h6>
-        <span class="text-muted x-small tracking-wider">INTERNAL AUDIT DATA</span>
-    </div>
-    <div class="premium-card-body">
-        <div class="row g-4">
-            <div class="col-md-3">
-                <div class="label-muted mb-1">Claim Identifier</div>
-                <div class="fw-bold text-white fs-5">{{ claim.claim_number }}</div>
-            </div>
-            <div class="col-md-3">
-                <div class="label-muted mb-1">Claim Category</div>
-                <div class="text-white">
-                    {{ claim.get_claim_type_display }}
-                    {% if claim.ai_claim_type %}
-                    <i class="bi bi-robot ms-2 text-info" title="AI Predicted Type"></i>
-                    {% endif %}
+            <!-- CLAIM DETAILS -->
+            <div class="premium-card">
+                <div class="premium-card-header">
+                    <h6><i class="bi bi-info-circle me-2"></i>Incident Dossier</h6>
+                    <span class="text-muted x-small tracking-wider">INTERNAL AUDIT DATA</span>
                 </div>
-            </div>
-            <div class="col-md-3">
-                <div class="label-muted mb-1">Incident Date</div>
-                <div class="text-white fw-semibold">{{ claim.incident_date|date:"d M, Y" }}</div>
-            </div>
-            <div class="col-md-3">
-                <div class="label-muted mb-1">Assigned Auditor</div>
-                <div class="text-white">
-                    {% if claim.assigned_to %}
-                    <span class="fw-bold text-primary">{{ claim.assigned_to.get_full_name|default:claim.assigned_to.username }}</span>
-                    {% else %}
-                    <span class="text-muted italic small">UNASSIGNED</span>
-                    {% endif %}
-                </div>
-            </div>
-            {% if claim.vehicle_number %}
-            <div class="col-md-3">
-                <div class="label-muted mb-1">Vehicle License</div>
-                <div class="text-info fw-bold">{{ claim.vehicle_number }}</div>
-            </div>
-            {% endif %}
-            <div class="col-12">
-                <div class="label-muted mb-2">Internal Incident Description</div>
-                <div class="p-3 rounded-3" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); color: #cbd5e1; line-height: 1.6; font-size: 13px;">
-                    {{ claim.description|default:"No description provided by claimant."|linebreaks }}
-                </div>
-            </div>
-            {% if claim.rejection_reason %}
-            <div class="col-12">
-                <div class="p-3 rounded-3 border border-danger border-opacity-25" style="background: rgba(239, 68, 68, 0.05); color: #f87171;">
-                    <i class="bi bi-exclamation-octagon me-2"></i><strong>Rejection Protocol:</strong> {{ claim.rejection_reason }}
-                </div>
-            </div>
-            {% endif %}
-        </div>
-    </div>
-</div>
+                <div class="premium-card-body">
+                    <div class="row g-4">
+                        <div class="col-md-3">
+                            <div class="label-muted mb-1">Claim Identifier</div>
+                            <div class="fw-bold text-white fs-5">{{ claim.claim_number }}</div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="label-muted mb-1">Claim Category</div>
+                            <div class="text-white">
+                                {{ claim.get_claim_type_display }}
+                                {% if claim.ai_claim_type %}
+                                <i class="bi bi-robot ms-2 text-info" title="AI Predicted Type"></i>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="label-muted mb-1">Incident Date</div>
+                            <div class="text-white fw-semibold">{{ claim.incident_date|date:"d M, Y" }}</div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="label-muted mb-1">Assigned Auditor</div>
+                            <div class="text-white">
+                                <span class="fw-bold text-primary">
+                                    {% if claim.assigned_to %}
+                                        {{ claim.assigned_to.username }}
+                                    {% else %}
+                                        <span class="text-muted small italic">UNASSIGNED</span>
+                                    {% endif %}
+                                </span>
+                            </div>
 
 
-<!-- ══════════════════════════════════════════════════════════════
+                        </div>
+                        {% if claim.vehicle_number %}
+                        <div class="col-md-3">
+                            <div class="label-muted mb-1">Vehicle License</div>
+                            <div class="text-info fw-bold">{{ claim.vehicle_number }}</div>
+                        </div>
+                        {% endif %}
+                        <div class="col-12">
+                            <div class="label-muted mb-2">Internal Incident Description</div>
+                            <div class="p-3 rounded-3"
+                                style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); color: #cbd5e1; line-height: 1.6; font-size: 13px;">
+                                {{ claim.description|default:"No description provided by claimant."|linebreaks }}
+                            </div>
+                        </div>
+                        {% if claim.rejection_reason %}
+                        <div class="col-12">
+                            <div class="p-3 rounded-3 border border-danger border-opacity-25"
+                                style="background: rgba(239, 68, 68, 0.05); color: #f87171;">
+                                <i class="bi bi-exclamation-octagon me-2"></i><strong>Rejection Protocol:</strong> {{
+                                claim.rejection_reason }}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- ══════════════════════════════════════════════════════════════
      SUPPORTING DOCUMENTS — with modal preview
      ══════════════════════════════════════════════════════════════ -->
-<!-- SUPPORTING DOCUMENTS -->
-<div class="premium-card">
-    <div class="premium-card-header">
-        <h6><i class="bi bi-folder-check me-2"></i>Supporting Documents</h6>
-        <span class="text-muted x-small tracking-wider">{{ claim.documents.count }} ATTACHMENTS</span>
-    </div>
-    <div class="premium-card-body">
-        {% if claim.documents.all %}
-        <div class="row g-3">
-            {% for doc in claim.documents.all %}
-            {% with fname=doc.file.name|lower %}
-            <div class="col-md-4">
-                <div class="doc-premium-box">
-                    <div class="d-flex align-items-center gap-3 mb-3">
-                        <div class="d-flex align-items-center justify-content-center bg-dark rounded-3" style="width: 40px; height: 40px; border: 1px solid rgba(255,255,255,0.05);">
-                            {% if 'bill' in doc.document_type %}
-                            <i class="bi bi-receipt text-info"></i>
-                            {% elif 'identity' in doc.document_type or 'proof' in doc.document_type %}
-                            <i class="bi bi-person-badge text-warning"></i>
-                            {% elif 'certificate' in doc.document_type %}
-                            <i class="bi bi-file-earmark-medical text-success"></i>
-                            {% elif 'rc' in doc.document_type %}
-                            <i class="bi bi-car-front text-primary"></i>
-                            {% else %}
-                            <i class="bi bi-file-earmark-text text-muted"></i>
-                            {% endif %}
+            <!-- SUPPORTING DOCUMENTS -->
+            <div class="premium-card">
+                <div class="premium-card-header">
+                    <h6><i class="bi bi-folder-check me-2"></i>Supporting Documents</h6>
+                    <span class="text-muted x-small tracking-wider">{{ claim.documents.count }} ATTACHMENTS</span>
+                </div>
+                <div class="premium-card-body">
+                    {% if claim.documents.all %}
+                    <div class="row g-3">
+                        {% for doc in claim.documents.all %}
+                        {% with fname=doc.file.name|lower %}
+                        <div class="col-md-4">
+                            <div class="doc-premium-box">
+                                <div class="d-flex align-items-center gap-3 mb-3">
+                                    <div class="d-flex align-items-center justify-content-center bg-dark rounded-3"
+                                        style="width: 40px; height: 40px; border: 1px solid rgba(255,255,255,0.05);">
+                                        {% if 'bill' in doc.document_type %}
+                                        <i class="bi bi-receipt text-info"></i>
+                                        {% elif 'identity' in doc.document_type or 'proof' in doc.document_type %}
+                                        <i class="bi bi-person-badge text-warning"></i>
+                                        {% elif 'certificate' in doc.document_type %}
+                                        <i class="bi bi-file-earmark-medical text-success"></i>
+                                        {% elif 'rc' in doc.document_type %}
+                                        <i class="bi bi-car-front text-primary"></i>
+                                        {% else %}
+                                        <i class="bi bi-file-earmark-text text-muted"></i>
+                                        {% endif %}
+                                    </div>
+                                    <div class="overflow-hidden">
+                                        <div class="text-white fw-bold small text-truncate">{{ doc.get_document_type_display }}</div>
+                                        <div class="x-small {% if doc.is_verified %}text-success{% else %}text-muted{% endif %}">
+                                            {% if doc.is_verified %}
+                                                <i class="bi bi-patch-check-fill me-1"></i>Verified
+                                            {% else %}
+                                                Pending Review
+                                            {% endif %}
+                                        </div>
+                                    </div>
+
+                                </div>
+                                <button
+                                    class="btn btn-sm w-100 bg-dark text-info border-info border-opacity-25 doc-preview-btn py-2"
+                                    data-url="{{ doc.file.url }}" 
+                                    data-name="{{ doc.get_document_type_display }}"
+                                    data-type="{% if fname|slice:'-4:' == '.pdf' %}pdf{% else %}image{% endif %}"
+                                    style="font-size: 11px;">
+                                    <i class="bi bi-eye me-1"></i> Preview Asset
+                                </button>
+
+                            </div>
                         </div>
-                        <div class="overflow-hidden">
-                            <div class="text-white fw-bold small text-truncate">{{ doc.get_document_type_display }}</div>
-                            <div class="x-small {% if doc.is_verified %}text-success{% else %}text-muted{% endif %}">
-                                {% if doc.is_verified %}<i class="bi bi-patch-check-fill me-1"></i>Verified{% else %}Pending Review{% endif %}
+                        {% endwith %}
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4 opacity-50"><i class="bi bi-cloud-slash fs-2 d-block mb-2"></i><span
+                            class="small">No digital assets found for this dossier.</span></div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- STAFF ASSESSMENT ARCHIVE -->
+            {% if request.user.role == 'admin' or request.user.is_superuser or request.user.role == 'staff' %}
+            {% if claim.policy_validity %}
+            <div class="premium-card">
+                <div class="premium-card-header" style="background: rgba(26, 110, 245, 0.05);">
+                    <h6 class="text-primary"><i class="bi bi-clipboard-check me-2"></i>Staff Audit Report</h6>
+                    <span class="text-muted x-small tracking-wider">LOCKED ASSESSMENT</span>
+                </div>
+                <div class="premium-card-body">
+                    <div class="row g-4">
+                        <div class="col-md-3">
+                            <div class="label-muted mb-1">Policy Status</div>
+                            <div
+                                class="fw-bold {% if claim.policy_validity == 'valid' or claim.policy_validity == 'Verified' %}text-success{% else %}text-danger{% endif %}">
+                                {{ claim.policy_validity|upper }}</div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="label-muted mb-1">Docs Verification</div>
+                            <div
+                                class="fw-bold {% if claim.document_verification == 'verified' or claim.document_verification == 'Verified' %}text-success{% else %}text-danger{% endif %}">
+                                {{ claim.document_verification|upper }}</div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="label-muted mb-1">Loss Analysis</div>
+                            <div
+                                class="fw-bold {% if claim.amount_verification == 'verified' or claim.amount_verification == 'Verified' %}text-success{% else %}text-danger{% endif %}">
+                                {{ claim.amount_verification|upper }}</div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="label-muted mb-1">Recommended Payout</div>
+                            <div class="fw-bold fs-5 text-info">₹{{ claim.recommended_amount|default:0|intcomma }}</div>
+                        </div>
+                        <div class="col-12">
+                            <div class="label-muted mb-2">Internal Assessment Notes</div>
+                            <div class="p-3 rounded-2 small shadow-inner"
+                                style="background: rgba(0,0,0,0.2); border-left: 3px solid #1a6ef5; color: #e2e8f0;">
+                                {{ claim.staff_comments|default:"No notes archived for this assessment." }}
                             </div>
                         </div>
                     </div>
-                    <button class="btn btn-sm w-100 bg-dark text-info border-info border-opacity-25 doc-preview-btn py-2"
-                            data-url="{{ doc.file.url }}" data-name="{{ doc.get_document_type_display }}"
-                            data-type="{% if fname|slice:'-4:' == '.pdf' %}pdf{% else %}image{% endif %}" style="font-size: 11px;">
-                        <i class="bi bi-eye me-1"></i> Preview Asset
-                    </button>
                 </div>
             </div>
-            {% endwith %}
-            {% endfor %}
-        </div>
-        {% else %}
-        <div class="text-center py-4 opacity-50"><i class="bi bi-cloud-slash fs-2 d-block mb-2"></i><span class="small">No digital assets found for this dossier.</span></div>
-        {% endif %}
-    </div>
-</div>
-
-<!-- STAFF ASSESSMENT ARCHIVE -->
-{% if request.user.role == 'admin' or request.user.is_superuser or request.user.role == 'staff' %}
-{% if claim.policy_validity %}
-<div class="premium-card">
-    <div class="premium-card-header" style="background: rgba(26, 110, 245, 0.05);">
-        <h6 class="text-primary"><i class="bi bi-clipboard-check me-2"></i>Staff Audit Report</h6>
-        <span class="text-muted x-small tracking-wider">LOCKED ASSESSMENT</span>
-    </div>
-    <div class="premium-card-body">
-        <div class="row g-4">
-            <div class="col-md-3">
-                <div class="label-muted mb-1">Policy Status</div>
-                <div class="fw-bold {% if claim.policy_validity == 'valid' or claim.policy_validity == 'Verified' %}text-success{% else %}text-danger{% endif %}">{{ claim.policy_validity|upper }}</div>
-            </div>
-            <div class="col-md-3">
-                <div class="label-muted mb-1">Docs Verification</div>
-                <div class="fw-bold {% if claim.document_verification == 'verified' or claim.document_verification == 'Verified' %}text-success{% else %}text-danger{% endif %}">{{ claim.document_verification|upper }}</div>
-            </div>
-            <div class="col-md-3">
-                <div class="label-muted mb-1">Loss Analysis</div>
-                <div class="fw-bold {% if claim.amount_verification == 'verified' or claim.amount_verification == 'Verified' %}text-success{% else %}text-danger{% endif %}">{{ claim.amount_verification|upper }}</div>
-            </div>
-            <div class="col-md-3">
-                <div class="label-muted mb-1">Recommended Payout</div>
-                <div class="fw-bold fs-5 text-info">₹{{ claim.recommended_amount|default:0|intcomma }}</div>
-            </div>
-            <div class="col-12">
-                <div class="label-muted mb-2">Internal Assessment Notes</div>
-                <div class="p-3 rounded-2 small shadow-inner" style="background: rgba(0,0,0,0.2); border-left: 3px solid #1a6ef5; color: #e2e8f0;">
-                    {{ claim.staff_comments|default:"No notes archived for this assessment." }}
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-{% endif %}
-{% endif %}
-
-<!-- FINANCIAL PROTOCOL -->
-<div class="premium-card">
-    <div class="premium-card-header">
-        <h6><i class="bi bi-bank me-2"></i>Financial & Risk Summary</h6>
-        <span class="text-muted x-small tracking-wider">GAAP COMPLIANT</span>
-    </div>
-    <div class="premium-card-body p-0">
-        <table class="premium-data-table mx-auto" style="width: 90%;">
-            <tr>
-                <td class="label-muted">Requested Amount</td>
-                <td class="text-end fw-bold text-white">₹{{ claim.claimed_amount|default:0|intcomma }}</td>
-            </tr>
-            {% if claim.ai_predicted_amount %}
-            <tr>
-                <td class="label-muted">AI Machine Prediction <i class="bi bi-robot ms-1 text-info"></i></td>
-                <td class="text-end">
-                    <span class="fw-bold text-info">₹{{ claim.ai_predicted_amount|default:0|intcomma }}</span>
-                    {% if claim.claimed_amount and claim.ai_predicted_amount %}
-                    {% with diff=claim.claimed_amount|subtract:claim.ai_predicted_amount|abs %}
-                    {% if diff|floatformat:0 > 5000 %}
-                    <div class="x-small text-warning mt-1"><i class="bi bi-exclamation-triangle me-1"></i>Large Variance Detected</div>
-                    {% endif %}
-                    {% endwith %}
-                    {% endif %}
-                </td>
-            </tr>
             {% endif %}
-            <tr>
-                <td class="label-muted">Policy Deductible</td>
-                <td class="text-end text-white">₹{{ claim.deductible_amount|default:0|intcomma }}</td>
-            </tr>
-            <tr>
-                <td class="label-muted">Final Approved Payout</td>
-                <td class="text-end fw-bold text-success fs-5">
-                    {% if claim.status == 'approved' or claim.status == 'settled' %}
-                    ₹{{ claim.approved_amount|default:0|intcomma }}
-                    {% else %}
-                    <span class="opacity-25">—</span>
-                    {% endif %}
-                </td>
-            </tr>
-            <tr>
-                <td class="label-muted">AI Fraud Risk Score</td>
-                <td class="text-end">
-                    <div class="d-flex align-items-center justify-content-end gap-2">
-                        <div class="progress-premium" style="width: 100px;">
-                            <div class="progress-bar {% if claim.fraud_flag %}bg-danger{% else %}bg-success{% endif %}"
-                                 style="width: {{ claim.risk_score|default:0 }}%; height: 6px;"></div>
+            {% endif %}
+
+            <!-- FINANCIAL PROTOCOL -->
+            <div class="premium-card">
+                <div class="premium-card-header">
+                    <h6><i class="bi bi-bank me-2"></i>Financial & Risk Summary</h6>
+                    <span class="text-muted x-small tracking-wider">GAAP COMPLIANT</span>
+                </div>
+                <div class="premium-card-body p-0">
+                    <table class="premium-data-table mx-auto" style="width: 90%;">
+                        <tr>
+                            <td class="label-muted">Requested Amount</td>
+                            <td class="text-end fw-bold text-white">₹{{ claim.claimed_amount|default:0|intcomma }}</td>
+                        </tr>
+                        {% if claim.ai_predicted_amount %}
+                        <tr>
+                            <td class="label-muted">AI Machine Prediction <i class="bi bi-robot ms-1 text-info"></i>
+                            </td>
+                            <td class="text-end">
+                                <span class="fw-bold text-info">₹{{ claim.ai_predicted_amount|default:0|intcomma }}</span>
+                                {% if claim.claimed_amount and claim.ai_predicted_amount %}
+                                {% with diff=claim.claimed_amount|subtract:claim.ai_predicted_amount|abs %}
+
+                                {% if diff|floatformat:0 > 5000 %}
+                                <div class="x-small text-warning mt-1"><i
+                                        class="bi bi-exclamation-triangle me-1"></i>Large Variance Detected</div>
+                                {% endif %}
+                                {% endwith %}
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endif %}
+                        <tr>
+                            <td class="label-muted">Policy Deductible</td>
+                            <td class="text-end text-white">₹{{ claim.deductible_amount|default:0|intcomma }}</td>
+                        </tr>
+                        <tr>
+                            <td class="label-muted">Final Approved Payout</td>
+                            <td class="text-end fw-bold text-success fs-5">
+                                {% if claim.status == 'approved' or claim.status == 'settled' %}
+                                ₹{{ claim.approved_amount|default:0|intcomma }}
+                                {% else %}
+                                <span class="opacity-25">—</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="label-muted">AI Fraud Risk Score</td>
+                            <td class="text-end">
+                                <div class="d-flex align-items-center justify-content-end gap-2">
+                                    <div class="progress-premium" style="width: 80px; height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden;">
+                                        <div class="progress-bar {% if claim.risk_score > 70 %}bg-danger{% elif claim.risk_score > 40 %}bg-warning{% else %}bg-success{% endif %}"
+                                             style="width: {{ claim.risk_score|default:0 }}%; height: 100%;"></div>
+                                    </div>
+                                    <span class="fw-bold {% if claim.risk_score > 70 %}text-danger{% elif claim.risk_score > 40 %}text-warning{% else %}text-success{% endif %}" style="font-size: 13px;">
+                                        {{ claim.risk_score|default:0|floatformat:1 }}%
+                                    </span>
+                                </div>
+                                <div class="x-small mt-1 text-uppercase fw-bold tracking-wider" style="font-size: 8px;">
+                                    {% if claim.risk_score > 70 %}
+                                        <span class="text-danger"><i class="bi bi-shield-fill-exclamation me-1"></i>Critical Risk</span>
+                                    {% elif claim.risk_score > 40 %}
+                                        <span class="text-warning"><i class="bi bi-shield-fill-info me-1"></i>Medium Risk</span>
+                                    {% else %}
+                                        <span class="text-success"><i class="bi bi-shield-fill-check me-1"></i>Low Risk</span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+
+                    </table>
+                </div>
+            </div>
+
+            <!-- NOTES -->
+            {% if request.user.role == 'staff' or request.user.role == 'admin' or request.user.is_superuser %}
+            <div class="card shadow-sm">
+                <div class="card-header bg-dark text-white">Notes</div>
+                <div class="card-body">
+                    <form method="post" action="{% url 'claim:add_note' claim.pk %}">
+                        {% csrf_token %}
+                        <div class="mb-2">
+                            <select name="note_type" class="form-control mb-2">
+                                <option value="internal">Internal</option>
+                                <option value="customer">Customer</option>
+                                <option value="investigation">Investigation</option>
+                            </select>
+                            <textarea name="content" class="form-control" placeholder="Write note"></textarea>
                         </div>
-                        <span class="fw-bold {% if claim.fraud_flag %}text-danger{% else %}text-success{% endif %}">{{ claim.risk_score|default:0|floatformat:1 }}%</span>
+                        <div class="text-end">
+                            <button class="btn btn-dark btn-sm">Add Note</button>
+                        </div>
+                    </form>
+                    <hr>
+                    {% for note in claim.notes.all %}
+                    <div class="border rounded p-3 mb-2 position-relative">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <div class="small text-muted">
+                                {{ note.created_at|date:"d M Y H:i" }}
+                                {% if note.created_by %}— {{ note.created_by.username }}{% endif %}
+                                <span class="badge {% if note.note_type == 'internal' %}bg-info{% elif note.note_type == 'customer' %}bg-success{% else %}bg-warning{% endif %} ms-2" style="font-size: 8px; text-transform: uppercase;">
+                                    {{ note.get_note_type_display }}
+                                </span>
+                            </div>
+                            {% if request.user.role == 'staff' or request.user.role == 'admin' or request.user.is_superuser %}
+                            <a href="{% url 'claim:delete_note' note.id %}" class="text-danger text-decoration-none" onclick="return confirm('Archive this audit note?')">
+                                <i class="bi bi-trash x-small"></i>
+                            </a>
+                            {% endif %}
+                        </div>
+                        <div class="small">{{ note.message }}</div>
                     </div>
-                </td>
-            </tr>
-        </table>
-    </div>
-</div>
 
-<!-- NOTES -->
-{% if request.user.role == 'staff' or request.user.role == 'admin' or request.user.is_superuser %}
-<div class="card shadow-sm">
-<div class="card-header bg-dark text-white">Notes</div>
-<div class="card-body">
-<form method="post" action="{% url 'claim:add_note' claim.pk %}">
-{% csrf_token %}
-<div class="mb-2">
-<select name="note_type" class="form-control mb-2">
-<option value="internal">Internal</option>
-<option value="customer">Customer</option>
-<option value="investigation">Investigation</option>
-</select>
-<textarea name="content" class="form-control" placeholder="Write note"></textarea>
-</div>
-<div class="text-end">
-<button class="btn btn-dark btn-sm">Add Note</button>
-</div>
-</form>
-<hr>
-{% for note in claim.notes.all %}
-<div class="border rounded p-3 mb-2">
-<div class="small text-muted">
-{{ note.created_at|date:"d M Y H:i" }}
-{% if note.created_by %}— {{ note.created_by.username }}{% endif %}
-</div>
-<div class="small">{{ note.message }}</div>
-</div>
-{% empty %}
-<div class="text-muted small">No notes yet</div>
-{% endfor %}
-</div>
-</div>
-{% endif %}
-
-    <!-- AI Claim Classification (Public) -->
-    <div class="premium-card">
-        <div class="premium-card-header">
-            <h6 class="text-white"><i class="bi bi-robot me-2"></i>AI Claim Classification</h6>
-            <span class="badge rounded-pill {% if claim.confidence_score > 85 %}bg-success text-white{% elif claim.confidence_score > 60 %}bg-warning text-dark{% else %}bg-danger text-white{% endif %} px-3 py-1 fw-bold" style="font-size: 11px; letter-spacing: 0.5px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
-                {{ claim.confidence_score|floatformat:1 }}% CONFIDENCE
-            </span>
-        </div>
-        <div class="premium-card-body">
-            <div class="d-flex align-items-center gap-3 mb-3">
-                <div class="p-3 rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2);">
-                    {% if claim.ai_claim_type == 'medical' %}
-                        <i class="bi bi-hospital text-danger fs-4"></i>
-                    {% elif claim.ai_claim_type == 'accident' %}
-                        <i class="bi bi-car-front text-primary fs-4"></i>
-                    {% elif claim.ai_claim_type == 'theft' %}
-                        <i class="bi bi-shield-lock text-warning fs-4"></i>
-                    {% else %}
-                        <i class="bi bi-file-earmark-text text-muted fs-4"></i>
-                    {% endif %}
-                </div>
-                <div>
-                    <div class="label-muted">Identified Analysis</div>
-                    <h5 class="text-white mb-0 text-capitalize">{{ claim.ai_claim_type|default:"Processing..." }}</h5>
+                    {% empty %}
+                    <div class="text-muted small">No notes yet</div>
+                    {% endfor %}
                 </div>
             </div>
-            <div class="p-3 rounded-3" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); color: #94a3b8; font-size: 12.5px; line-height: 1.5;">
-                <i class="bi bi-info-circle me-1 opacity-75"></i>
-                Automated classification suggests this is a <strong>{{ claim.ai_claim_type }}</strong> claim. This helps optimize our internal routing and review priorities.
+            {% endif %}
+
+            <!-- AI Claim Classification (Public) -->
+            <div class="premium-card">
+                <div class="premium-card-header">
+                    <h6 class="text-white"><i class="bi bi-robot me-2"></i>AI Claim Classification</h6>
+                    <span
+                        class="badge rounded-pill {% if claim.confidence_score > 85 %}bg-success text-white{% elif claim.confidence_score > 60 %}bg-warning text-dark{% else %}bg-danger text-white{% endif %} px-3 py-1 fw-bold"
+                        style="font-size: 11px; letter-spacing: 0.5px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
+                        {{ claim.confidence_score|default:0|floatformat:1 }}% CONFIDENCE
+                    </span>
+                </div>
+                <div class="premium-card-body">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div class="p-3 rounded-circle d-flex align-items-center justify-content-center"
+                            style="width: 50px; height: 50px; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2);">
+                            {% if claim.ai_claim_type == 'medical' %}
+                            <i class="bi bi-hospital text-danger fs-4"></i>
+                            {% elif claim.ai_claim_type == 'accident' %}
+                            <i class="bi bi-car-front text-primary fs-4"></i>
+                            {% elif claim.ai_claim_type == 'theft' %}
+                            <i class="bi bi-shield-lock text-warning fs-4"></i>
+                            {% else %}
+                            <i class="bi bi-file-earmark-text text-muted fs-4"></i>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <div class="label-muted">Identified Analysis</div>
+                            <h5 class="text-white mb-0 text-capitalize">{{ claim.ai_claim_type|default:"Under Analysis..." }}</h5>
+                        </div>
+                    </div>
+                    <div class="p-3 rounded-3"
+                        style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); color: #94a3b8; font-size: 12.5px; line-height: 1.5;">
+                        <i class="bi bi-info-circle me-1 opacity-75"></i>
+                        Automated classification identifies this claim as: <strong class="text-white text-uppercase">{{ claim.ai_claim_type|default:"Other" }}</strong>.
+                        This helps optimize our internal routing and review priorities.
+                    </div>
+
+                </div>
+            </div>
+
+        </div><!-- /col-lg-8 -->
+
+        <!-- RIGHT COLUMN -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-dark text-white">Policy</div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                        <span class="text-muted small">Policy Plan</span>
+                        <span class="fw-semibold">{{ claim.user_policy.policy.policy_number|default:claim.policy.policy_number }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                        <span class="text-muted small">Policyholder</span>
+                        <span class="fw-semibold text-end ms-3">
+                            {% if claim.created_by %}
+                                {{ claim.created_by.get_full_name|default:claim.created_by.username }}
+                            {% else %}
+                                <span class="text-muted italic small">[SYSTEM]</span>
+                            {% endif %}
+                        </span>
+
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                        <span class="text-muted small">Certificate #</span>
+                        <span class="fw-semibold text-info">
+                            {% if claim.policy and claim.policy.certificate_number %}
+                                {{ claim.policy.certificate_number }}
+                            {% elif claim.user_policy and claim.user_policy.certificate_number %}
+                                {{ claim.user_policy.certificate_number }}
+                            {% else %}
+                                LEGACY
+                            {% endif %}
+                        </span>
+                    </li>
+
+
+                    <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                        <span class="text-muted small">Coverage Start</span>
+                        <span class="fw-semibold">
+                            {% if claim.user_policy and claim.user_policy.start_date %}
+                                {{ claim.user_policy.start_date }}
+                            {% else %}
+                                {{ claim.policy.start_date }}
+                            {% endif %}
+                        </span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                        <span class="text-muted small">Coverage End</span>
+                        <span class="fw-semibold">
+                            {% if claim.user_policy and claim.user_policy.end_date %}
+                                {{ claim.user_policy.end_date }}
+                            {% else %}
+                                {{ claim.policy.end_date }}
+                            {% endif %}
+                        </span>
+                    </li>
+
+                </ul>
             </div>
         </div>
-    </div>
 
-</div><!-- /col-lg-8 -->
-
-<!-- RIGHT COLUMN -->
-<div class="col-lg-4">
-<div class="card shadow-sm mb-4">
-<div class="card-header bg-dark text-white">Policy</div>
-<ul class="list-group list-group-flush">
-<li class="list-group-item d-flex justify-content-between align-items-center py-3">
-<span class="text-muted small">Policy</span>
-<span class="fw-semibold">{{ claim.policy.policy_number }}</span>
-</li>
-<li class="list-group-item d-flex justify-content-between align-items-center py-3">
-<span class="text-muted small">Policyholder</span>
-<span class="fw-semibold text-end ms-3">{{ claim.created_by.get_full_name|default:claim.created_by.username }}</span>
-</li>
-<li class="list-group-item d-flex justify-content-between align-items-center py-3">
-<span class="text-muted small">Start</span>
-<span class="fw-semibold">{{ claim.policy.start_date }}</span>
-</li>
-<li class="list-group-item d-flex justify-content-between align-items-center py-3">
-<span class="text-muted small">End</span>
-<span class="fw-semibold">{{ claim.policy.end_date }}</span>
-</li>
-</ul>
-</div>
-</div>
-
-</div><!-- /row -->
+    </div><!-- /row -->
 </div><!-- /container -->
 
 
@@ -475,7 +671,7 @@
             </div>
             <div style="display:flex; gap:10px; align-items:center;">
                 <a id="docModalDownload" href="#" target="_blank"
-                   style="font-size:12px; color:#7a8ba8; text-decoration:none; display:flex; align-items:center; gap:5px; border:1px solid rgba(255,255,255,0.1); padding:5px 12px; border-radius:8px; transition:all 0.2s;">
+                    style="font-size:12px; color:#7a8ba8; text-decoration:none; display:flex; align-items:center; gap:5px; border:1px solid rgba(255,255,255,0.1); padding:5px 12px; border-radius:8px; transition:all 0.2s;">
                     <i class="bi bi-download"></i> Open in Tab
                 </a>
                 <button onclick="closeDocModal()" style="
@@ -489,15 +685,17 @@
                     font-size: 18px;
                     transition: all 0.2s;
                 " onmouseover="this.style.background='rgba(244,72,101,0.25)'"
-                   onmouseout="this.style.background='rgba(244,72,101,0.1)'">
+                    onmouseout="this.style.background='rgba(244,72,101,0.1)'">
                     <i class="bi bi-x"></i>
                 </button>
             </div>
         </div>
 
         <!-- Modal Body -->
-        <div style="flex:1; overflow:auto; padding:20px; display:flex; align-items:center; justify-content:center; min-height:200px;">
-            <div id="docModalContent" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center;">
+        <div
+            style="flex:1; overflow:auto; padding:20px; display:flex; align-items:center; justify-content:center; min-height:200px;">
+            <div id="docModalContent"
+                style="width:100%; height:100%; display:flex; align-items:center; justify-content:center;">
                 <!-- Filled by JS -->
             </div>
         </div>
@@ -508,30 +706,30 @@
 
 {% block extra_js %}
 <script>
-const modal    = document.getElementById('docPreviewModal');
-const content  = document.getElementById('docModalContent');
-const title    = document.getElementById('docModalTitle');
-const dlBtn    = document.getElementById('docModalDownload');
+    const modal = document.getElementById('docPreviewModal');
+    const content = document.getElementById('docModalContent');
+    const title = document.getElementById('docModalTitle');
+    const dlBtn = document.getElementById('docModalDownload');
 
-// Open modal on button click
-document.querySelectorAll('.doc-preview-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-        const url      = this.dataset.url;
-        const name     = this.dataset.name;
-        const fileType = this.dataset.type; // 'pdf' or 'image'
+    // Open modal on button click
+    document.querySelectorAll('.doc-preview-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const url = this.dataset.url;
+            const name = this.dataset.name;
+            const fileType = this.dataset.type; // 'pdf' or 'image'
 
-        title.textContent = name;
-        dlBtn.href = url;
+            title.textContent = name;
+            dlBtn.href = url;
 
-        if (fileType === 'pdf') {
-            content.innerHTML = `
+            if (fileType === 'pdf') {
+                content.innerHTML = `
                 <iframe
                     src="${url}"
                     style="width:100%; height:65vh; border:none; border-radius:8px; background:#fff;"
                     title="${name}">
                 </iframe>`;
-        } else {
-            content.innerHTML = `
+            } else {
+                content.innerHTML = `
                 <img
                     src="${url}"
                     alt="${name}"
@@ -539,27 +737,27 @@ document.querySelectorAll('.doc-preview-btn').forEach(btn => {
                            box-shadow: 0 8px 30px rgba(0,0,0,0.5);"
                     onerror="this.outerHTML='<div style=\'color:#f44865;text-align:center\'><i class=\'bi bi-exclamation-triangle fs-1 d-block mb-2\'></i>Unable to load image preview.<br><a href=\\'${url}\\' target=\\'_blank\\' class=\\'text-info mt-2 d-inline-block\\'>Open directly</a></div>'"
                 />`;
-        }
+            }
 
-        modal.style.display = 'flex';
-        document.body.style.overflow = 'hidden';
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        });
     });
-});
 
-function closeDocModal() {
-    modal.style.display = 'none';
-    content.innerHTML    = '';
-    document.body.style.overflow = '';
-}
+    function closeDocModal() {
+        modal.style.display = 'none';
+        content.innerHTML = '';
+        document.body.style.overflow = '';
+    }
 
-// Close on backdrop click
-modal.addEventListener('click', function(e) {
-    if (e.target === modal) closeDocModal();
-});
+    // Close on backdrop click
+    modal.addEventListener('click', function (e) {
+        if (e.target === modal) closeDocModal();
+    });
 
-// Close on Escape key
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape' && modal.style.display === 'flex') closeDocModal();
-});
+    // Close on Escape key
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.style.display === 'flex') closeDocModal();
+    });
 </script>
 {% endblock %}

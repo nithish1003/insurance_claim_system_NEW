@@ -426,10 +426,21 @@
 
 <div class="container-fluid px-4 py-2">
 
-    <div class="page-header mt-3">
-        <h2 class="fw-bold mb-1">Admin Control Center</h2>
-        <p class="text-muted small mb-0">Overview of system health, policy growth, and claim metrics.</p>
+    <div class="page-header mt-3 d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h2 class="fw-bold mb-0">Admin Control Center</h2>
+            <p class="text-muted small mb-0">Overview of system health, policy growth, and claim metrics.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'accounts:admin_create_staff' %}" class="btn btn-primary btn-sm px-3 rounded-pill shadow-sm fw-bold">
+                <i class="bi bi-person-badge-fill me-1"></i> Provision Staff
+            </a>
+            <a href="/admin/" class="btn btn-outline-secondary btn-sm px-3 rounded-pill" title="Django Administrator">
+                <i class="bi bi-cpu-fill"></i> 
+            </a>
+        </div>
     </div>
+
 
     <!-- KPI GRID -->
     <div class="dashboard-grid">
@@ -514,19 +525,41 @@
             </div>
         </div>
 
-        <!-- Card 6: Pending Claims -->
+        <!-- Card 6: Submitted Claims (ORANGE ACCENT) -->
         <div class="status-card accent-orange hover-scale" data-aos="fade-up" data-aos-delay="350">
             <div class="card-icon-wrapper">
-                <i class="bi bi-clock-history"></i>
+                <i class="bi bi-file-earmark-plus"></i>
             </div>
             <div>
-                <div class="card-title">Pending Claims</div>
-                <div class="card-value">{{ pending_claims }}</div>
+                <div class="card-title">New Submissions</div>
+                <div class="card-value">{{ submitted_claims }}</div>
             </div>
         </div>
 
-        <!-- Card 7: Approved Claims (GREEN ACCENT) -->
-        <div class="status-card accent-green hover-scale" data-aos="fade-up" data-aos-delay="400">
+        <!-- Card 7: Review Claims (BLUE ACCENT) -->
+        <div class="status-card accent-blue hover-scale" data-aos="fade-up" data-aos-delay="400">
+            <div class="card-icon-wrapper">
+                <i class="bi bi-person-badge"></i>
+            </div>
+            <div>
+                <div class="card-title">Under Review</div>
+                <div class="card-value">{{ review_claims }}</div>
+            </div>
+        </div>
+
+        <!-- Card 8: Investigation Claims (PURPLE ACCENT) -->
+        <div class="status-card accent-purple hover-scale" data-aos="fade-up" data-aos-delay="450">
+            <div class="card-icon-wrapper">
+                <i class="bi bi-search"></i>
+            </div>
+            <div>
+                <div class="card-title">Investigation</div>
+                <div class="card-value">{{ investigation_claims }}</div>
+            </div>
+        </div>
+
+        <!-- Card 9: Approved Claims (GREEN ACCENT) -->
+        <div class="status-card accent-green hover-scale" data-aos="fade-up" data-aos-delay="475">
             <div class="card-icon-wrapper">
                 <i class="bi bi-check-circle"></i>
             </div>
@@ -536,8 +569,8 @@
             </div>
         </div>
 
-        <!-- Card 8: Rejected Claims (RED ACCENT) -->
-        <div class="status-card accent-red hover-scale" data-aos="fade-up" data-aos-delay="450">
+        <!-- Card 10: Rejected Claims (RED ACCENT) -->
+        <div class="status-card accent-red hover-scale" data-aos="fade-up" data-aos-delay="500">
             <div class="card-icon-wrapper">
                 <i class="bi bi-x-circle"></i>
             </div>
@@ -659,45 +692,28 @@
         </div>
         <div class="card-body">
             <div class="row g-3">
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <div class="info-row">
-                        <div class="info-label text-muted small">Full Name</div>
-                        <div class="info-value fw-bold text-white">{{ request.user.full_name|default:request.user.username }}</div>
+                        <div class="info-label">Full Name</div>
+                        <div class="info-value">{% if request.user %}{{ request.user.get_full_name|default:request.user.username }}{% else %}—{% endif %}</div>
                     </div>
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <div class="info-row">
-                        <div class="info-label text-muted small">Username</div>
-                        <div class="info-value fw-bold text-white">{{ request.user.username }}</div>
+                        <div class="info-label">Username</div>
+                        <div class="info-value">{% if request.user %}{{ request.user.username }}{% else %}—{% endif %}</div>
                     </div>
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <div class="info-row">
-                        <div class="info-label text-muted small">Email</div>
-                        <div class="info-value text-white">{{ request.user.email }}</div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="info-row">
-                        <div class="info-label text-muted small">Aadhaar</div>
-                        <div class="info-value text-white">{{ request.user.profile.masked_aadhaar|default:"—" }}</div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="info-row">
-                        <div class="info-label text-muted small">Phone</div>
-                        <div class="info-value text-white">{{ current_user.phone|default:"—" }}</div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="info-row">
-                        <div class="info-label text-muted small">Address</div>
-                        <div class="info-value text-white">{{ current_user.address|default:"—" }}</div>
+                        <div class="info-label">Email</div>
+                        <div class="info-value">{{ request.user.email|default:"—" }}</div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
 
     <div class="row g-4" data-aos="fade-up" data-aos-delay="200">
         <!-- RECENT CLAIMS -->
@@ -727,8 +743,13 @@
                                     {% if claim.emergency_flag %}<i class="bi bi-lightning-fill text-danger ms-1" title="Emergency"></i>{% endif %}
                                 </td>
                                 <td>
-                                    <div class="fw-bold text-white">{{ claim.created_by.full_name|default:claim.created_by.username|default:"-" }}</div>
-                                    <div class="x-small text-muted">ID: {{ claim.created_by.id }}</div>
+                                    {% if claim.created_by %}
+                                        <div class="fw-bold text-white">{{ claim.created_by.full_name|default:claim.created_by.username }}</div>
+                                        <div class="table-subtext">ID: {{ claim.created_by.id }}</div>
+                                    {% else %}
+                                        <div class="fw-bold text-white italic">Internal / System</div>
+                                        <div class="table-subtext">Automated Record</div>
+                                    {% endif %}
                                 </td>
                                 <td class="text-center">
                                     <span class="badge {% if claim.priority_level == "HIGH" %}bg-danger{% elif claim.priority_level == "MEDIUM" %}bg-warning text-dark{% else %}bg-secondary opacity-50{% endif %}" style="font-size: 0.62rem; min-width: 60px;">
@@ -886,8 +907,14 @@
                     {% for app in pending_policy_applications %}
                     <tr>
                         <td class="ps-4">
-                            <div class="fw-bold text-white fs-6">{{ app.user.full_name|default:app.user.username }}</div>
-                            <div class="table-subtext">{{ app.user.email|lower }}</div>
+                            <div class="fw-bold text-white fs-6">
+                                {% if app.user %}
+                                    {{ app.user.full_name|default:app.user.username }}
+                                {% else %}
+                                    Anonymous Applicant
+                                {% endif %}
+                            </div>
+                            <div class="table-subtext">{% if app.user %}{{ app.user.email|lower }}{% else %}no-reply@system.com{% endif %}</div>
                         </td>
                         <td>
                             <div class="text-id text-info-premium fw-normal">#{{ app.policy.policy_number }}</div>

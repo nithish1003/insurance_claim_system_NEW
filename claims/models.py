@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.exceptions import ValidationError
 from django.conf import settings
 from django.utils import timezone
 from django.core.validators import FileExtensionValidator
@@ -55,15 +56,105 @@ class Claim(models.Model):
         related_name="claims"
     )
 
+    user_policy = models.ForeignKey(
+        'policy.UserPolicy',
+        on_delete=models.CASCADE,
+        related_name='claims',
+        null=True, blank=True,
+        help_text="The specific user-owned policy this claim is filed against."
+    )
+
     claim_number = models.CharField(max_length=50, unique=True, db_index=True)
 
     claim_type = models.CharField(max_length=30, choices=CLAIM_TYPE)
 
-    status = models.CharField(max_length=30, choices=STATUS, default="draft", db_index=True)
+    status = models.CharField(
+        max_length=30, 
+        choices=STATUS, 
+        default="submitted", 
+        db_index=True,
+        help_text="Current lifecycle state of the dossier."
+    )
 
     incident_date = models.DateField()
 
-    reported_date = models.DateField(default=timezone.now)
+    reported_date = models.DateTimeField(default=timezone.now)
+    
+    # ── VALIDATION & STATE MACHINE ──────────────────────────────────────────
+    
+    def validate_status_transition(self, new_status):
+        """
+        Enforces Regulator-Grade Workflow:
+        SUBMITTED → UNDER_REVIEW → INVESTIGATION → APPROVED → SETTLED
+        """
+        if self._state.adding:
+            # Creation phase: Must start at SUBMITTED (or DRAFT)
+            if new_status not in ['submitted', 'draft']:
+                 raise ValidationError(f"New claims must start in 'submitted' status. Received: {new_status}")
+            return
+
+        # Fetch current status from DB to prevent tampering
+        old_status = Claim.objects.get(pk=self.pk).status
+        if old_status == new_status:
+            return
+
+        # Define high-fidelity transition map
+        VALID_TRANSITIONS = {
+            'draft': ['submitted'],
+            'submitted': ['under_review', 'rejected', 'withdrawn'],
+            'under_review': ['investigation', 'approved', 'rejected'],
+            'investigation': ['approved', 'rejected'],
+            'approved': ['settled'],
+            'rejected': ['under_review'], # Permissive for appeals
+            'settled': [], # Terminal
+            'closed': [], # Terminal
+            'withdrawn': ['submitted'],
+        }
+
+        allowed_next = VALID_TRANSITIONS.get(old_status, [])
+        if new_status not in allowed_next:
+            raise ValidationError(
+                f"Invalid Workflow Violation: Cannot move dossier from '{old_status}' to '{new_status}'. "
+                f"Expected next stages: {', '.join(allowed_next) if allowed_next else 'None (Terminal State)'}"
+            )
+
+    def save(self, *args, **kwargs):
+        """Final Persistence Hook: Enforces Workflow State and Financial Integrity"""
+        
+        # 🛡️ 1. Extract Custom Arguments EARLY (Crucial for Django super().save compatibility)
+        skip_workflow = kwargs.pop('skip_workflow_check', False)
+        performing_user = kwargs.pop('user', None)
+
+        # 2. Capture Initial State (Audit Log Comparison)
+        is_new = self.pk is None
+        old_status = None
+        
+        if not is_new:
+            try:
+                # Optimized field-only fetch for state comparison
+                old_status = Claim.objects.filter(pk=self.pk).values_list('status', flat=True).first()
+            except Exception:
+                pass
+
+        # 3. Enforce Workflow Constraints
+        if not skip_workflow:
+            self.validate_status_transition(self.status)
+
+        # 4. Synchronize Financial Integrity
+        if self.claimed_amount and self.deductible_amount is not None:
+             self.net_claimable = max(0, self.claimed_amount - self.deductible_amount)
+        
+        # 5. Final Save (Commit to DB)
+        super().save(*args, **kwargs)
+
+        # 6. Post-Save Audit Logging (On Status Change)
+        if not is_new and old_status and old_status != self.status:
+            ClaimAuditLog.objects.create(
+                claim=self,
+                action=f"Workflow Transition: {old_status.upper()} -> {self.status.upper()}",
+                description=f"Automated State Machine validation successful.",
+                performed_by=performing_user
+            )
 
     description = models.TextField(blank=True)
 
@@ -209,12 +300,6 @@ class Claim(models.Model):
     settled_amount = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
 
     deductible_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-
-    def save(self, *args, **kwargs):
-        # 🛡️ Real Insurance Safety Guard: Synchronize Net Claimable
-        if self.claimed_amount and self.deductible_amount is not None:
-             self.net_claimable = max(0, self.claimed_amount - self.deductible_amount)
-        super().save(*args, **kwargs)
 
     rejection_reason = models.TextField(blank=True)
 

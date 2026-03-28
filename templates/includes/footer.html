@@ -1,0 +1,179 @@
+{% load static %}
+<footer class="main-footer" data-aos="fade-up">
+    <div class="container py-5">
+        <div class="row g-4">
+            <!-- Brand & Mission -->
+            <div class="col-lg-4 col-md-12 mb-4 mb-lg-0">
+                <div class="footer-brand h2 fw-bold text-white mb-3">ClaimIQ</div>
+                <p class="text-muted small pe-lg-5 mb-4" style="line-height: 1.8;">
+                    Reimagining the future of insurance claims with autonomous AI and extreme transparency. 
+                    Simplified processing, zero bureaucracy, and rapid settlements for the modern era.
+                </p>
+                <div class="d-flex gap-3">
+                    <a href="#" class="social-icon"><i class="bi bi-linkedin"></i></a>
+                    <a href="#" class="social-icon"><i class="bi bi-twitter-x"></i></a>
+                    <a href="#" class="social-icon"><i class="bi bi-instagram"></i></a>
+                    <a href="#" class="social-icon"><i class="bi bi-facebook"></i></a>
+                </div>
+            </div>
+
+            <!-- Products -->
+            <div class="col-lg-2 col-md-4 col-6">
+                <h6 class="footer-heading">Solutions</h6>
+                <ul class="list-unstyled footer-links">
+                    <li><a href="#">Health Guard</a></li>
+                    <li><a href="#">Vehicle Secure</a></li>
+                    <li><a href="#">Home Protect</a></li>
+                    <li><a href="#">Life Shield</a></li>
+                    <li><a href="#">Travel Safe</a></li>
+                </ul>
+            </div>
+
+            <!-- Company -->
+            <div class="col-lg-2 col-md-4 col-6">
+                <h6 class="footer-heading">Company</h6>
+                <ul class="list-unstyled footer-links">
+                    <li><a href="#">About Identity</a></li>
+                    <li><a href="#">Careers</a></li>
+                    <li><a href="#">Partner Program</a></li>
+                    <li><a href="#">Press Kit</a></li>
+                    <li><a href="#">System Help</a></li>
+                </ul>
+            </div>
+
+            <!-- Legal & Support -->
+            <div class="col-lg-2 col-md-4 col-12">
+                <h6 class="footer-heading">Protocol</h6>
+                <ul class="list-unstyled footer-links">
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                    <li><a href="#">Cookie Policy</a></li>
+                    <li><a href="#">Compliance</a></li>
+                    <li><a href="#">Fraud Reporting</a></li>
+                </ul>
+            </div>
+
+            <!-- Contact/Location -->
+            <div class="col-lg-2 col-md-12">
+                <h6 class="footer-heading">Connect</h6>
+                <div class="contact-info small text-muted">
+                    <p class="mb-2"><i class="bi bi-geo-alt me-2"></i> Cyber City Hub, Tower 8, Hyderabad, IN</p>
+                    <p class="mb-2"><i class="bi bi-envelope me-2"></i> protocol@claimiq.gov</p>
+                    <p class="mb-0"><i class="bi bi-telephone me-2"></i> +91 40-CLAIM-00</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Bar -->
+    <div class="footer-bottom py-3">
+        <div class="container">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+                <div class="copyright x-small text-muted">
+                    &copy; {% now "Y" %} ClaimIQ Insurance Infrastructure. All rights reserved.
+                </div>
+                <div class="d-flex gap-4 x-small text-muted">
+                    <span class="d-flex align-items-center gap-1"><i class="bi bi-clock"></i> 24/7 Monitoring Active</span>
+                    <span class="d-flex align-items-center gap-1"><i class="bi bi-patch-check-fill text-info"></i> IRDAI Certified</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<style>
+    .main-footer {
+        background: radial-gradient(circle at top right, rgba(26, 110, 245, 0.05), transparent 40%),
+                    linear-gradient(to bottom, #0f1b33 0%, #0a1122 100%);
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        color: #94a3b8;
+        position: relative;
+        z-index: 10;
+        overflow: hidden;
+    }
+
+    .main-footer::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(26, 110, 245, 0.3), transparent);
+    }
+
+    .footer-heading {
+        color: white;
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        margin-bottom: 24px;
+        position: relative;
+        padding-bottom: 8px;
+    }
+
+    .footer-heading::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 25px;
+        height: 2px;
+        background: #1a6ef5;
+    }
+
+    .footer-links li {
+        margin-bottom: 12px;
+    }
+
+    .footer-links a {
+        color: #64748b;
+        text-decoration: none;
+        font-size: 13.5px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        display: inline-block;
+    }
+
+    .footer-links a:hover {
+        color: white;
+        transform: translateX(6px);
+    }
+
+    .social-icon {
+        width: 38px;
+        height: 38px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #94a3b8;
+        text-decoration: none;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .social-icon:hover {
+        background: #1a6ef5;
+        color: white;
+        border-color: #1a6ef5;
+        transform: translateY(-5px) rotate(8deg);
+    }
+
+    .footer-bottom {
+        border-top: 1px solid rgba(255, 255, 255, 0.04);
+        background: rgba(0, 0, 0, 0.1);
+    }
+
+    .footer-brand {
+        letter-spacing: -0.5px;
+        background: linear-gradient(45deg, #fff 0%, #94a3b8 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .x-small {
+        font-size: 11px;
+    }
+</style>

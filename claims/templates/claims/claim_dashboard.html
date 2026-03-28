@@ -246,10 +246,13 @@ class="text-dark text-decoration-none">
 </td>
 
 <td>
-
-{{ claim.created_by.get_full_name|default:claim.created_by.username }}
-
+    {% if claim.created_by %}
+        {{ claim.created_by.get_full_name|default:claim.created_by.username }}
+    {% else %}
+        <span class="text-muted small italic">[SYSTEM]</span>
+    {% endif %}
 </td>
+
 
 <td class="fw-semibold">
 

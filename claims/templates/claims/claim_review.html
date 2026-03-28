@@ -3,6 +3,64 @@
 
 {% block title %}Review Claim — {{ claim.claim_number }}{% endblock %}
 
+{% block extra_css %}
+<style>
+    /* Premium Card System */
+    .premium-card {
+        background: rgba(17, 28, 53, 0.4);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        margin-bottom: 24px;
+        overflow: hidden;
+    }
+
+    .premium-card-header {
+        padding: 16px 20px;
+        background: rgba(255, 255, 255, 0.02);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .premium-card-header h6 {
+        margin-bottom: 0;
+        color: #f1f5f9;
+        font-weight: 700;
+        font-size: 0.9rem;
+    }
+    
+    .premium-card-body {
+        padding: 20px;
+    }
+
+    .label-muted {
+        color: #94a3b8;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .data-value {
+        color: #ffffff;
+        font-weight: 600;
+    }
+    
+    /* Risk Badges */
+    .alert-premium {
+        background: rgba(255, 255, 255, 0.02);
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        display: flex;
+        gap: 15px;
+        padding: 16px;
+    }
+</style>
+{% endblock %}
+
+
 {% block content %}
 <div class="container-fluid px-4 py-3">
 
@@ -54,9 +112,13 @@ Policy: {{ claim.policy.policy_number }}
 </div>
 
 <div class="d-flex gap-2">
-  <a href="{% url 'claim:settlement' claim.pk %}" class="btn btn-primary btn-sm {% if claim.status == 'settled' %}disabled{% endif %}">
-    Settle Claim
-  </a>
+  {% if request.user.role == 'admin' or request.user.is_superuser %}
+    <a href="{% url 'claim:settlement' claim.pk %}" 
+       class="btn btn-primary btn-sm {% if claim.status != 'approved' %}disabled{% endif %}"
+       {% if claim.status != 'approved' %}title="Dossier must be APPROVED before final settlement"{% endif %}>
+      Settle Claim
+    </a>
+  {% endif %}
   <a href="{% url 'claim:detail' claim.pk %}" class="btn btn-outline-secondary btn-sm">
     Back to Claim
   </a>
@@ -120,7 +182,14 @@ Claim Overview
 
 <div class="col-md-4">
 <small class="text-muted">Policyholder (Subject)</small>
-<div class="fw-bold text-info">{{ subject_user.get_full_name|default:subject_user.username }}</div>
+<div class="fw-bold text-info">
+    {% if subject_user %}
+        {{ subject_user.get_full_name|default:subject_user.username }}
+    {% else %}
+        <span class="text-muted small italic">[GHOST ACCOUNT]</span>
+    {% endif %}
+</div>
+
 </div>
 
 <div class="col-12">
@@ -139,25 +208,28 @@ Claim Overview
 
 
         <!-- Comparison Summary: AI vs Staff Decisions -->
-        <div class="card shadow-sm mb-4 border-warning" style="border-width: 2px;">
-            <div class="card-header bg-warning text-dark fw-bold">
-                <i class="bi bi-arrow-left-right me-1"></i> AI Prediction vs. Human Review (Audit Detail)
+        <div class="premium-card" style="border-left: 3px solid #f59e0b;">
+            <div class="premium-card-header" style="background: rgba(245, 158, 11, 0.05);">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-arrow-left-right text-warning"></i>
+                    <h6 class="text-white">AI Prediction vs. Human Review</h6>
+                </div>
             </div>
-            <div class="card-body p-0">
-                <table class="table mb-0 align-middle">
-                    <thead class="bg-light">
-                        <tr style="font-size: 11px; text-transform: uppercase;">
-                            <th class="ps-3">Feature</th>
-                            <th>AI Suggested</th>
-                            <th>Staff Adjusted</th>
-                            <th class="text-center">Status</th>
+            <div class="premium-card-body p-0">
+                <table class="table table-dark table-hover mb-0 align-middle" style="background: transparent; font-size: 13px;">
+                    <thead style="background: rgba(255,255,255,0.02);">
+                        <tr style="font-size: 10px; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.5px;">
+                            <th class="ps-3 border-0">Feature</th>
+                            <th class="border-0">AI Suggested</th>
+                            <th class="border-0">Staff Adjusted</th>
+                            <th class="text-center border-0">Status</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody style="border-top: 1px solid rgba(255,255,255,0.05);">
                         <tr>
-                            <td class="ps-3 text-muted">Claim Type</td>
-                            <td><span class="badge bg-light text-dark border">{{ claim.ai_claim_type|default:"Other"|upper }}</span></td>
-                            <td><span class="badge bg-dark">{{ claim.get_claim_type_display|upper }}</span></td>
+                            <td class="ps-3 label-muted">Claim Type</td>
+                            <td><span class="badge border border-white border-opacity-10 bg-dark text-white-50" style="font-size: 10px;">{{ claim.ai_claim_type|default:"Other"|upper }}</span></td>
+                            <td><span class="badge bg-primary bg-opacity-10 text-primary" style="font-size: 10px;">{{ claim.get_claim_type_display|upper }}</span></td>
                             <td class="text-center">
                                 {% if claim.ai_claim_type != claim.claim_type %}
                                     <i class="bi bi-pencil-square text-warning" title="Adjusted by Staff"></i>
@@ -167,8 +239,8 @@ Claim Overview
                             </td>
                         </tr>
                         <tr>
-                            <td class="ps-3 text-muted">Final Payout</td>
-                            <td><span class="text-muted fw-bold">₹{{ claim.ai_predicted_amount|default:0|intcomma }}</span></td>
+                            <td class="ps-3 label-muted">Final Payout</td>
+                            <td><span class="text-white-50 fw-bold">₹{{ claim.ai_predicted_amount|default:0|intcomma }}</span></td>
                             <td><span class="text-primary fw-bold">₹{{ claim.approved_amount|default:0|intcomma }}</span></td>
                             <td class="text-center">
                                 {% if claim.ai_predicted_amount != claim.approved_amount %}
@@ -183,22 +255,28 @@ Claim Overview
             </div>
         </div>
 
+
         <!-- Financial Summary -->
-        <div class="card shadow-sm mb-4">
-            <div class="card-header bg-dark text-white">Financial Summary</div>
-            <div class="card-body">
+        <div class="premium-card">
+            <div class="premium-card-header">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-currency-rupee text-success"></i>
+                    <h6 class="text-white">Financial Summary</h6>
+                </div>
+            </div>
+            <div class="premium-card-body">
                 <div class="row text-center g-3">
                     <div class="col-md-4">
-                        <small class="text-muted d-block uppercase" style="font-size: 0.65rem;">Reported Amount</small>
-                        <span class="h5 fw-bold text-dark">₹{{ claim.claimed_amount|default:0|intcomma }}</span>
+                        <div class="label-muted mb-1">Reported Amount</div>
+                        <div class="data-value h5 mb-0">₹{{ claim.claimed_amount|default:0|intcomma }}</div>
                     </div>
                     <div class="col-md-4">
-                        <small class="text-muted d-block uppercase" style="font-size: 0.65rem;">Applied Deductible</small>
-                        <span class="h5 fw-bold text-danger">₹{{ claim.deductible_amount|default:0|intcomma }}</span>
+                        <div class="label-muted mb-1">Applied Deductible</div>
+                        <div class="data-value h5 mb-0 text-danger">₹{{ claim.deductible_amount|default:0|intcomma }}</div>
                     </div>
                     <div class="col-md-4">
-                        <small class="text-muted d-block uppercase" style="font-size: 0.65rem;">Net Approved</small>
-                        <span class="h5 fw-bold text-success">₹{{ claim.approved_amount|default:0|intcomma }}</span>
+                        <div class="label-muted mb-1">Net Approved</div>
+                        <div class="data-value h5 mb-0 text-success">₹{{ claim.approved_amount|default:0|intcomma }}</div>
                     </div>
                 </div>
             </div>
@@ -206,8 +284,10 @@ Claim Overview
 
 
 
+
         <!-- 👤 Applicant Information (Centered Pro-Style Identity Card) -->
-        <div class="applicant-card shadow-sm border border-secondary border-opacity-25 rounded-4 p-4 mb-4 bg-dark text-white" id="applicant-info-section">
+        {% if applicant %}
+        <div class="premium-card admin-applicant-panel" id="applicant-info-section">
             <style>
                 #applicant-info-section .profile-header {
                     text-align: center;
@@ -254,113 +334,132 @@ Claim Overview
                     font-size: 15px;
                     font-weight: 700;
                     margin: 0;
+                    color: #f8fafc;
                 }
                 #applicant-info-section .address-row {
                     grid-column: span 2;
                 }
             </style>
 
-            <div class="profile-header">
-                <div class="profile-avatar">
-                   {{ applicant.username|slice:":1"|upper }}
+            <div class="premium-card-body">
+                <div class="profile-header">
+                    <div class="profile-avatar">
+                       {{ applicant.username|slice:":1"|upper }}
+                    </div>
+                    <h5 class="mb-1 text-success">{{ applicant.get_full_name|default:applicant.username }}</h5>
+                    <p class="text-muted small mb-0"><i class="bi bi-person-fill-check me-1"></i> Claim Subject / Verified Policyholder</p>
                 </div>
-                <h5 class="mb-1 text-success">{{ applicant.full_name|default:applicant.username }}</h5>
-                <p class="text-muted small mb-0"><i class="bi bi-person-fill-check me-1"></i> Claim Subject / Verified Policyholder</p>
-            </div>
 
-            <div class="centered-grid">
-                <div class="field-group">
-                    <label class="field-label">Legal Full Name</label>
-                    <p class="field-value">{{ applicant.full_name|default:applicant.username }}</p>
-                </div>
-                <div class="field-group">
-                    <label class="field-label">Portal Identity</label>
-                    <p class="field-value text-primary">@{{ applicant.username }}</p>
-                </div>
-                <div class="field-group">
-                    <label class="field-label">Secure Contact Email</label>
-                    {% if show_full_data %}
-                    <p class="field-value text-info" style="font-size: 13px;">{{ applicant.email }}</p>
-                    {% else %}
-                    <p class="field-value text-white-50">{{ masked_email }}</p>
-                    {% endif %}
-                </div>
-                <div class="field-group">
-                    <label class="field-label">Verified Phone</label>
-                    {% if show_full_data %}
-                    <p class="field-value">{{ applicant.phone|default:"—" }}</p>
-                    {% else %}
-                    <p class="field-value text-white-50">{{ masked_phone }}</p>
-                    {% endif %}
-                </div>
-                <div class="field-group">
-                    <label class="field-label">KYC (Aadhaar Number)</label>
-                    <code class="field-value text-info">{{ applicant.aadhaar_masked }}</code>
-                </div>
-                <div class="field-group">
-                    <label class="field-label">Internal UID</label>
-                    <p class="field-value text-muted" style="font-size: 12px;">UID-00{{ applicant.id }}</p>
-                </div>
-                
-                <div class="field-group address-row" style="background: rgba(255,255,255,0.01); border: 1px dashed rgba(255,255,255,0.1);">
-                    <label class="field-label">Permanent Site Address</label>
-                    <p class="field-value small" style="font-weight: normal; color: #94a3b8;">{{ applicant.address|default:"No verified address recorded" }}</p>
+                <div class="centered-grid">
+                    <div class="field-group">
+                        <label class="field-label">Legal Full Name</label>
+                        <p class="field-value">{{ applicant.get_full_name|default:applicant.username }}</p>
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label">Portal Identity</label>
+                        <p class="field-value text-primary">@{{ applicant.username }}</p>
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label">Secure Contact Email</label>
+                        {% if show_full_data %}
+                        <p class="field-value text-info" style="font-size: 13px;">{{ applicant.email }}</p>
+                        {% else %}
+                        <p class="field-value text-white-50">{{ masked_email }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label">Verified Phone</label>
+                        {% if show_full_data %}
+                        <p class="field-value">{{ applicant.phone|default:"—" }}</p>
+                        {% else %}
+                        <p class="field-value text-white-50">{{ masked_phone }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label">KYC (Aadhaar Number)</label>
+                        <code class="field-value text-info" style="background:transparent; border:none; padding:0;">{{ applicant.aadhaar_masked }}</code>
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label">Internal UID</label>
+                        <p class="field-value text-muted" style="font-size: 12px;">UID-00{{ applicant.id }}</p>
+                    </div>
+                    
+                    <div class="field-group address-row" style="background: rgba(255,255,255,0.01); border: 1px dashed rgba(255,255,255,0.1);">
+                        <label class="field-label">Permanent Site Address</label>
+                        <p class="field-value small" style="font-weight: normal; color: #94a3b8;">{{ applicant.address|default:"No verified address recorded" }}</p>
+                    </div>
                 </div>
             </div>
         </div>
+        {% else %}
+        <!-- Fallback for Ghost/Legacy Accounts -->
+        <div class="premium-card border-warning border-opacity-25 p-4 text-center">
+            <div class="display-6 text-warning mb-2"><i class="bi bi-person-x"></i></div>
+            <h6 class="text-white">Unlinked Identity</h6>
+            <p class="text-muted small mb-0">This dossier originated from a legacy system or system-level account without a direct individual policyholder mapping.</p>
+        </div>
+        {% endif %}
+
+
 
 <!-- Policy Verification -->
-<div class="card shadow-sm mb-4">
-
-<div class="card-header bg-dark text-white">
-Policy Verification
+<div class="premium-card">
+    <div class="premium-card-header">
+        <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-shield-check text-info"></i>
+            <h6 class="text-white">Policy Verification</h6>
+        </div>
+    </div>
+    <div class="premium-card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <div class="label-muted">Policy Number</div>
+                <div class="data-value">{{ claim.policy.policy_number }}</div>
+            </div>
+            <div class="col-md-6">
+                <div class="label-muted">Policy Active</div>
+                <div class="mt-1">
+                    {% if policy_active_on_incident %}
+                    <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-3">Active</span>
+                    {% else %}
+                    <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-3">Inactive</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
-<div class="card-body">
-
-<div class="row g-3">
-
-<div class="col-md-6">
-<small class="text-muted">Policy Number</small>
-<div class="fw-bold">{{ claim.policy.policy_number }}</div>
-</div>
-
-<div class="col-md-6">
-<small class="text-muted">Policy Active</small>
-
-{% if policy_active_on_incident %}
-<span class="badge bg-success">Yes</span>
-{% else %}
-<span class="badge bg-danger">No</span>
-{% endif %}
-
-</div>
-
-</div>
-
-</div>
-</div>
 
     <!-- Audit Timeline -->
-    <div class="card shadow-sm mb-4">
-        <div class="card-header bg-dark text-white">Audit & Activity Log</div>
-        <div class="card-body p-0">
-            <div style="max-height: 400px; overflow-y: auto;">
-                <table class="table table-sm table-hover mb-0" style="font-size: 11px;">
+    <div class="premium-card">
+        <div class="premium-card-header">
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-clock-history text-muted"></i>
+                <h6 class="text-white">Audit & Activity Log</h6>
+            </div>
+        </div>
+        <div class="premium-card-body p-0">
+            <div style="max-height: 300px; overflow-y: auto;">
+                <table class="table table-dark table-hover mb-0" style="background: transparent; font-size: 11px;">
                     <tbody>
                         {% for log in audit_logs %}
                         <tr>
                             <td class="ps-3 py-2 text-muted" style="width: 120px;">{{ log.created_at|date:"d M, H:i" }}</td>
-                            <td class="py-2"><span class="fw-bold text-primary">{{ log.performed_by.username }}</span>: {{ log.action }}</td>
+                            <td class="py-2">
+                                <span class="fw-bold text-info">@{{ log.performed_by.username }}</span>
+                                <span class="text-white-50 ms-1">{{ log.action|replace:"_, "|title }}</span>
+                            </td>
                         </tr>
                         {% empty %}
-                        <tr><td colspan="2" class="text-center py-3 text-muted italic">No logs found</td></tr>
+                        <tr><td colspan="2" class="text-center py-4 text-muted fst-italic">Historical audit empty</td></tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
+
 </div>
 
 <!-- RIGHT COLUMN -->
@@ -368,19 +467,19 @@ Policy Verification
 
     {% if request.user.is_staff %}
     <!-- AI Claim Classification (Staff/Admin Overview) -->
-    <div class="card shadow-sm mb-4 border-info" style="overflow: hidden; border-radius: 12px; border-width: 2px;">
-        <div class="card-header bg-info text-white d-flex justify-content-between align-items-center py-3">
+    <div class="premium-card">
+        <div class="premium-card-header" style="background: rgba(59, 130, 246, 0.05);">
             <div class="d-flex align-items-center gap-2">
-                <i class="bi bi-tag"></i>
-                <span class="fw-bold fs-6">AI Classification</span>
+                <i class="bi bi-tag text-info"></i>
+                <h6 class="text-white">AI Classification</h6>
             </div>
-            <span class="badge {% if claim.confidence_score > 80 %}bg-success{% elif claim.confidence_score > 50 %}bg-warning text-dark{% elif claim.confidence_score > 0 %}bg-info{% else %}bg-danger{% endif %} px-3 py-2 rounded-pill shadow-sm" style="font-size: 0.85rem;">
+            <span class="badge {% if claim.confidence_score > 80 %}bg-success{% elif claim.confidence_score > 50 %}bg-warning text-dark{% else %}bg-danger{% endif %} px-3 py-1 rounded-pill" style="font-size: 11px;">
                 {{ claim.confidence_score|floatformat:1 }}% CONFIDENCE
             </span>
         </div>
-        <div class="card-body bg-white p-3">
+        <div class="premium-card-body">
             <div class="d-flex align-items-center gap-3">
-                <div class="p-3 rounded bg-light border d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                <div class="p-3 rounded bg-dark bg-opacity-50 border border-secondary border-opacity-25 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
                     {% if claim.ai_claim_type == 'medical' %}
                         <i class="bi bi-hospital text-danger fs-4"></i>
                     {% elif claim.ai_claim_type == 'accident' %}
@@ -392,143 +491,151 @@ Policy Verification
                     {% endif %}
                 </div>
                 <div>
-                    <small class="text-muted text-uppercase fw-bold" style="font-size: 0.6rem;">Predicted Category</small>
-                    <h5 class="mb-0 text-capitalize">{{ claim.ai_claim_type|default:"Other" }}</h5>
+                    <div class="label-muted">Predicted Category</div>
+                    <div class="data-value text-capitalize fs-5">{{ claim.ai_claim_type|default:"Other" }}</div>
                 </div>
             </div>
         </div>
     </div>
 
+
     <!-- AI Financial Assessment (Staff/Admin Only) -->
-    <div class="card shadow-sm mb-4 border-primary" style="overflow: hidden; border-radius: 12px; border-width: 2px;">
-        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center py-3">
+    <div class="premium-card">
+        <div class="premium-card-header" style="background: rgba(26, 110, 245, 0.05);">
             <div class="d-flex align-items-center gap-2">
-                <i class="bi bi-calculator"></i>
-                <span class="fw-bold fs-6">AI Payout Analysis</span>
+                <i class="bi bi-calculator text-primary"></i>
+                <h6 class="text-white">AI Payout Analysis</h6>
             </div>
-            <span class="badge bg-white text-primary px-3 py-2 rounded-pill shadow-sm" style="font-size: 0.85rem;">
+            <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-3 py-1 rounded-pill" style="font-size: 11px;">
                 {{ claim.ai_adjustment_factor|default:1.0|multiply:100|floatformat:0 }}% Payout
             </span>
         </div>
-        <div class="card-body bg-white border-bottom p-0">
-            <div class="p-3 border-bottom bg-light bg-opacity-50">
+        <div class="premium-card-body p-0">
+            <div class="p-3 border-bottom border-white border-opacity-5" style="background: rgba(255,255,255,0.01);">
                 <div class="d-flex justify-content-between mb-2">
-                    <small class="text-muted text-uppercase fw-bold" style="font-size: 0.6rem;">Claimed Amount</small>
-                    <span class="fw-bold">₹{{ claim.claimed_amount|intcomma }}</span>
+                    <div class="label-muted">Claimed Amount</div>
+                    <div class="data-value">₹{{ claim.claimed_amount|intcomma }}</div>
                 </div>
                 <div class="d-flex justify-content-between align-items-center">
-                    <small class="text-muted text-uppercase fw-bold" style="font-size: 0.6rem;">Recommended</small>
-                    <span class="fs-5 fw-bold text-primary">₹{{ claim.ai_predicted_amount|default:0|intcomma }}</span>
+                    <div class="label-muted">Recommended</div>
+                    <div class="data-value text-primary fs-5">₹{{ claim.ai_predicted_amount|default:0|intcomma }}</div>
                 </div>
             </div>
 
-            <div class="p-3 bg-white">
-                <h6 class="text-uppercase text-muted fw-bold mb-3" style="font-size: 0.65rem; letter-spacing: 1px;">Reasoning Factors</h6>
+            <div class="p-3">
+                <h6 class="label-muted mb-3" style="font-size: 10px;">Reasoning Factors</h6>
                 <div class="d-flex flex-wrap gap-2 mb-3">
                     <!-- Risk Badge -->
-                    <span class="badge border {% if claim.risk_score > 60 %}border-danger text-danger bg-danger bg-opacity-10{% elif claim.risk_score > 30 %}border-warning text-warning bg-warning bg-opacity-10{% else %}border-success text-success bg-success bg-opacity-10{% endif %} py-2 px-3">
+                    <span class="badge border {% if claim.risk_score > 60 %}border-danger text-danger bg-danger bg-opacity-10{% elif claim.risk_score > 30 %}border-warning text-warning bg-warning bg-opacity-10{% else %}border-success text-success bg-success bg-opacity-10{% endif %} py-2 px-3" style="font-size: 10px;">
                         <i class="bi bi-shield-exclamation me-1"></i> {{ claim.risk_score|floatformat:0 }}% Risk
                     </span>
                     <!-- Deductible Badge -->
-                    <span class="badge border border-secondary text-secondary bg-light py-2 px-3">
+                    <span class="badge border border-secondary border-opacity-25 text-muted bg-dark bg-opacity-50 py-2 px-3" style="font-size: 10px;">
                         <i class="bi bi-dash-circle me-1"></i> ₹{{ claim.deductible_amount|intcomma }} Ded.
                     </span>
                     <!-- History Badge -->
-                    <span class="badge border border-info text-info bg-info bg-opacity-10 py-2 px-3">
+                    <span class="badge border border-info border-opacity-25 text-info bg-info bg-opacity-10 py-2 px-3" style="font-size: 10px;">
                         <i class="bi bi-clock-history me-1"></i> History: {{ claim_history_count|default:0 }}
                     </span>
                     <!-- Docs Badge -->
-                    <span class="badge border {% if documents %}border-success text-success bg-success bg-opacity-10{% else %}border-danger text-danger bg-danger bg-opacity-10{% endif %} py-2 px-3">
+                    <span class="badge border {% if documents %}border-success text-success bg-success bg-opacity-10{% else %}border-danger text-danger bg-danger bg-opacity-10{% endif %} border-opacity-25 py-2 px-3" style="font-size: 10px;">
                         <i class="bi bi-file-earmark-check me-1"></i> {% if documents %}Docs OK{% else %}Docs Missing{% endif %}
                     </span>
                 </div>
 
-                <h6 class="text-uppercase text-muted fw-bold mb-2" style="font-size: 0.65rem; letter-spacing: 1px;">Calculation Logic</h6>
-                <div class="p-3 rounded-3" style="background: #f0f9ff; border: 1px solid #bae6fd; color: #0369a1; font-size: 0.8rem; line-height: 1.6;">
-                    <i class="bi bi-info-circle-fill me-1 opacity-75"></i>
+                <h6 class="label-muted mb-2" style="font-size: 10px;">Calculation Logic</h6>
+                <div class="p-3 rounded-3 small text-white-50" style="background: rgba(0,0,0,0.2); border-left: 3px solid #1a6ef5; line-height: 1.6;">
+                    <i class="bi bi-info-circle me-1 opacity-75"></i>
                     {{ claim.ai_calculation_logic|default:"No calculation trace found." }}
                 </div>
             </div>
         </div>
-        <div class="card-footer bg-light py-2 border-0 text-center">
-            <small class="text-muted small fst-italic" style="font-size: 0.7rem;">
+        <div class="p-2 border-top border-white border-opacity-5 text-center">
+            <small class="text-muted" style="font-size: 9px; letter-spacing: 0.5px;">
                 <i class="bi bi-lock-fill me-1"></i>
-                Financial Audit Detail: Staff/Admin Only
+                FINANCIAL AUDIT DETAIL: STAFF/ADMIN ONLY
             </small>
         </div>
     </div>
 
+
     <!-- AI Risk Analysis (Staff/Admin Only) -->
-    <div class="card shadow-sm mb-4 border-danger" style="overflow: hidden; border-radius: 12px; border-width: 2px;">
-        <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center py-3">
+    <div class="premium-card">
+        <div class="premium-card-header" style="background: rgba(239, 68, 68, 0.05);">
             <div class="d-flex align-items-center gap-2">
-                <i class="bi bi-shield-shaded"></i>
-                <span class="fw-bold fs-6">AI Risk Analysis</span>
+                <i class="bi bi-shield-shaded text-danger"></i>
+                <h6 class="text-white">AI Risk Analysis</h6>
             </div>
-            <span class="badge bg-white text-danger px-3 py-2 rounded-pill shadow-sm" style="font-size: 0.85rem;">
-                {{ claim.risk_score|floatformat:1 }}%
+            <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-3 py-1 rounded-pill" style="font-size: 11px;">
+                {{ claim.risk_score|floatformat:1 }}% RISK
             </span>
         </div>
-        <div class="card-body bg-white border-bottom">
+        <div class="premium-card-body">
             <div class="mb-3">
-                <h6 class="text-uppercase text-muted fw-bold mb-3" style="font-size: 0.65rem; letter-spacing: 1px;">Risk Profile Status</h6>
+                <h6 class="label-muted mb-3" style="font-size: 10px;">Risk Profile Status</h6>
                 {% if claim.fraud_flag %}
-                    <div class="alert alert-danger border-0 d-flex align-items-start gap-3 py-3 mb-0 shadow-sm" style="background: #fff5f5; border-left: 4px solid #f04444 !important; color: #b91c1c;">
-                        <i class="bi bi-exclamation-octagon-fill fs-5"></i>
+                    <div class="alert-premium" style="border-left: 3px solid #ef4444; background: rgba(239, 68, 68, 0.03);">
+                        <i class="bi bi-exclamation-octagon-fill text-danger fs-5"></i>
                         <div>
-                            <div class="fw-bold mb-1 small">HIGH RISK FLAG</div>
-                            <small class="opacity-75" style="font-size: 0.75rem;">This claim requires immediate manual investigation.</small>
+                            <div class="fw-bold text-danger mb-1 small">HIGH RISK FLAG</div>
+                            <div class="text-muted" style="font-size: 11px;">This claim requires immediate manual investigation.</div>
                         </div>
                     </div>
                 {% else %}
-                    <div class="alert alert-success border-0 d-flex align-items-start gap-3 py-3 mb-0 shadow-sm" style="background: #f0fdf4; border-left: 4px solid #22c55e !important; color: #15803d;">
-                        <i class="bi bi-shield-check-fill fs-5"></i>
+                    <div class="alert-premium" style="border-left: 3px solid #10b981; background: rgba(16, 185, 129, 0.03);">
+                        <i class="bi bi-shield-check-fill text-success fs-5"></i>
                         <div>
-                            <div class="fw-bold mb-1 small">NORMAL PROFILE</div>
-                            <small class="opacity-75" style="font-size: 0.75rem;">System detected no significant variances.</small>
+                            <div class="fw-bold text-success mb-1 small">NORMAL PROFILE</div>
+                            <div class="text-muted" style="font-size: 11px;">System detected no significant variances.</div>
                         </div>
                     </div>
                 {% endif %}
             </div>
 
             <div>
-                <h6 class="text-uppercase text-muted fw-bold mb-2" style="font-size: 0.65rem; letter-spacing: 1px;">Audit Justification</h6>
-                <div class="p-3 rounded-3" style="background: #f8fafc; border: 1px solid #e2e8f0; color: #475569; font-size: 0.8rem; line-height: 1.6;">
+                <h6 class="label-muted mb-2" style="font-size: 10px;">Audit Justification</h6>
+                <div class="p-3 rounded-3 small text-white-50" style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); line-height: 1.6;">
                     {{ claim.fraud_explanation|default:"No automated justification trace found." }}
                 </div>
             </div>
         </div>
-        <div class="card-footer bg-light py-2 border-0 text-center">
-            <small class="text-muted small fst-italic" style="font-size: 0.7rem;">
+        <div class="p-2 border-top border-white border-opacity-5 text-center">
+            <small class="text-muted" style="font-size: 9px; letter-spacing: 0.5px;">
                 <i class="bi bi-eye-slash-fill me-1"></i>
-                Internal Audit Trace: Restricted Visibility
+                INTERNAL AUDIT TRACE: RESTRICTED VISIBILITY
             </small>
         </div>
     </div>
+
     {% endif %}
 
     <!-- Final Decision: Admin Controls -->
-    <div class="card shadow-sm border-dark">
-        <div class="card-header bg-black text-white fw-bold">Admin Decision Console</div>
-        <div class="card-body">
+    <div class="premium-card" style="border: 1px solid rgba(255, 255, 255, 0.15);">
+        <div class="premium-card-header" style="background: rgba(255, 255, 255, 0.05);">
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-cpu text-white"></i>
+                <h6 class="text-white">Admin Decision Console</h6>
+            </div>
+        </div>
+        <div class="premium-card-body">
             <form method="POST">
                 {% csrf_token %}
-                <label class="small text-muted mb-1">FINAL REMARKS</label>
-                <textarea name="admin_comment" class="form-control mb-3" rows="3" placeholder="Enter final settlement notes (visible in audit logs)..."></textarea>
+                <div class="label-muted mb-2">Final Remarks</div>
+                <textarea name="admin_comment" class="form-control bg-dark text-white border-secondary mb-3" rows="3" placeholder="Enter final settlement notes (visible in audit logs)..." style="font-size: 13px;"></textarea>
                 
                 <div class="d-grid gap-2">
-                    <button type="submit" name="action" value="approve" class="btn btn-success d-flex justify-content-between align-items-center py-2" onclick="return confirm('APPROVE this claim for settlement?')">
-                        <span class="ps-2">APPROVE CLAIM</span>
+                    <button type="submit" name="action" value="approve" class="btn btn-success d-flex justify-content-between align-items-center py-2 shadow-sm" style="font-size: 13px; font-weight: 700;" onclick="return confirm('APPROVE this claim for settlement?')">
+                        <span class="ps-2 text-uppercase letter-spacing-1">Approve Claim</span>
                         <i class="bi bi-check-circle-fill pe-2"></i>
                     </button>
-                    <button type="submit" name="action" value="reject" class="btn btn-danger d-flex justify-content-between align-items-center py-2" onclick="return confirm('REJECT this claim?')">
-                        <span class="ps-2">REJECT CLAIM</span>
+                    <button type="submit" name="action" value="reject" class="btn btn-outline-danger d-flex justify-content-between align-items-center py-2" style="font-size: 13px; font-weight: 700;" onclick="return confirm('REJECT this claim?')">
+                        <span class="ps-2 text-uppercase letter-spacing-1">Reject Claim</span>
                         <i class="bi bi-x-circle-fill pe-2"></i>
                     </button>
                     <!-- Redirect to settlement if approved -->
                     {% if claim.status == 'approved' %}
-                    <a href="{% url 'claim:settlement' claim.pk %}" class="btn btn-primary d-flex justify-content-between align-items-center py-2">
-                        <span class="ps-2">GO TO SETTLEMENT</span>
+                    <a href="{% url 'claim:settlement' claim.pk %}" class="btn btn-primary d-flex justify-content-between align-items-center py-2 mt-2 shadow" style="font-size: 13px; font-weight: 700;">
+                        <span class="ps-2 text-uppercase letter-spacing-1">Proceed to Settlement</span>
                         <i class="bi bi-wallet2 pe-2"></i>
                     </a>
                     {% endif %}
@@ -537,17 +644,26 @@ Policy Verification
         </div>
     </div>
 
+
     <!-- Settlement Info -->
     {% if claim.settlement %}
-    <div class="card shadow-sm mt-4 border-info">
-        <div class="card-header bg-info text-white">Settlement Status</div>
-        <table class="table mb-0 small">
-            <tr><td class="ps-3 text-muted">Settled Amount</td><td class="text-end fw-bold">₹{{ claim.settlement.settled_amount|intcomma }}</td></tr>
-            <tr><td class="ps-3 text-muted">Payment Mode</td><td class="text-end text-uppercase">{{ claim.settlement.payment_mode }}</td></tr>
-            <tr><td class="ps-3 text-muted">Ref. ID</td><td class="text-end text-truncate" style="max-width: 100px;">{{ claim.settlement.transaction_reference }}</td></tr>
-        </table>
+    <div class="premium-card">
+        <div class="premium-card-header" style="background: rgba(13, 110, 253, 0.05);">
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-wallet2 text-info"></i>
+                <h6 class="text-white">Settlement Status</h6>
+            </div>
+        </div>
+        <div class="premium-card-body p-0">
+            <table class="table table-dark mb-0 small" style="background: transparent;">
+                <tr><td class="ps-3 label-muted">Settled Amount</td><td class="text-end fw-bold text-success">₹{{ claim.settlement.settled_amount|intcomma }}</td></tr>
+                <tr><td class="ps-3 label-muted">Payment Mode</td><td class="text-end text-uppercase text-white-50">{{ claim.settlement.payment_mode }}</td></tr>
+                <tr><td class="ps-3 label-muted">Ref. ID</td><td class="text-end text-info" style="font-family: monospace;">{{ claim.settlement.transaction_reference }}</td></tr>
+            </table>
+        </div>
     </div>
     {% endif %}
+
 </div>
 </div>
 </div>

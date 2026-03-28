@@ -8,17 +8,51 @@ class User(AbstractUser):
     ROLE_CHOICES = (
         ('admin', 'Admin'),
         ('staff', 'Staff'),
-        ('policyholder', 'Policyholder'),
+        ('user',  'User'),
     )
 
-    role    = models.CharField(max_length=20, choices=ROLE_CHOICES, default='policyholder')
+    role    = models.CharField(
+        max_length=20, 
+        choices=ROLE_CHOICES, 
+        default='user',
+        db_index=True,
+        help_text="System-assigned role for RBAC enforcement."
+    )
     phone   = models.CharField(max_length=15, blank=True)
     address = models.TextField(blank=True)
 
     def __str__(self):
-        return f"{self.username} ({self.get_role_display()})"
+        return f"{self.username} [{self.role.upper()}]"
 
-    # ── Convenience helpers ──────────────────────────────────────────
+    # ── SECURITY ENFORCEMENT ──────────────────────────────────────────
+    
+    def save(self, *args, **kwargs):
+        """
+        Hardened persistence hook: Synchronizes Django flags with the 'role' field.
+        Ensures bidirectional integrity (Flags <=> Role) for proper dashboard routing.
+        """
+        # 🛡️ 1. IDENTITY SYNC: Priority to Superuser/Staff flags for management tools compatibility
+        if self.is_superuser:
+            self.role = 'admin'
+            self.is_staff = True    # Admin must always be staff
+        elif self.is_staff and self.role != 'admin':
+            self.role = 'staff'
+            self.is_superuser = False
+        elif self.role == 'admin':
+            self.is_staff = True
+            self.is_superuser = True
+        elif self.role == 'staff':
+            self.is_staff = True
+            self.is_superuser = False
+        else:
+            # Default to User for any other state
+            self.role = 'user'
+            self.is_staff = False
+            self.is_superuser = False
+            
+        super().save(*args, **kwargs)
+
+
     @property
     def is_admin(self):
         return self.role == 'admin'
@@ -28,18 +62,28 @@ class User(AbstractUser):
         return self.role == 'staff'
 
     @property
-    def is_policyholder(self):
-        return self.role == 'policyholder'
+    def is_user(self):
+        return self.role == 'user'
 
     @property
     def dashboard_url(self):
-        """Return the correct dashboard URL name for this user's role."""
+        """
+        Centralized routing logic: Prioritizes Django permissions flags to ensure
+        unfailing redirection for Admins and Staff members.
+        """
+        if self.is_superuser:
+            return 'accounts:admin_dashboard'
+        
+        if self.is_staff:
+            return 'accounts:staff_dashboard'
+
         mapping = {
-            'admin':        'admin_dashboard',
-            'staff':        'staff_dashboard',
-            'policyholder': 'policyholder_dashboard',
+            'admin':        'accounts:admin_dashboard',
+            'staff':        'accounts:staff_dashboard',
+            'user':         'accounts:policyholder_dashboard',
         }
-        return mapping.get(self.role, 'policyholder_dashboard')
+        return mapping.get(self.role, 'accounts:policyholder_dashboard')
+
 
     @property
     def full_name(self):
@@ -76,8 +120,21 @@ class UserProfile(models.Model):
     )
     
     id_proof = models.FileField(upload_to='id_proofs/')
+    VERIFICATION_STATUS_CHOICES = [
+        ('PENDING', 'Pending'),
+        ('VERIFIED', 'Verified'),
+        ('MISMATCH', 'Mismatch'),
+    ]
+
     is_verified = models.BooleanField(default=False)
+    verification_status = models.CharField(
+        max_length=20,
+        choices=VERIFICATION_STATUS_CHOICES,
+        default='PENDING',
+        help_text="State machine for identity auditing."
+    )
     created_at = models.DateTimeField(auto_now_add=True)
+
 
     def __str__(self):
         return f"Profile of {self.user.username}"

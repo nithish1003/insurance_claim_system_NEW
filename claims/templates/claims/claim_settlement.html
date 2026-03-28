@@ -69,7 +69,9 @@
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label class="form-label fw-bold small text-muted text-uppercase" style="color: #94a3b8 !important; letter-spacing: 0.5px;">Payee Name</label>
-                            <input type="text" name="payee_name" class="form-control bg-dark text-white border-secondary" value="{{ claim.created_by.get_full_name|default:claim.created_by.username }}" required>
+                            <input type="text" name="payee_name" class="form-control bg-dark text-white border-secondary" 
+                                   value="{% if claim.created_by %}{{ claim.created_by.get_full_name|default:claim.created_by.username }}{% else %}ADMINISTRATOR/SYSTEM{% endif %}" required>
+
                         </div>
                         
                         <div class="col-md-6">

@@ -121,7 +121,14 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h5 class="text-white mb-1"><i class="bi bi-shield-lock me-2 text-primary"></i>Claim Assessment Panel</h5>
-            <small class="text-muted">Assessment for {{ claim.claim_number }} | {{ claim.created_by.get_full_name|default:claim.created_by.username }}</small>
+            <small class="text-muted">Assessment for {{ claim.claim_number }} | 
+                {% if claim.created_by %}
+                    {{ claim.created_by.get_full_name|default:claim.created_by.username }}
+                {% else %}
+                    <span class="italic text-muted-premium small">[SYSTEM]</span>
+                {% endif %}
+            </small>
+
         </div>
         <div class="d-flex gap-2">
             <a href="{% url 'accounts:staff_dashboard' %}" class="btn btn-outline-secondary btn-sm p-1 px-3" style="font-size: 11px;">
@@ -186,7 +193,8 @@
         </div>
         <div class="col-md-4">
             <div class="assessment-card">
-                <div class="data-row"><span class="data-label">Policy No</span><span class="data-value">{{ claim.policy.policy_number }}</span></div>
+                <div class="data-row"><span class="data-label">Policy Plan</span><span class="data-value">{{ claim.user_policy.policy.policy_number|default:claim.policy.policy_number }}</span></div>
+                <div class="data-row"><span class="data-label">Certificate</span><span class="data-value text-info">{{ claim.user_policy.certificate_number|default:"LEGACY" }}</span></div>
                 <div class="data-row"><span class="data-label">Policy Status</span><span class="data-value {% if policy_active %}text-success{% else %}text-danger{% endif %}">{% if policy_active %}Active{% else %}Inactive{% endif %}</span></div>
                 <div class="data-row"><span class="data-label">Claim Stats</span><span class="data-value">Freq: {{ claim_history_count|default:0 }}</span></div>
                 <div class="data-row"><span class="data-label">Incident Date</span><span class="data-value">{{ claim.incident_date|date:"d M Y" }}</span></div>
@@ -243,9 +251,14 @@
                         <td class="text-white-50">{{ doc.get_document_type_display }}</td>
                         <td><span class="truncate-text" title="{{ doc.file|filename }}">{{ doc.file|filename }}</span></td>
                         <td class="text-start">
-                            <button class="btn btn-doc-preview" onclick="previewDoc('{% url 'claim:view_document' doc.id %}', '{{ doc.get_document_type_display|escapejs }}')">
+                            <button class="btn btn-doc-preview" 
+                                    data-url="{% url 'claim:view_document' doc.id %}" 
+                                    data-title="{{ doc.get_document_type_display|escapejs }}"
+                                    onclick="previewDoc(this.dataset.url, this.dataset.title)">
                                 <i class="bi bi-eye"></i> Preview
                             </button>
+
+
                         </td>
                     </tr>
                     {% empty %}
@@ -297,7 +310,8 @@
                                    max="{{ net_claimable }}"
                                    value="{{ claim.approved_amount|default:claim.ai_predicted_amount|default:net_claimable|floatformat:2 }}" 
                                    style="font-size: 12px; font-weight: bold; color: #3b82f6 !important;"
-                                   oninput="if(this.value > {{ net_claimable }}) { this.classList.add('border-danger'); this.classList.remove('border-secondary'); } else { this.classList.remove('border-danger'); this.classList.add('border-secondary'); }">
+                                   oninput="if(parseFloat(this.value) > parseFloat('{{ net_claimable|stringformat:'f' }}')) { this.classList.add('border-danger'); this.classList.remove('border-secondary'); } else { this.classList.remove('border-danger'); this.classList.add('border-secondary'); }">
+
                             <div class="x-small text-muted mt-1" style="font-size: 9px;">Total Claim ({{ claim.claimed_amount }}) - Deductible ({{ claim.deductible_amount }})</div>
                         </div>
                     </div>

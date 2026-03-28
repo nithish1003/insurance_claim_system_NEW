@@ -40,7 +40,7 @@ urlpatterns = [
 
     # Claim notes
     path("note/add/<int:claim_id>/", views.add_claim_note, name="add_note"),
-    path("note/delete/<int:id>/", views.delete_claim_note, name="delete_note"),
+    path("note/delete/<int:note_id>/", views.delete_claim_note, name="delete_note"),
 
     # Claim history
     path("history/<int:claim_id>/", views.claim_history, name="history"),

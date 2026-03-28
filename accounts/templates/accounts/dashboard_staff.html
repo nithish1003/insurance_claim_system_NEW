@@ -323,6 +323,96 @@
         border-radius: 10px;
         overflow: hidden;
     }
+    .workspace-hero {
+        background: linear-gradient(135deg, rgba(26, 110, 245, 0.16), rgba(15, 27, 51, 0.92));
+        border: 1px solid rgba(59, 130, 246, 0.18);
+        border-radius: 18px;
+        padding: 24px;
+        margin-bottom: 24px;
+        position: relative;
+        overflow: hidden;
+    }
+    .workspace-hero::after {
+        content: "";
+        position: absolute;
+        inset: auto -40px -50px auto;
+        width: 180px;
+        height: 180px;
+        background: radial-gradient(circle, rgba(59, 130, 246, 0.22), transparent 70%);
+        pointer-events: none;
+    }
+    .workspace-summary-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+    .workspace-summary-card {
+        background: rgba(255, 255, 255, 0.035);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 14px;
+        padding: 18px 20px;
+        min-height: 118px;
+    }
+    .workspace-summary-card .summary-label {
+        color: #94a3b8;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 10px;
+    }
+    .workspace-summary-card .summary-value {
+        color: #ffffff;
+        font-size: 2rem;
+        font-weight: 700;
+        line-height: 1;
+        margin-bottom: 8px;
+    }
+    .workspace-summary-card .summary-note {
+        color: #cbd5e1;
+        font-size: 12px;
+        margin: 0;
+    }
+    .workspace-empty-state {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px dashed rgba(148, 163, 184, 0.35);
+        border-radius: 16px;
+        padding: 28px 24px;
+        margin-bottom: 24px;
+    }
+    .workspace-empty-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 16px;
+        background: rgba(16, 185, 129, 0.12);
+        color: #34d399;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        margin-bottom: 14px;
+    }
+    .workspace-empty-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 18px;
+    }
+    .workspace-table-note {
+        color: #94a3b8;
+        font-size: 12px;
+    }
+    @media (max-width: 767.98px) {
+        .workspace-hero {
+            padding: 20px;
+        }
+        .workspace-summary-card .summary-value {
+            font-size: 1.6rem;
+        }
+        .workspace-empty-actions {
+            flex-direction: column;
+        }
+    }
 </style>
 {% endblock %}
 
@@ -418,28 +508,32 @@
         </div>
         {% endif %}
 
-        <!-- Workflow Status Cards -->
-        <div class="kpi-row">
-            <div class="kpi-box info hover-scale" data-aos="zoom-in" data-aos-delay="100">
-                <div class="kpi-label">Master Submissions</div>
+        <!-- Workflow Status Cards (Granular Fix) -->
+        <div class="kpi-row" data-aos="fade-up">
+            <div class="kpi-box info hover-scale">
+                <div class="kpi-label">Dossiers Total</div>
                 <div class="kpi-value">{{ kpi.total_claims|default:0 }}</div>
                 <i class="bi bi-hdd-network kpi-icon"></i>
             </div>
-            <div class="kpi-box primary hover-scale" data-aos="zoom-in" data-aos-delay="200">
-                <div class="kpi-label">New Review Required</div>
-                <div class="kpi-value">{{ kpi.pending_claims|default:0 }}</div>
+            <div class="kpi-box primary hover-scale">
+                <div class="kpi-label">Submitted</div>
+                <div class="kpi-value text-info">{{ kpi.submitted_claims|default:0 }}</div>
                 <i class="bi bi-shield-exclamation kpi-icon text-info"></i>
-                <div class="position-absolute bottom-0 start-0 w-100 bg-info opacity-10" style="height: 4px;"></div>
             </div>
-            <div class="kpi-box warning hover-scale" data-aos="zoom-in" data-aos-delay="300">
-                <div class="kpi-label">Administrative Triage</div>
-                <div class="kpi-value">{{ kpi.forwarded_claims|default:0 }}</div>
+            <div class="kpi-box info hover-scale">
+                <div class="kpi-label">In Review</div>
+                <div class="kpi-value text-primary">{{ kpi.review_claims|default:0 }}</div>
+                <i class="bi bi-person-badge kpi-icon"></i>
+            </div>
+            <div class="kpi-box warning hover-scale">
+                <div class="kpi-label">Investigation</div>
+                <div class="kpi-value text-warning">{{ kpi.investigation_claims|default:0 }}</div>
                 <i class="bi bi-terminal kpi-icon"></i>
             </div>
-            <div class="kpi-box success hover-scale" data-aos="zoom-in" data-aos-delay="400">
-                <div class="kpi-label">Cycle Completed</div>
-                <div class="kpi-value">{{ kpi.processed_claims|default:0 }}</div>
-                <i class="bi bi-graph-up kpi-icon"></i>
+            <div class="kpi-box success hover-scale">
+                <div class="kpi-label">Settled</div>
+                <div class="kpi-value text-success">{{ kpi.settled_claims|default:0 }}</div>
+                <i class="bi bi-check-circle-fill kpi-icon text-success"></i>
             </div>
         </div>
 
@@ -469,12 +563,17 @@
                                 <div class="x-small text-muted mt-1" style="font-size: 9px;">{{ claim.ai_claim_type|upper|default:"PENDING" }}</div>
                             </td>
                             <td>
-                                <div class="fw-bold text-white">{{ claim.created_by.get_full_name|default:claim.created_by.username }}</div>
-                                <div class="d-flex align-items-center gap-2 mt-1">
-                                    <span class="badge {% if claim.priority_level == "HIGH" %}bg-danger{% elif claim.priority_level == "MEDIUM" %}bg-warning text-dark{% else %}bg-secondary opacity-50{% endif %}" style="font-size: 8px; padding: 2px 8px;">
-                                        {{ claim.priority_level|default:"LOW" }}
-                                    </span>
-                                </div>
+                                {% if claim.created_by %}
+                                    <div class="fw-bold text-white">{{ claim.created_by.get_full_name|default:claim.created_by.username }}</div>
+                                    <div class="d-flex align-items-center gap-2 mt-1">
+                                        <span class="badge {% if claim.priority_level == "HIGH" %}bg-danger{% elif claim.priority_level == "MEDIUM" %}bg-warning text-dark{% else %}bg-secondary opacity-50{% endif %}" style="font-size: 8px; padding: 2px 8px;">
+                                            {{ claim.priority_level|default:"LOW" }}
+                                        </span>
+                                    </div>
+                                {% else %}
+                                    <div class="fw-bold text-white italic">Internal / System</div>
+                                    <div class="x-small text-muted mt-1" style="font-size: 9px;">Automated Record</div>
+                                {% endif %}
                             </td>
                             <td>
                                 <div class="d-flex flex-column gap-1">
@@ -613,8 +712,8 @@
                             <td class="fw-medium">{{ claim.claim_number }}</td>
                             <td>
                                 <div class="fw-bold">{{ claim.created_by.get_full_name|default:claim.created_by.username }}</div>
-                                <div class="x-small text-muted">{{ claim.policy.policy_number }}</div>
                             </td>
+                            <td>{{ claim.policy.policy_number|default:"Not linked" }}</td>
                             <td>₹{{ claim.claimed_amount|intcomma }}</td>
                             <td>
                                 <span class="text-info fw-bold">₹{{ claim.ai_predicted_amount|default:0|floatformat:0|intcomma }}</span>
@@ -655,10 +754,68 @@
     <!-- 3B. ASSESSMENT DETAILS SCREEN (New Sidebar)    -->
     <!-- ============================================== -->
     <div id="view-assessment" class="view-section" style="display: none;">
+        <div class="workspace-hero" data-aos="fade-down">
+            <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+                <div>
+                    <div class="text-uppercase small text-info fw-semibold mb-2" style="letter-spacing: 0.12em;">Audit Command Center</div>
+                    <h4 class="text-white mb-2">Audit &amp; Assessment Workspace</h4>
+                    <p class="text-muted mb-0">Stay on top of the live queue, spot files that need attention, and keep completed assessments easy to revisit.</p>
+                </div>
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="{% url 'accounts:staff_dashboard' %}" class="btn btn-outline-light btn-sm px-3 hover-scale">Refresh Queue</a>
+                    <a href="{% url 'claim:notes_dashboard' %}" class="btn btn-primary-modern btn-sm px-3 hover-scale">Open Notes Hub</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="workspace-summary-grid" data-aos="fade-up" data-aos-delay="50">
+            <div class="workspace-summary-card hover-scale">
+                <div class="summary-label">Open Assessments</div>
+                <div class="summary-value">{{ workspace_metrics.pending_count }}</div>
+                <p class="summary-note">Claims currently waiting for staff action.</p>
+            </div>
+            <div class="workspace-summary-card hover-scale">
+                <div class="summary-label">Needs Attention</div>
+                <div class="summary-value text-warning">{{ workspace_metrics.attention_count }}</div>
+                <p class="summary-note">Files with SLA pressure, validation gaps, or fraud flags.</p>
+            </div>
+            <div class="workspace-summary-card hover-scale">
+                <div class="summary-label">Overdue Queue</div>
+                <div class="summary-value {% if workspace_metrics.overdue_count %}text-danger{% else %}text-success{% endif %}">{{ workspace_metrics.overdue_count }}</div>
+                <p class="summary-note">Claims beyond the review SLA window.</p>
+            </div>
+            <div class="workspace-summary-card hover-scale">
+                <div class="summary-label">Assessment Archive</div>
+                <div class="summary-value">{{ workspace_metrics.completed_count }}</div>
+                <p class="summary-note">Completed or closed claim assessments ready for lookup.</p>
+            </div>
+        </div>
+
+        {% if not waiting_claims %}
+        <div class="workspace-empty-state" data-aos="fade-up" data-aos-delay="100">
+            <div class="workspace-empty-icon">
+                <i class="bi bi-check2-circle"></i>
+            </div>
+            <h5 class="text-white mb-2">The active assessment queue is clear.</h5>
+            <p class="text-muted mb-0">
+                {% if request.GET.q or request.GET.status or request.GET.type %}
+                No claims match the current filters. Clear the search to repopulate the workspace.
+                {% else %}
+                There are no submitted, under-review, or investigation claims waiting for staff action right now.
+                {% endif %}
+            </p>
+            <div class="workspace-empty-actions">
+                <a href="{% url 'accounts:staff_dashboard' %}" class="btn btn-outline-secondary btn-sm hover-scale">Reset Filters</a>
+                <a href="{% url 'claim:list' %}" class="btn btn-primary-modern btn-sm hover-scale">Open Claim Register</a>
+            </div>
+        </div>
+        {% endif %}
+
         <!-- 1. Pending Assessment Table -->
         <div class="table-card mb-4" data-aos="fade-up">
-            <div class="p-3 border-bottom border-secondary" style="background: rgba(255,255,255,0.02);">
-                <h6 class="mb-0 text-white"><i class="bi bi-hourglass-split me-2 text-warning"></i>Audit & Assessment Workspace</h6>
+            <div class="p-3 border-bottom border-secondary d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2" style="background: rgba(255,255,255,0.02);">
+                <h6 class="mb-0 text-white"><i class="bi bi-hourglass-split me-2 text-warning"></i>Pending Assessment Queue</h6>
+                <span class="workspace-table-note">{{ workspace_metrics.pending_count }} live file{{ workspace_metrics.pending_count|pluralize }} in the action queue</span>
             </div>
             <div class="table-responsive">
                 <table class="table-modern">
@@ -709,58 +866,6 @@
                 </table>
             </div>
         </div>
-
-        <!-- 2. Completed Assessment Details Table -->
-        <div class="table-card" data-aos="fade-up" data-aos-delay="100">
-            <div class="p-3 border-bottom border-secondary" style="background: rgba(255,255,255,0.02);">
-                <h6 class="mb-0 text-white"><i class="bi bi-check-all me-2 text-success"></i>Assessment Archive</h6>
-            </div>
-            <div class="table-responsive">
-                <table class="table-modern">
-                    <thead>
-                        <tr>
-                            <th class="ps-4">Claim ID</th>
-                            <th>Incident Date</th>
-                            <th>Audit Metrics</th>
-                            <th>Rec. Payout</th>
-                            <th>Final Status</th>
-                            <th class="pe-4 text-end">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody class="stagger-container">
-                        {% for claim in processed_claims %}
-                            {% if claim.status != 'draft' %}
-                            <tr>
-                                <td class="ps-4">
-                                    <div class="fw-bold text-white">{{ claim.claim_number }}</div>
-                                    <div class="x-small text-muted">ID: {{ claim.pk }}</div>
-                                </td>
-                                <td class="small">{{ claim.incident_date|date:"d M Y" }}</td>
-                                <td>
-                                    <div class="d-flex gap-1">
-                                        <span class="badge {% if claim.policy_validity == 'valid' or claim.policy_validity == 'Verified' %}bg-success{% else %}bg-danger{% endif %} opacity-75" style="font-size: 8px;" title="Policy Validity: {{ claim.policy_validity }}">VAL</span>
-                                        <span class="badge {% if claim.document_verification == 'verified' or claim.document_verification == 'Verified' %}bg-success{% else %}bg-danger{% endif %} opacity-75" style="font-size: 8px;" title="Docs: {{ claim.document_verification }}">DOC</span>
-                                        <span class="badge {% if claim.amount_verification == 'verified' or claim.amount_verification == 'Verified' %}bg-success{% else %}bg-danger{% endif %} opacity-75" style="font-size: 8px;" title="Amt: {{ claim.amount_verification }}">AMT</span>
-                                    </div>
-                                </td>
-                                <td class="fw-bold text-info-premium">₹{{ claim.recommended_amount|default:0|intcomma }}</td>
-                                <td>
-                                    <span class="badge-status {% if claim.status == 'approved' %}badge-success{% elif claim.status == 'rejected' %}badge-danger{% else %}badge-neutral{% endif %}">
-                                        {{ claim.get_status_display }}
-                                    </span>
-                                </td>
-                                <td class="pe-4 text-end">
-                                    <a href="{% url 'claim:detail' claim.id %}" class="btn-primary-modern py-1 px-3 text-decoration-none hover-scale" style="font-size: 10px;">
-                                        View Dossier
-                                    </a>
-                                </td>
-                            </tr>
-                            {% endif %}
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
     </div>
 
     <!-- ============================================== -->
@@ -774,14 +879,6 @@
             </div>
             <div class="d-flex gap-2">
                 <button class="btn btn-sm btn-outline-secondary hover-scale"><i class="bi bi-download me-1"></i> Export Data</button>
-                <div class="dropdown">
-                    <button class="btn btn-sm btn-primary-modern dropdown-toggle hover-scale" data-bs-toggle="dropdown">All Risk Categories</button>
-                    <ul class="dropdown-menu dropdown-menu-dark">
-                        <li><a class="dropdown-item" href="#">Motor Fleet</a></li>
-                        <li><a class="dropdown-item" href="#">Health Premium</a></li>
-                        <li><a class="dropdown-item" href="#">Life Coverage</a></li>
-                    </ul>
-                </div>
             </div>
         </div>
 
@@ -840,7 +937,6 @@
     <div id="view-reports" class="view-section animate-fade-in" style="display: none;">
         <h5 class="text-white mb-4" data-aos="fade-down">Analytics & Reports summary</h5>
         
-        <!-- TOP GRAPHS -->
         <div class="row g-4 mb-4">
             <div class="col-md-8">
                 <div class="dashboard-card p-4 h-100 hover-scale" data-aos="fade-up" data-aos-delay="100">
@@ -854,8 +950,6 @@
                         </div>
                         <span class="small ps-2 text-white" style="width: 30px;">{{ entry.count }}</span>
                     </div>
-                    {% empty %}
-                    <p class="text-muted small text-center py-4">No recent claim activity to display.</p>
                     {% endfor %}
                 </div>
             </div>
@@ -871,7 +965,6 @@
         <div class="premium-card hover-scale" data-aos="fade-up" data-aos-delay="300">
             <div class="premium-card-header">
                 <h6><i class="bi bi-person-badge me-2 text-info"></i>AUDITOR PERFORMANCE METRICS</h6>
-                <span class="text-muted small tracking-wider text-uppercase">Direct Assessment Analytics</span>
             </div>
             <div class="premium-table-container">
                 <table class="premium-table">
@@ -900,7 +993,6 @@
                             </td>
                             <td>
                                 <div class="fw-bold text-info">{{ stat.total_audit }}</div>
-                                <div class="x-small text-muted">Claims Handled</div>
                             </td>
                             <td>
                                 <div class="fw-bold text-white">₹{{ stat.total_audited|default:0|intcomma }}</div>
@@ -908,12 +1000,6 @@
                             </td>
                             <td>
                                 <div class="d-flex align-items-center gap-2">
-                                    <div class="flex-grow-1" style="max-width: 80px;">
-                                        <div class="progress-premium" style="height: 4px;">
-                                            <div class="progress-bar {% if stat.accuracy > 85 %}bg-success{% elif stat.accuracy > 60 %}bg-warning{% else %}bg-danger{% endif %}" 
-                                                 style="width: {{ stat.accuracy }}%"></div>
-                                        </div>
-                                    </div>
                                     <span class="fw-bold {% if stat.accuracy > 85 %}text-success{% elif stat.accuracy > 60 %}text-warning{% else %}text-danger{% endif %}">{{ stat.accuracy }}%</span>
                                 </div>
                             </td>
@@ -923,16 +1009,12 @@
                                 </span>
                             </td>
                         </tr>
-                        {% empty %}
-                        <tr><td colspan="5" class="text-center py-5 text-muted small">No performance data synchronized for current staff roster.</td></tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
-
-</div>
 
 </div>
 {% endblock %}
@@ -945,13 +1027,11 @@
             element.classList.add('active');
         }
 
-        // Hide all views first
         document.querySelectorAll('.view-section').forEach(sec => sec.style.display = 'none');
         
         const target = document.getElementById('view-' + viewName);
         if (target) {
             target.style.display = 'block';
-            // Refresh AOS to catch newly visible elements
             if (typeof AOS !== 'undefined') {
                 AOS.refresh();
             }
@@ -961,14 +1041,12 @@
     function updateSearchMode(select) {
         const input = document.getElementById('staff-search-input');
         const mode = select.value;
-        
         const placeholders = {
             'all': 'Search by any identifier...',
             'claim': 'Enter Claim ID (e.g. CLM-123)...',
             'policy': 'Enter Policy ID (e.g. POL-456)...',
             'name': 'Enter Holder Name or Username...'
         };
-        
         input.placeholder = placeholders[mode] || placeholders['all'];
         input.focus();
     }
@@ -977,7 +1055,6 @@
     function fetchSuggestions(query) {
         clearTimeout(searchTimeout);
         const container = document.getElementById('search-suggestions');
-        
         if (query.length < 2) {
             container.style.display = 'none';
             return;
@@ -1012,34 +1089,26 @@
         const typeSelect = document.getElementById('search-type');
         const container = document.getElementById('search-suggestions');
         
-        // 1. Auto-fill input and type
         input.value = item.value;
         if (item.type === 'claim' || item.type === 'policy' || item.type === 'name') {
             typeSelect.value = item.type;
         }
 
-        // 2. Auto-fill status and claim_type if available (only for claims)
         if (item.type === 'claim') {
             const statusSelect = document.querySelector('select[name="status"]');
-            const claimTypeSelect = document.querySelector('select[name="claim_type"]'); // Check if name is correct
-            // The template uses name="type" for claim type filter
             const realTypeSelect = document.querySelector('select[name="type"]');
-
             if (statusSelect && item.status) statusSelect.value = item.status;
             if (realTypeSelect && item.claim_type) realTypeSelect.value = item.claim_type;
         }
 
-        // 3. Hide suggestions
         container.style.display = 'none';
-
-        // 4. Submit form
         input.form.submit();
     }
 
-    // Close suggestions on outside click
     document.addEventListener('click', (e) => {
         if (!e.target.closest('.search-group')) {
-            document.getElementById('search-suggestions').style.display = 'none';
+            const suggestions = document.getElementById('search-suggestions');
+            if (suggestions) suggestions.style.display = 'none';
         }
     });
 </script>
