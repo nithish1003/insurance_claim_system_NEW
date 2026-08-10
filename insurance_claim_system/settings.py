@@ -25,7 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '***REMOVED***'
+SECRET_KEY = os.getenv('SECRET_KEY', 'default-insecure-key-for-dev-only')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -98,7 +98,7 @@ DATABASES = {
         'ENGINE': os.getenv('DB_ENGINE', 'django.db.backends.mysql'),
         'NAME': os.getenv('DB_NAME', 'insurance_db'),
         'USER': os.getenv('DB_USER', 'root'),
-        'PASSWORD': os.getenv('DB_PASSWORD', '***REMOVED***'),
+        'PASSWORD': os.getenv('DB_PASSWORD', ''),
         'HOST': os.getenv('DB_HOST', 'localhost'),
         'PORT': os.getenv('DB_PORT', '3306'),
     }
@@ -143,8 +143,8 @@ STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
 # Razorpay Test Keys (Managed via .env)
-RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID", "***REMOVED***")
-RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET", "***REMOVED***")
+RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID", "")
+RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET", "")
 AUTH_USER_MODEL = 'accounts.User'
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"

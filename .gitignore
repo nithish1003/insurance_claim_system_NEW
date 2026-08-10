@@ -66,3 +66,9 @@ db.sqlite3
 
 # Media
 media/
+
+# Environment Variables
+.env
+
+# Virtual Environment
+venv311/
