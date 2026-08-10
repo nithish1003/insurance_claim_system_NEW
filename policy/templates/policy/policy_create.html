@@ -9,15 +9,15 @@
 {% block extra_css %}
 <style>
 .form-card {
-    background: #111c35;
-    border: 1px solid #1f335c;
+    background: #FFFFFF;
+    border: 1px solid rgba(101, 96, 79, 0.25);
     border-radius: 12px;
     padding: 30px;
     position: relative;
     z-index: 1;
 }
 .form-label {
-    color: #9fb3d1;
+    color: rgba(156, 149, 143, 0.7);
     font-size: 14px;
     font-weight: 500;
     margin-bottom: 8px;
@@ -26,7 +26,7 @@
     letter-spacing: 0.5px;
 }
 .form-control, .form-select {
-    background-color: #1e293b;
+    background-color: #FFFFFF;
     border: 1px solid rgba(255,255,255,0.2);
     color: #ffffff;
     border-radius: 8px;
@@ -40,20 +40,20 @@
     transition: all 0.3s ease;
 }
 .form-control::placeholder, .form-select::placeholder {
-    color: #94a3b8;
+    color: rgba(156, 149, 143, 0.7);
     opacity: 1;
 }
 .form-control:focus, .form-select:focus {
-    background-color: #1e293b;
-    border-color: #1a6ef5;
+    background-color: #FFFFFF;
+    border-color: #65604F;
     color: #ffffff;
-    box-shadow: 0 0 0 3px rgba(26, 110, 245, 0.25);
+    box-shadow: 0 0 0 3px rgba(101, 96, 79, 0.25);
     outline: none;
     z-index: 10;
 }
 .form-control:hover, .form-select:hover {
     border-color: rgba(255,255,255,0.4);
-    background-color: #1e293b;
+    background-color: #FFFFFF;
 }
 .form-select {
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
@@ -62,7 +62,7 @@
     background-size: 12px 12px;
 }
 .form-select option {
-    background-color: #111c35;
+    background-color: #FFFFFF;
     color: #ffffff;
 }
 .form-group {
@@ -73,13 +73,13 @@
     display: flex;
     gap: 15px;
     margin-top: 30px;
-    border-top: 1px solid #1f335c;
+    border-top: 1px solid rgba(101, 96, 79, 0.25);
     padding-top: 25px;
     position: relative;
     z-index: 1;
 }
 .btn-save {
-    background: #1a6ef5;
+    background: #65604F;
     color: white;
     padding: 10px 24px;
     border-radius: 8px;
@@ -90,13 +90,13 @@
     z-index: 5;
 }
 .btn-save:hover {
-    background: #3d8bff;
+    background: #65604F;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(26, 110, 245, 0.3);
+    box-shadow: 0 4px 12px rgba(101, 96, 79, 0.3);
 }
 .btn-cancel {
     background: rgba(255,255,255,0.05);
-    color: #9fb3d1;
+    color: rgba(156, 149, 143, 0.7);
     padding: 10px 24px;
     border-radius: 8px;
     border: 1px solid rgba(255,255,255,0.1);
@@ -117,7 +117,7 @@
 }
 /* Fix any potential overlapping issues */
 .form-control[readonly], .form-control[disabled], .form-select[readonly], .form-select[disabled] {
-    background-color: #1e293b;
+    background-color: #FFFFFF;
     color: #ffffff;
     opacity: 1;
     cursor: not-allowed;
@@ -197,6 +197,23 @@
                         <label class="form-label">Base Premium Amount (₹) <small class="text-info">(auto-calculated)</small></label>
                         <input type="number" step="0.01" id="id_base_premium" name="base_premium" class="form-control" readonly placeholder="0.00">
                     </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label text-warning-premium">Admin Premium (%) <small class="text-info">(markup percentage)</small></label>
+                        <input type="number" step="0.01" name="admin_premium_percent" id="id_admin_premium_percent" class="form-control" required placeholder="6.00" style="border-color: rgba(255, 193, 7, 0.4);" value="6.00">
+                        <p class="x-small text-muted-premium mt-1">Enter percentage (e.g., 6 for 6%). Final Price = Base + (Base * % / 100)</p>
+                    </div>
+
+                    <div class="col-md-6" id="room_rent_container" style="display: none;">
+                        <label class="form-label">✅ Overall Room Rent Coverage Limit (₹)</label>
+                        <input type="number" step="0.01" name="room_rent_limit_per_day" id="id_room_rent_limit_per_day" class="form-control" placeholder="0.00" value="0">
+                        <p class="x-small text-muted-premium mt-1">Maximum total room charges covered for a hospitalization.</p>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label text-success-premium">Final Payout Price (₹) <small class="text-info">(calculated)</small></label>
+                        <input type="text" id="id_final_price_display" class="form-control fw-bold text-success bg-dark border-success border-opacity-25" readonly placeholder="0.00">
+                    </div>
                 </div>
 
                 <div class="action-buttons">
@@ -249,10 +266,30 @@
             }
             const premium = sumInsured * rate;
             basePremiumInput.value = premium.toFixed(2);
+            
+            // Calculate and display Final Price
+            const percentInput = document.getElementById('id_admin_premium_percent');
+            const finalPriceDisplay = document.getElementById('id_final_price_display');
+            
+            const percent = parseFloat(percentInput.value) || 0;
+            const finalPrice = premium + (premium * percent / 100);
+            finalPriceDisplay.value = finalPrice.toLocaleString('en-IN', {
+                style: 'currency',
+                currency: 'INR'
+            });
+
+            // 🏥 Room Rent Field visibility
+            const roomRentContainer = document.getElementById('room_rent_container');
+            if (policyType === 'health' || policyType === 'medical') {
+                roomRentContainer.style.display = 'block';
+            } else {
+                roomRentContainer.style.display = 'none';
+            }
         }
 
         policyTypeSelect.addEventListener('change', calculateValues);
         sumInsuredInput.addEventListener('input', calculateValues);
+        document.getElementById('id_admin_premium_percent').addEventListener('input', calculateValues);
     });
 </script>
 {% endblock %}

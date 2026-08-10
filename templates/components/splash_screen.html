@@ -1,0 +1,313 @@
+{% load static %}
+<script>
+    if (sessionStorage.getItem('ai_insurance_intro_played')) {
+        document.write('<style>#ai-system-loader { display: none !important; }</style>');
+    }
+</script>
+
+<div id="ai-system-loader" class="loader-overlay">
+    <!-- 3D WebGL Canvas for Chips Animation -->
+    <canvas id="intro-canvas"></canvas>
+    
+    <!-- Logo that automatically creates/fades in at the end -->
+    <div id="intro-logo" class="intro-logo">
+        <div class="intro-logo-content">
+            <h1 class="intro-title">Claim<span class="text-primary" style="color: #65604F; font-style: italic;">IQ</span></h1>
+            <p class="intro-subtitle">Online Insurance Claim Processing & Tracking System</p>
+        </div>
+    </div>
+
+    <button id="skip-loader" class="skip-btn">
+        Skip Intro <i class="bi bi-chevron-double-right"></i>
+    </button>
+</div>
+
+<style>
+    .loader-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 999999;
+        background: #000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+
+    #intro-canvas {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+    .intro-logo {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(0.85);
+        z-index: 10;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 2.5s cubic-bezier(0.23, 1, 0.32, 1), transform 3s cubic-bezier(0.16, 1, 0.3, 1);
+        text-align: center;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+    }
+
+    .intro-logo-content {
+        background: rgba(101, 96, 79, 0.85);
+        backdrop-filter: blur(16px);
+        border: 1px solid rgba(170, 135, 88, 0.3);
+        padding: 40px 60px;
+        border-radius: 20px;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3), inset 0 0 30px rgba(170, 135, 88, 0.1);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .intro-logo-content::before {
+        content: '';
+        position: absolute;
+        top: -50%; left: -50%;
+        width: 200%; height: 200%;
+        background: radial-gradient(circle, rgba(101, 96, 79, 0.15), transparent 60%);
+        animation: rotate 10s linear infinite;
+        pointer-events: none;
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .intro-title {
+        font-size: 4rem;
+        font-weight: 900;
+        color: #ffffff;
+        margin: 0;
+        text-shadow: 0 0 20px rgba(101, 96, 79, 0.6);
+        position: relative;
+        letter-spacing: 20px;
+        transition: letter-spacing 3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .intro-subtitle {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: rgba(255, 255, 255, 0.9);
+        text-transform: uppercase;
+        letter-spacing: 12px;
+        margin: 0;
+        position: relative;
+        background: linear-gradient(90deg, #fff, #65604F, #fff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: shimmer 3s infinite linear;
+        background-size: 200% auto;
+        transition: letter-spacing 3s cubic-bezier(0.16, 1, 0.3, 1);
+        white-space: nowrap;
+    }
+
+    @keyframes shimmer {
+        to { background-position: 200% center; }
+    }
+    
+    .intro-logo.show {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+    
+    .intro-logo.show .intro-title {
+        letter-spacing: 8px;
+    }
+
+    .intro-logo.show .intro-subtitle {
+        letter-spacing: 4px;
+    }
+
+    .skip-btn {
+        position: absolute;
+        bottom: 3rem;
+        right: 3rem;
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(15px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: rgba(255, 255, 255, 0.4);
+        padding: 14px 32px;
+        border-radius: 100px;
+        font-size: 0.7rem;
+        font-weight: 900;
+        cursor: pointer;
+        z-index: 100;
+        text-transform: uppercase;
+        letter-spacing: 3px;
+        transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+
+    .skip-btn:hover {
+        background: rgba(101, 96, 79, 0.1);
+        border-color: rgba(101, 96, 79, 0.4);
+        color: #65604F;
+        transform: translateY(-4px);
+        box-shadow: 0 15px 40px rgba(101, 96, 79, 0.2);
+    }
+
+    @media (max-width: 768px) {
+        .intro-title { font-size: 2.5rem; }
+        .intro-subtitle { font-size: 0.7rem; white-space: normal; text-align: center; line-height: 1.5; }
+        .intro-logo-content { padding: 30px 20px; width: 90%; }
+        .intro-logo.show .intro-title { letter-spacing: 4px; }
+        .intro-logo.show .intro-subtitle { letter-spacing: 2px; }
+    }
+</style>
+
+<!-- Three.js Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    if (sessionStorage.getItem('ai_insurance_intro_played')) return;
+
+    const canvas = document.getElementById('intro-canvas');
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.z = 18;
+
+    // Lighting (Cinematic)
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+    scene.add(ambientLight);
+    
+    const blueLight = new THREE.PointLight(0x0FA4AF, 12, 60);
+    blueLight.position.set(0, 5, 10);
+    scene.add(blueLight);
+
+    const purpleLight = new THREE.PointLight(0xa855f7, 8, 50);
+    purpleLight.position.set(-10, -5, 5);
+    scene.add(purpleLight);
+
+    // Create "Square Chips"
+    const chips = [];
+    const chipCount = 80;
+    const geometry = new THREE.BoxGeometry(1.2, 1.2, 0.2);
+    
+    for (let i = 0; i < chipCount; i++) {
+        const material = new THREE.MeshPhongMaterial({ 
+            color: Math.random() > 0.8 ? 0xffffff : 0x0FA4AF, 
+            specular: 0xAFDDE5,
+            shininess: 120,
+            transparent: true,
+            opacity: 0.9
+        });
+        
+        const chip = new THREE.Mesh(geometry, material);
+        
+        // Random start positions high up
+        chip.position.set(
+            (Math.random() - 0.5) * 25,
+            Math.random() * 30 + 15,
+            (Math.random() - 0.5) * 15
+        );
+        
+        chip.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+        
+        // Physics state
+        chip.userData = {
+            velocity: new THREE.Vector3((Math.random() - 0.5) * 0.02, -0.05 - Math.random() * 0.15, 0),
+            rotSpeed: new THREE.Vector3((Math.random() - 0.5) * 0.05, (Math.random() - 0.5) * 0.05, (Math.random() - 0.5) * 0.05),
+            gravity: 0.004 + Math.random() * 0.002,
+            settled: false
+        };
+        
+        scene.add(chip);
+        chips.push(chip);
+    }
+
+    let animationId;
+    const startTime = Date.now();
+    let logoTriggered = false;
+
+    function animate() {
+        animationId = requestAnimationFrame(animate);
+        const elapsed = Date.now() - startTime;
+
+        chips.forEach(chip => {
+            const data = chip.userData;
+            
+            if (!data.settled) {
+                // Apply Gravity
+                data.velocity.y -= data.gravity;
+                chip.position.add(data.velocity);
+                
+                // Spin while falling
+                chip.rotation.x += data.rotSpeed.x;
+                chip.rotation.y += data.rotSpeed.y;
+                chip.rotation.z += data.rotSpeed.z;
+
+                // Bounce off "floor"
+                if (chip.position.y < -6) {
+                    chip.position.y = -6;
+                    data.velocity.y *= -0.25; // Dampened bounce
+                    data.rotSpeed.multiplyScalar(0.5); // Slow down spin
+                    
+                    if (Math.abs(data.velocity.y) < 0.01) {
+                        data.settled = true;
+                    }
+                }
+            } else if (elapsed > 4500) {
+                // Drift away as logo takes over
+                chip.position.z -= 0.05;
+                chip.position.y -= 0.01;
+                chip.material.opacity -= 0.01;
+            }
+        });
+
+        // Logo Sequence
+        if (elapsed > 3500 && !logoTriggered) {
+            document.getElementById('intro-logo').classList.add('show');
+            logoTriggered = true;
+        }
+
+        // Auto-close
+        if (elapsed > 8500) {
+            closeIntro();
+        }
+
+        renderer.render(scene, camera);
+    }
+
+    function closeIntro() {
+        cancelAnimationFrame(animationId);
+        sessionStorage.setItem('ai_insurance_intro_played', 'true');
+        const loader = document.getElementById('ai-system-loader');
+        if (loader) {
+            loader.style.opacity = '0';
+            loader.style.transition = 'opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1)';
+            setTimeout(() => {
+                loader.remove();
+                document.body.style.overflow = 'auto';
+            }, 1200);
+        }
+    }
+
+    document.getElementById('skip-loader').addEventListener('click', closeIntro);
+    document.body.style.overflow = 'hidden';
+    
+    animate();
+
+    window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+});
+</script>

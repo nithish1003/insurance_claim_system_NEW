@@ -49,3 +49,27 @@ def multiply(value, arg):
         return float(value) * float(arg)
     except (ValueError, TypeError):
         return 0
+
+
+@register.filter
+def divide(value, arg):
+    try:
+        divisor = float(arg)
+        if divisor == 0:
+            return 0
+        return float(value) / divisor
+    except (ValueError, TypeError):
+        return 0
+
+
+@register.filter
+def add_minutes(value, minutes):
+    """
+    Adds minutes to a datetime object.
+    Usage: {{ claim.created_at|add_minutes:10 }}
+    """
+    from datetime import timedelta
+    try:
+        return value + timedelta(minutes=int(minutes))
+    except (ValueError, TypeError):
+        return value

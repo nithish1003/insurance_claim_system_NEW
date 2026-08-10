@@ -12,22 +12,20 @@
     .tracking-wider { letter-spacing: 0.05em; }
     .cert-badge {
         font-size: 11px;
-        color: #7a8ba8;
+        color: rgba(156, 149, 143, 0.7);
         font-family: monospace;
-        background: rgba(26,110,245,0.08);
-        border: 1px solid rgba(26,110,245,0.15);
+        background: rgba(101, 96, 79, 0.08);
+        border: 1px solid rgba(101, 96, 79, 0.15);
         border-radius: 6px;
         padding: 2px 8px;
     }
     
     /* 💠 Premium Table Architecture */
     .premium-card {
-        --section-accent: #3b82f6;
-        background:
-            radial-gradient(circle at top right, rgba(255, 255, 255, 0.08), transparent 38%),
-            linear-gradient(160deg, rgba(15, 23, 42, 0.96) 0%, rgba(15, 23, 42, 0.82) 55%, rgba(30, 41, 59, 0.96) 100%);
+        --section-accent: #65604F;
+        background: #FFFFFF;
         backdrop-filter: blur(12px);
-        border: 1px solid rgba(148, 163, 184, 0.16);
+        border: 1px solid rgba(255, 255, 255, 0.08);
         border-radius: 18px;
         overflow: hidden;
         margin-bottom: 30px;
@@ -44,7 +42,7 @@
     }
     .premium-card-header {
         background: linear-gradient(to right, rgba(255, 255, 255, 0.03), transparent);
-        border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         padding: 18px 24px;
         display: flex;
         justify-content: space-between;
@@ -52,7 +50,7 @@
     }
     .premium-card-header h5 {
         margin-bottom: 0;
-        color: white;
+        color: #605E5B;
         font-size: 1rem;
         font-weight: 700;
         letter-spacing: 0.02em;
@@ -66,7 +64,7 @@
     .premium-table thead th {
         background: transparent;
         padding: 4px 18px 8px;
-        color: #7f91ab;
+        color: rgba(156, 149, 143, 0.6);
         font-size: 0.68rem;
         font-weight: 700;
         text-transform: uppercase;
@@ -78,44 +76,49 @@
         color: #cbd5e1;
         font-size: 0.85rem;
         vertical-align: middle;
-        background: rgba(8, 15, 30, 0.62);
-        border-top: 1px solid rgba(148, 163, 184, 0.08);
-        border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+        background: #FFFFFF;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     }
     .premium-table tbody td:first-child {
-        border-left: 1px solid rgba(148, 163, 184, 0.08);
+        border-left: 1px solid rgba(255, 255, 255, 0.05);
         border-radius: 14px 0 0 14px;
     }
     .premium-table tbody td:last-child {
-        border-right: 1px solid rgba(148, 163, 184, 0.08);
+        border-right: 1px solid rgba(255, 255, 255, 0.05);
         border-radius: 0 14px 14px 0;
     }
     .premium-table tbody tr:hover td {
-        background: rgba(15, 23, 42, 0.92);
-        border-color: rgba(59, 130, 246, 0.18);
+        background: #F4EEE2;
+        border-color: rgba(101, 96, 79, 0.18);
     }
     .premium-table tbody tr.table-empty-row:hover td {
         background: rgba(8, 15, 30, 0.62);
         border-color: rgba(148, 163, 184, 0.08);
     }
     .badge-neon {
+        display: inline-block;
+        white-space: nowrap;
         padding: 5px 12px;
         border-radius: 20px;
         font-size: 0.65rem;
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.5px;
+        min-width: 100px;
+        text-align: center;
     }
-    .badge-active { background: rgba(0, 198, 100, 0.1); color: #00c664; border: 1px solid rgba(0, 198, 100, 0.2); }
-    .badge-warning-premium { background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.2); }
-    .badge-lapsed { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
-    .badge-expired { background: rgba(108, 117, 125, 0.1); color: #94a3b8; border: 1px solid rgba(108, 117, 125, 0.2); }
-    .badge-pending { background: rgba(59, 130, 246, 0.1); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.2); }
+    .badge-active { background: rgba(62, 124, 69, 0.1); color: #3E7C45; border: 1px solid rgba(62, 124, 69, 0.2); }
+    .badge-warning-premium { background: rgba(200, 138, 45, 0.1); color: #C88A2D; border: 1px solid rgba(200, 138, 45, 0.2); }
+    .badge-lapsed { background: rgba(176, 74, 74, 0.1); color: #B04A4A; border: 1px solid rgba(176, 74, 74, 0.2); }
+    .badge-expired { background: rgba(108, 117, 125, 0.1); color: rgba(156, 149, 143, 0.7); border: 1px solid rgba(108, 117, 125, 0.2); }
+    .badge-pending { background: rgba(101, 96, 79, 0.1); color: #65604F; border: 1px solid rgba(101, 96, 79, 0.2); }
+    .badge-awaiting-payment { background: rgba(200, 138, 45, 0.14); color: #C88A2D; border: 1px solid rgba(200, 138, 45, 0.24); }
 
     .btn-premium-sm {
-        background: rgba(59, 130, 246, 0.1);
-        color: #60a5fa;
-        border: 1px solid rgba(59, 130, 246, 0.22);
+        background: rgba(101, 96, 79, 0.1);
+        color: #65604F;
+        border: 1px solid rgba(101, 96, 79, 0.22);
         padding: 7px 14px;
         border-radius: 10px;
         font-size: 0.68rem;
@@ -129,14 +132,14 @@
         gap: 6px;
     }
     .btn-premium-sm:hover {
-        background: #1a6ef5;
+        background: #65604F;
         color: white;
-        border-color: #1a6ef5;
+        border-color: #65604F;
         transform: translateY(-1px);
-        box-shadow: 0 10px 20px rgba(26, 110, 245, 0.18);
+        box-shadow: 0 10px 20px rgba(101, 96, 79, 0.18);
     }
     .hover-blue:hover {
-        color: #60a5fa !important;
+        color: #65604F !important;
         text-decoration: underline !important;
     }
 </style>
@@ -145,7 +148,7 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4" data-aos="fade-down">
     <div>
-        <h3 class="mb-1 text-white fw-bold">My Coverage Portfolio</h3>
+        <h3 class="mb-1 fw-bold"><span class="gradient-title">My Coverage Portfolio</span></h3>
         <p class="text-muted mb-0">Review your active and approved insurance policies.</p>
     </div>
     <div class="d-flex gap-2">
@@ -162,8 +165,8 @@
 
 <div class="premium-card" data-aos="fade-up" data-aos-delay="100">
     <div class="premium-card-header">
-        <h5><i class="bi bi-shield-check me-2 text-primary"></i>Insurance Policies</h5>
-        <span class="text-muted small tracking-wider">{{ user_policies|length }} ACTIVE CONTRACT{{ user_policies|length|pluralize }}</span>
+        <h5><i class="bi bi-shield-check me-2 text-primary"></i><span class="gradient-title">Insurance Policies</span></h5>
+        <span class="text-muted small tracking-wider">{{ user_policies|length }} POLICY RECORD{{ user_policies|length|pluralize }}</span>
     </div>
 
     <div class="premium-table-container">
@@ -176,7 +179,7 @@
                     <th>Insurer</th>
                     <th>Coverage Period</th>
                     <th>Sum Insured</th>
-                    <th>Premium</th>
+                    <th>Current Due</th>
                     <th>Status</th>
                     <th class="pe-4 text-end">Action</th>
                 </tr>
@@ -188,7 +191,7 @@
                         <span class="cert-badge">{{ up.certificate_number }}</span>
                     </td>
                     <td class="fw-bold text-white">
-                        <a href="{% url 'policy:detail' up.policy.id %}" class="text-white text-decoration-none hover-blue">
+                        <a href="{% url 'policy:detail' up.policy.public_id %}" class="text-white text-decoration-none hover-blue">
                         {{ up.policy.policy_number }}
                         </a>
                     </td>
@@ -209,30 +212,51 @@
                     </td>
                     <td class="fw-bold">₹{{ up.policy.sum_insured|default:0|floatformat:0|intcomma }}</td>
                     <td class="text-info">
-                        {% with schedule=up.premium_schedule %}
-                        {% if schedule %}
-                        ₹{{ schedule.gross_premium|default:0|floatformat:2|intcomma }}
+                        {% with due=up.current_due_payment %}
+                        {% if due %}
+                            <div class="fw-bold">&#8377;{{ due.amount|floatformat:2|intcomma }}</div>
+                            <div class="x-small text-muted" style="font-size: 10px;">
+                                Annual Premium: ₹{{ up.final_premium|default:up.premium_schedule.gross_premium|default:0|floatformat:2|intcomma }}
+                            </div>
                         {% else %}
-                        <span class="text-muted small">N/A</span>
+                            {% if up.is_paid and up.status == 'active' %}
+                                <span class="text-success small">Paid in Full</span>
+                            {% else %}
+                                <span class="text-muted small">N/A</span>
+                            {% endif %}
                         {% endif %}
                         {% endwith %}
                     </td>
                     <td>
-                        <span class="badge-neon {% if up.status == 'active' %}badge-active{% elif up.status == 'grace' %}badge-warning-premium{% elif up.status == 'lapsed' %}badge-lapsed{% elif up.status == 'expired' %}badge-expired{% else %}badge-pending{% endif %}">
-                            {{ up.get_status_display }}
+                        <span class="badge-neon {% if up.status == 'active' %}badge-active{% elif up.status == 'approved' and not up.is_paid %}badge-awaiting-payment{% elif up.status == 'grace' %}badge-warning-premium{% elif up.status == 'lapsed' %}badge-lapsed{% elif up.status == 'expired' %}badge-expired{% else %}badge-pending{% endif %}">
+                            {{ up.admin_status_label }}
                         </span>
                     </td>
                     <td class="pe-4 text-end">
-                        <a href="{% url 'policy:detail' up.policy.id %}" class="btn-premium-sm hover-scale">
+                        {% if up.status == 'approved' and not up.is_paid %}
+                        {% with due=up.current_due_payment %}
+                        {% if due %}
+                        <a href="{% url 'premiums:pay' due.public_id %}" class="btn-premium-sm hover-scale">
+                            Pay Now <i class="bi bi-credit-card ms-1"></i>
+                        </a>
+                        {% else %}
+                        <button type="button" class="btn-premium-sm hover-scale" disabled>
+                            Pay Now <i class="bi bi-credit-card ms-1"></i>
+                        </button>
+                        {% endif %}
+                        {% endwith %}
+                        {% else %}
+                        <a href="{% url 'policy:detail' up.policy.public_id %}" class="btn-premium-sm hover-scale">
                             View Details <i class="bi bi-chevron-right ms-1"></i>
                         </a>
+                        {% endif %}
                     </td>
                 </tr>
                 {% empty %}
                 <tr class="table-empty-row">
                     <td colspan="9" class="empty-state py-4 text-center">
                         <i class="bi bi-shield-slash fs-3 mb-3 d-block opacity-25"></i>
-                        You do not have any active policies yet.<br>
+                        You do not have any approved or active policies yet.<br>
                         {% if request.user.role == "policyholder" %}
                         <a href="{% url 'policy:browse' %}" class="btn btn-link text-info mt-2">Browse Available Plans</a>
                         {% endif %}
@@ -246,9 +270,9 @@
 
 {% if pending_applications %}
 {# ── Shared Asset: Pending Applications Tracker ──────────────────────────── #}
-<div class="premium-card" data-aos="fade-up" data-aos-delay="200" style="--section-accent: #f59e0b;">
+<div class="premium-card" data-aos="fade-up" data-aos-delay="200" style="--section-accent: #65604F;">
     <div class="premium-card-header">
-        <h5><i class="bi bi-hourglass-split me-2 text-warning"></i>Applications Pending Review</h5>
+        <h5><i class="bi bi-hourglass-split me-2 text-warning"></i><span class="gradient-title-cyan">Applications Pending Review</span></h5>
         <span class="text-muted small tracking-wider">{{ pending_applications|length }} APPLICATION{{ pending_applications|length|pluralize }} SUBMITTED</span>
     </div>
     <div class="premium-table-container">
@@ -282,7 +306,7 @@
                         </span>
                     </td>
                     <td class="pe-4 text-end">
-                        <a href="{% url 'policy:my_applications' %}" class="btn-premium-sm hover-scale" style="color: #f59e0b; background: rgba(245,158,11,0.1); border-color: rgba(245,158,11,0.22);">
+                        <a href="{% url 'policy:my_applications' %}" class="btn-premium-sm hover-scale" style="color: #C88A2D; background: rgba(245,158,11,0.1); border-color: rgba(245,158,11,0.22);">
                             Track Status <i class="bi bi-chevron-right ms-1"></i>
                         </a>
                     </td>
@@ -293,4 +317,10 @@
     </div>
 </div>
 {% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Navigation and hover effects logic (if any)
+</script>
 {% endblock %}

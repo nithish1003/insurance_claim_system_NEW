@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Application Details | ClaimIQ{% endblock %}
+
+{% block breadcrumb %}Application Detail{% endblock %}
+
+{% block extra_css %}
+<style>
+    .detail-card {
+        background: #FFFFFF;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 20px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        overflow: hidden;
+        position: relative;
+    }
+
+    .detail-card::after {
+        content: "";
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #65604F, #3E7C45);
+    }
+
+    .info-label {
+        font-size: 0.75rem;
+        color: rgba(156, 149, 143, 0.7);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 4px;
+    }
+
+    .info-value {
+        font-weight: 600;
+        color: #605E5B;
+        font-size: 1.1rem;
+    }
+
+    .status-banner {
+        padding: 20px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 30px;
+    }
+
+    .banner-pending {
+        background: rgba(255, 193, 7, 0.1);
+        border: 1px solid rgba(255, 193, 7, 0.2);
+        color: #ffc107;
+    }
+
+    .banner-approved {
+        background: rgba(62, 124, 69, 0.1);
+        border: 1px solid rgba(62, 124, 69, 0.2);
+        color: #3E7C45;
+    }
+
+    .banner-rejected {
+        background: rgba(176, 74, 74, 0.1);
+        border: 1px solid rgba(176, 74, 74, 0.2);
+        color: #B04A4A;
+    }
+
+    .spec-item {
+        padding: 15px;
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        height: 100%;
+    }
+
+    .back-btn {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: rgba(156, 149, 143, 0.7);
+        padding: 8px 16px;
+        border-radius: 10px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .back-btn:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: #fff;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="gradient-title mb-0">Application Detail</h3>
+        <a href="{% url 'policy:my_applications' %}" class="back-btn">
+            <i class="bi bi-arrow-left"></i> Back to My Applications
+        </a>
+    </div>
+
+    <div class="detail-card p-4 p-md-5" data-aos="fade-up">
+        <!-- Status Banner -->
+        <div class="status-banner banner-{{ application.status }}">
+            <div class="fs-1">
+                {% if application.status == 'pending' %}<i class="bi bi-hourglass-split"></i>
+                {% elif application.status == 'approved' %}<i class="bi bi-check-circle-fill"></i>
+                {% else %}<i class="bi bi-x-circle-fill"></i>{% endif %}
+            </div>
+            <div>
+                <h4 class="mb-1 fw-bold">Status: {{ application.get_status_display }}</h4>
+                <p class="mb-0 opacity-75">
+                    {% if application.status == 'pending' %}Your application is currently under review by our agents.{% elif application.status == 'approved' %}Your application has been approved. You can now proceed to payment.{% else %}Unfortunately, your application was not approved.{% endif %}
+                </p>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- Left: Policy Info -->
+            <div class="col-lg-7">
+                <h5 class="text-white mb-4"><i class="bi bi-info-square me-2 text-primary"></i> Policy Information</h5>
+                <div class="row g-3">
+                    <div class="col-sm-6">
+                        <div class="spec-item">
+                            <div class="info-label">Policy Number</div>
+                            <div class="info-value text-primary">{{ application.policy.policy_number }}</div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="spec-item">
+                            <div class="info-label">Policy Type</div>
+                            <div class="info-value">{{ application.policy.policy_type|default:"General" }}</div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="spec-item">
+                            <div class="info-label">Sum Insured</div>
+                            <div class="info-value text-success">₹{{ application.policy.sum_insured|intcomma }}</div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="spec-item">
+                            <div class="info-label">Deductible</div>
+                            <div class="info-value">₹{{ application.policy.deductible|intcomma }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <div class="spec-item bg-transparent border-0 px-0">
+                        <div class="info-label">Plan Description</div>
+                        <p class="text-muted small">{{ application.policy.plan.description|default:"No description available." }}</p>
+                    </div>
+                </div>
+
+                {% if application.admin_remarks %}
+                <div class="mt-4 p-4 rounded bg-dark border border-secondary">
+                    <h6 class="text-white mb-2"><i class="bi bi-chat-left-text me-2"></i> Admin Remarks</h6>
+                    <p class="text-muted mb-0 small">{{ application.admin_remarks }}</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Right: Application Meta -->
+            <div class="col-lg-5">
+                <h5 class="text-white mb-4"><i class="bi bi-clipboard-data me-2 text-primary"></i> Application Timeline</h5>
+                <ul class="list-unstyled">
+                    <li class="mb-4 d-flex gap-3">
+                        <div class="text-primary fs-4"><i class="bi bi-calendar-plus"></i></div>
+                        <div>
+                            <div class="info-label">Submitted On</div>
+                            <div class="info-value">{{ application.created_at|date:"F d, Y @ H:i" }}</div>
+                        </div>
+                    </li>
+                    {% if application.reviewed_at %}
+                    <li class="mb-4 d-flex gap-3">
+                        <div class="text-success fs-4"><i class="bi bi-calendar-check"></i></div>
+                        <div>
+                            <div class="info-label">Reviewed On</div>
+                            <div class="info-value">{{ application.reviewed_at|date:"F d, Y @ H:i" }}</div>
+                        </div>
+                    </li>
+                    {% endif %}
+                </ul>
+
+                {% if application.vehicle_number %}
+                <div class="mt-4 p-3 rounded" style="background: rgba(101, 96, 79, 0.05); border: 1px solid rgba(101, 96, 79, 0.1);">
+                    <h6 class="text-white mb-3">Vehicle Details</h6>
+                    <div class="d-flex justify-content-between mb-2">
+                        <small class="text-muted">Vehicle Number</small>
+                        <span class="text-white fw-bold">{{ application.vehicle_number }}</span>
+                    </div>
+                    {% if application.rc_upload %}
+                    <div class="d-flex justify-content-between">
+                        <small class="text-muted">RC Document</small>
+                        <a href="{{ application.rc_upload.url }}" target="_blank" class="text-primary small">View Uploaded RC</a>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <div class="mt-5">
+                    {% if application.status == 'approved' %}
+                    <a href="{% url 'policy:detail' application.policy.public_id %}" class="btn btn-primary w-100 py-3 fw-bold rounded-pill shadow-lg hover-scale">
+                        <i class="bi bi-credit-card me-2"></i> Proceed to Premium Payment
+                    </a>
+                    {% elif application.status == 'pending' %}
+                    <div class="text-center p-3 rounded border border-warning border-opacity-25" style="background: rgba(255, 193, 7, 0.02);">
+                        <i class="bi bi-clock-history text-warning fs-3 mb-2 d-block"></i>
+                        <p class="text-muted small mb-0">Our underwriting team is verifying your documents. This usually takes 24-48 hours.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

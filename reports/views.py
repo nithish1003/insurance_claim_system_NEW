@@ -11,6 +11,15 @@ from accounts.models import User
 from django.http import JsonResponse
 from django.contrib.admin.views.decorators import staff_member_required
 
+ARCHIVED_CLAIM_STATUSES = ["closed", "withdrawn"]
+PENDING_CLAIM_STATUSES = ["submitted", "under_review", "staff_reviewed", "investigation"]
+APPROVED_CLAIM_STATUSES = ["approved", "settled", "partially_approved"]
+RESOLVED_CLAIM_STATUSES = APPROVED_CLAIM_STATUSES + ["rejected"]
+
+
+def operational_claims():
+    return Claim.objects.exclude(status__in=ARCHIVED_CLAIM_STATUSES)
+
 def is_admin(user):
     return user.is_authenticated and (user.is_superuser or user.role == 'admin')
 
@@ -75,7 +84,7 @@ def _serialize_payment_activity(payment):
         description_bits.append(payment.description)
 
     return {
-        "id": payment.id,
+        "id": str(payment.public_id),
         "title": title,
         "description": " | ".join(description_bits),
         "log_type": "payment",
@@ -157,18 +166,20 @@ def admin_reports(request):
         return render(request, 'accounts/unauthorized.html')
 
     # 1. Total Claims by Status
-    status_counts = Claim.objects.values('status').annotate(total=Count('id'))
+    claims_qs = operational_claims()
+
+    status_counts = claims_qs.values('status').annotate(total=Count('id'))
     # 2. KPI Summary Analytics
-    total_claims = Claim.objects.count()
-    approved_claims = Claim.objects.filter(status__in=['approved', 'settled', 'partially_approved']).count()
-    rejected_claims = Claim.objects.filter(status='rejected').count()
-    pending_claims = Claim.objects.filter(status__in=['submitted', 'under_review', 'investigation']).count()
+    total_claims = claims_qs.count()
+    approved_claims = claims_qs.filter(status__in=APPROVED_CLAIM_STATUSES).count()
+    rejected_claims = claims_qs.filter(status='rejected').count()
+    pending_claims = claims_qs.filter(status__in=PENDING_CLAIM_STATUSES).count()
     
     reviewed_total = approved_claims + rejected_claims
     efficiency = (approved_claims / reviewed_total * 100) if reviewed_total > 0 else 0
 
     # 3. Financial Summary - using Coalesce to avoid None values
-    financials = Claim.objects.aggregate(
+    financials = claims_qs.aggregate(
         total_claimed=Coalesce(Sum('claimed_amount'), Value(0), output_field=DecimalField()),
         total_approved=Coalesce(
             Sum(Case(
@@ -180,22 +191,35 @@ def admin_reports(request):
             Value(0), 
             output_field=DecimalField()
         ),
-        total_rejected=Coalesce(
+        total_exposure=Coalesce(
             Sum(Case(
-                When(status='rejected', then=F('claimed_amount')),
-                When(status='partially_approved', then=F('claimed_amount') - F('approved_amount')),
+                When(status__in=PENDING_CLAIM_STATUSES, then=F('claimed_amount')),
                 default=Value(0),
                 output_field=DecimalField()
-            )), 
-            Value(0), 
+            )),
+            Value(0),
             output_field=DecimalField()
-        )
+        ),
     )
 
+    resolved_totals = claims_qs.filter(status__in=RESOLVED_CLAIM_STATUSES).aggregate(
+        claimed=Coalesce(Sum('claimed_amount'), Value(0), output_field=DecimalField()),
+        payout=Coalesce(
+            Sum(Case(
+                When(status='settled', then=F('settled_amount')),
+                When(status__in=['approved', 'partially_approved'], then=F('approved_amount')),
+                default=Value(0),
+                output_field=DecimalField()
+            )),
+            Value(0),
+            output_field=DecimalField()
+        ),
+    )
+    financials['total_rejected'] = max(resolved_totals['claimed'] - resolved_totals['payout'], 0)
 
     # 3. Monthly Claim Distribution (last 6 months)
     six_months_ago = timezone.now() - timedelta(days=180)
-    monthly_data_raw = Claim.objects.filter(created_at__gte=six_months_ago).values('created_at__month').annotate(count=Count('id')).order_by('created_at__month')
+    monthly_data_raw = claims_qs.filter(created_at__gte=six_months_ago).values('created_at__month').annotate(count=Count('id')).order_by('created_at__month')
     
     # Pre-populate last 6 months with 0
     month_names = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
@@ -237,7 +261,7 @@ def admin_reports(request):
         avg_rec = claims.filter(status__in=['approved', 'settled', 'partially_approved']).aggregate(avg_val=Avg('approved_amount'))['avg_val'] or 0
 
         staff_performance.append({
-            'name': s.get_full_name() or s.username,
+            'name': getattr(s, "full_name_display", None) or s.get_full_name() or s.username,
             'handled': total_handled,
             'accuracy': round(accuracy, 1),
             'avg_time': str(avg_time).split('.')[0] if avg_time else "N/A",
@@ -402,8 +426,9 @@ def get_fraud_alerts(request):
     if not is_admin(request.user):
         return JsonResponse({'error': 'Unauthorized'}, status=403)
         
-    high_value_claims = Claim.objects.filter(claimed_amount__gt=500000).order_by('-claimed_amount')[:5]
-    missing_docs_claims = Claim.objects.filter(documents__isnull=True).distinct()[:5]
+    claims_qs = operational_claims()
+    high_value_claims = claims_qs.filter(claimed_amount__gt=500000).order_by('-claimed_amount')[:5]
+    missing_docs_claims = claims_qs.filter(documents__isnull=True).distinct()[:5]
     
     alerts = []
     
@@ -412,7 +437,7 @@ def get_fraud_alerts(request):
             'type': 'high_value',
             'claim_number': c.claim_number,
             'amount': float(c.claimed_amount),
-            'id': c.id,
+            'id': str(c.public_id),
             'status': 'critical',
             'message': f"High Value Exposure: ₹{int(c.claimed_amount):,}"
         })
@@ -421,7 +446,7 @@ def get_fraud_alerts(request):
         alerts.append({
             'type': 'missing_docs',
             'claim_number': c.claim_number,
-            'id': c.id,
+            'id': str(c.public_id),
             'status': 'warning',
             'message': "Critical Documentation Gap"
         })

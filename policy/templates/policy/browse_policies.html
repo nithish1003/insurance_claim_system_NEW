@@ -11,8 +11,8 @@
 <style>
     /* ── Policy Plan Cards ───────────────────── */
     .plan-card {
-        background: rgba(255, 255, 255, 0.03);
-        border: 1px solid rgba(255, 255, 255, 0.07);
+        background: #FFFFFF;
+        border: 1px solid rgba(255, 255, 255, 0.08);
         border-radius: 16px;
         overflow: hidden;
         transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
@@ -24,7 +24,7 @@
     .plan-card:hover {
         transform: translateY(-5px);
         box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
-        border-color: rgba(26, 110, 245, 0.35);
+        border-color: rgba(101, 96, 79, 0.35);
     }
 
     .plan-card-top {
@@ -43,27 +43,27 @@
         letter-spacing: 0.06em;
         padding: 4px 10px;
         border-radius: 20px;
-        background: rgba(26, 110, 245, 0.15);
-        color: #6fa3f5;
+        background: rgba(101, 96, 79, 0.15);
+        color: #65604F;
         text-transform: uppercase;
     }
 
     .plan-insurer {
         font-size: 12px;
-        color: #7a8ba8;
+        color: rgba(156, 149, 143, 0.7);
         margin-top: 4px;
     }
 
     .plan-sum {
         font-size: 22px;
         font-weight: 700;
-        color: #00c664;
+        color: #3E7C45;
         margin: 10px 0 2px;
     }
 
     .plan-premium {
         font-size: 13px;
-        color: #7a8ba8;
+        color: rgba(156, 149, 143, 0.7);
     }
 
     .btn-apply {
@@ -73,7 +73,7 @@
         font-size: 14px;
         font-weight: 600;
         border: none;
-        background: linear-gradient(135deg, #1a6ef5, #0b50d6);
+        background: #65604F;
         color: #fff;
         display: flex;
         align-items: center;
@@ -84,7 +84,7 @@
     }
 
     .btn-apply:hover {
-        background: linear-gradient(135deg, #2d80ff, #1a6ef5);
+        background: #F4EEE2;
         color: #fff;
     }
 
@@ -109,15 +109,49 @@
     }
 
     .btn-status.approved {
-        border: 1px solid rgba(0, 198, 100, 0.4);
-        background: rgba(0, 198, 100, 0.1);
-        color: #00c664;
+        border: 1px solid rgba(62, 124, 69, 0.4);
+        background: rgba(62, 124, 69, 0.1);
+        color: #3E7C45;
     }
 
     .btn-status.rejected {
-        border: 1px solid rgba(244, 72, 101, 0.4);
-        background: rgba(244, 72, 101, 0.1);
-        color: #f44865;
+        border: 1px solid rgba(176, 74, 74, 0.4);
+        background: rgba(176, 74, 74, 0.1);
+        color: #B04A4A;
+    }
+
+    .btn-buy-policy {
+        width: 100%;
+        padding: 12px 18px;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 700;
+        border: 1px solid rgba(101, 96, 79, 0.3);
+        background: #FFFFFF;
+        color: #65604F;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        text-decoration: none;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .btn-buy-policy:hover {
+        background: #65604F;
+        color: #fff;
+        border-color: #65604F;
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(101, 96, 79, 0.2);
+    }
+
+    .btn-buy-policy:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
     }
 </style>
 {% endblock %}
@@ -132,18 +166,19 @@
             <i class="bi bi-arrow-left"></i>
         </a>
         <div>
-            <h3 class="mb-1 text-white fw-bold">Browse Policy Plans</h3>
+            <h3 class="mb-1 fw-bold"><span class="gradient-title">Browse Policy Plans</span></h3>
             <p class="text-muted mb-0">Select a plan to apply — applications are reviewed and approved by our admin team.</p>
         </div>
     </div>
     <a href="{% url 'policy:my_applications' %}" class="btn btn-outline-secondary btn-sm">
         <i class="bi bi-file-earmark-check me-1"></i>My Applications
     </a>
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
 </div>
 
 {# ── Info Banner ──────────────────────────────────────────────────────────── #}
 <div class="mb-4 p-3 rounded d-flex align-items-center gap-3"
-    style="background: rgba(26,110,245,0.08); border: 1px solid rgba(26,110,245,0.2);">
+    style="background: rgba(101, 96, 79, 0.08); border: 1px solid rgba(101, 96, 79, 0.2);">
     <i class="bi bi-info-circle-fill text-primary fs-5"></i>
     <div>
         <strong class="text-white small">How the Approval Process Works</strong>
@@ -192,9 +227,9 @@
 
             {# ── Action Button based on application status ───────────────── #}
             <div class="plan-card-footer">
-                {% if policy.id in user_applications %}
+                {% if policy.public_id|stringformat:"s" in user_applications %}
                 {% for app_id, app_obj in user_applications.items %}
-                {% if app_id == policy.id %}
+                {% if app_id == policy.public_id|stringformat:"s" %}
                 {% if app_obj.status == "pending" %}
                 <div class="btn-status pending">
                     <i class="bi bi-hourglass-split"></i> Application Pending Review
@@ -211,9 +246,9 @@
                 {% endif %}
                 {% endfor %}
                 {% else %}
-                <a href="{% url 'policy:apply' policy.id %}" class="btn-apply">
-                    <i class="bi bi-file-earmark-plus"></i> Apply Now
-                </a>
+                <button class="btn-buy-policy" onclick="buyPolicy(this, '{{ policy.public_id }}', '{{ policy.policy_number|escapejs }}')">
+                    <i class="bi bi-send-check"></i> Apply Now
+                </button>
                 {% endif %}
             </div>
         </div>
@@ -229,4 +264,73 @@
     <p class="text-muted">No insurance plans are currently listed. Check back soon!</p>
 </div>
 {% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    async function buyPolicy(btn, policyId, policyNumber) {
+        const originalHtml = btn.innerHTML;
+        
+        try {
+            // Confirmation UI
+            const result = await InsureAlert.confirm("Plan Subscription", `Are you sure you want to apply for ${policyNumber}?`, "Apply Now");
+            if (!result.isConfirmed) return;
+
+            // UI Feedback: Loading
+            btn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i> PROCESSING...';
+            btn.disabled = true;
+
+            const response = await fetch(`/policy/buy-policy/${policyId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                }
+            });
+
+            const contentType = response.headers.get('content-type');
+            if (response.status === 401 || (contentType && contentType.includes('text/html') && response.url.includes('login'))) {
+                const data = contentType && contentType.includes('application/json') ? await response.json() : null;
+                const msg = data && data.error ? data.error : "Session expired. Redirecting to login...";
+                InsureAlert.warning("Session Expired", msg);
+                setTimeout(() => window.location.href = "{% url 'accounts:login' %}?next=" + encodeURIComponent(window.location.pathname), 2000);
+                return;
+            }
+
+            if (!contentType || !contentType.includes('application/json')) {
+                const rawText = await response.text();
+                console.error("Non-JSON Application Response:", rawText);
+                throw new Error("NON_JSON_RESPONSE");
+            }
+
+            const data = await response.json();
+
+            if (response.ok) {
+                // Success UI
+                btn.innerHTML = '<i class="bi bi-check2-circle"></i> APPLICATION SENT';
+                btn.className = 'btn-status pending';
+                btn.disabled = true;
+
+                // Show success toast
+                await InsureAlert.success('Application Sent', data.message || 'Your request is being reviewed.');
+                window.location.reload();
+            } else {
+                // Business/Logic error
+                InsureAlert.error('Application Error', data.error || 'Something went wrong');
+                btn.innerHTML = originalHtml;
+                btn.disabled = false;
+            }
+        } catch (error) {
+            console.error('API Error:', error);
+            if (error.message === 'NON_JSON_RESPONSE' || response?.status >= 500) {
+                InsureAlert.error('Gateway Error', 'Payment service temporarily unavailable. Please try again.');
+            } else {
+                InsureAlert.error('Network Error', 'Could not reach the server. Please check your connection.');
+            }
+            btn.innerHTML = originalHtml;
+            btn.disabled = false;
+        }
+    }
+</script>
 {% endblock %}

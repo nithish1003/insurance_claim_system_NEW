@@ -50,9 +50,9 @@ class PolicyHolderAdmin(admin.ModelAdmin):
 @admin.register(UserProfile)
 class UserProfileAdmin(admin.ModelAdmin):
 
-    list_display = ("id", "user", "phone", "city", "state", "created_at")
+    list_display = ("public_id", "user", "phone", "city", "state", "created_at")
 
-    search_fields = ("user__username", "phone", "city")
+    search_fields = ("public_id", "user__username", "phone", "city")
 
     list_filter = ("state",)
 
@@ -65,19 +65,20 @@ class UserProfileAdmin(admin.ModelAdmin):
 class PolicyAdmin(admin.ModelAdmin):
 
     list_display = (
+        "public_id",
         "policy_number",
         "policy_type",
         "status",
         "start_date",
         "end_date",
         "sum_insured",
+        "room_rent_limit_per_day",
         "gross_premium"
     )
 
     list_filter = ("policy_type", "status")
 
-    search_fields = ("policy_number", "insurer_name")
-
+    search_fields = ("public_id", "policy_number", "insurer_name")
     ordering = ("-created_at",)
     readonly_fields = (
         "deductible",
@@ -148,12 +149,13 @@ class PremiumAdmin(admin.ModelAdmin):
 class PolicyDocumentAdmin(admin.ModelAdmin):
 
     list_display = (
+        "public_id",
         "document_name",
         "policy",
         "uploaded_at"
     )
 
-    search_fields = ("document_name",)
+    search_fields = ("public_id", "document_name",)
 
 
 # -----------------------
@@ -203,7 +205,7 @@ reject_applications.short_description = "❌ Reject selected applications"
 class PolicyApplicationAdmin(admin.ModelAdmin):
 
     list_display = (
-        "id",
+        "public_id",
         "user",
         "policy",
         "status",
@@ -214,9 +216,9 @@ class PolicyApplicationAdmin(admin.ModelAdmin):
 
     list_filter = ("status", "created_at")
 
-    search_fields = ("user__username", "policy__policy_number", "admin_remarks")
+    search_fields = ("public_id", "user__username", "policy__policy_number", "admin_remarks")
 
-    readonly_fields = ("created_at", "reviewed_at")
+    readonly_fields = ("public_id", "created_at", "reviewed_at")
 
     ordering = ("-created_at",)
 
@@ -231,6 +233,7 @@ class PolicyApplicationAdmin(admin.ModelAdmin):
 class UserPolicyAdmin(admin.ModelAdmin):
 
     list_display = (
+        "public_id",
         "certificate_number",
         "user",
         "policy",
@@ -243,12 +246,13 @@ class UserPolicyAdmin(admin.ModelAdmin):
     list_filter = ("status", "assigned_at")
 
     search_fields = (
+        "public_id",
         "certificate_number",
         "user__username",
         "policy__policy_number",
     )
 
-    readonly_fields = ("certificate_number", "assigned_at")
+    readonly_fields = ("public_id", "certificate_number", "assigned_at")
 
     ordering = ("-assigned_at",)
 
@@ -261,6 +265,7 @@ class UserPolicyAdmin(admin.ModelAdmin):
 class PaymentAdmin(admin.ModelAdmin):
     
     list_display = (
+        "public_id",
         "transaction_id",
         "user_policy",
         "amount",
@@ -278,6 +283,7 @@ class PaymentAdmin(admin.ModelAdmin):
     )
 
     search_fields = (
+        "public_id",
         "transaction_id",
         "user_policy__certificate_number",
         "user_policy__user__username",
@@ -285,6 +291,7 @@ class PaymentAdmin(admin.ModelAdmin):
     )
 
     readonly_fields = (
+        "public_id",
         "transaction_id",
         "created_at",
         "completed_at"
@@ -297,7 +304,7 @@ class PaymentAdmin(admin.ModelAdmin):
             'fields': ('user_policy', 'amount', 'payment_status', 'payment_method')
         }),
         ("Transaction Details", {
-            'fields': ('transaction_id', 'gateway_reference', 'description', 'notes')
+            'fields': ('public_id', 'transaction_id', 'gateway_reference', 'description', 'notes')
         }),
         ("Timestamps", {
             'fields': ('created_at', 'completed_at')

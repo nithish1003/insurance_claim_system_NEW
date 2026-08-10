@@ -1,0 +1,197 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Notification Mission Control | ClaimIQ Admin{% endblock %}
+
+{% block breadcrumb %}System Intelligence / Notification Center{% endblock %}
+
+{% block extra_css %}
+<style>
+    .metric-card {
+        background: rgba(17, 28, 53, 0.4); backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px;
+        padding: 24px; transition: all 0.4s ease; height: 100%;
+        position: relative; overflow: hidden;
+    }
+    .metric-card:hover {
+        transform: translateY(-5px); border-color: rgba(101, 96, 79, 0.3);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+    }
+    .metric-card::before {
+        content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+        background: radial-gradient(circle, rgba(101, 96, 79, 0.03) 0%, transparent 70%);
+        pointer-events: none;
+    }
+    .metric-value { font-size: 32px; font-weight: 800; color: #fff; margin: 8px 0; letter-spacing: -1px; }
+    .metric-label { font-size: 12px; font-weight: 700; color: rgba(156, 149, 143, 0.7); text-transform: uppercase; letter-spacing: 1px; }
+    .metric-icon { 
+        width: 48px; height: 48px; border-radius: 12px; display: flex; 
+        align-items: center; justify-content: center; font-size: 1.5rem;
+        background: rgba(101, 96, 79, 0.1); color: #00DCE5;
+    }
+    
+    .chart-container {
+        background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 20px; padding: 24px; margin-top: 24px;
+    }
+    .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+    .chart-title { font-size: 16px; font-weight: 700; color: #605E5B; }
+
+    .status-badge {
+        padding: 4px 10px; border-radius: 20px; font-size: 10px;
+        font-weight: 800; text-transform: uppercase;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row g-4 mb-4">
+        <!-- KPI CARDS -->
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="metric-icon"><i class="bi bi-broadcast"></i></div>
+                <div class="metric-value">{{ total_alerts }}</div>
+                <div class="metric-label">Total Traffic (30d)</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="metric-icon" style="background: rgba(197, 90, 90, 0.1); color: #c55a5a;"><i class="bi bi-envelope-exclamation"></i></div>
+                <div class="metric-value">{{ unread_alerts }}</div>
+                <div class="metric-label">Unread Alerts</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="metric-icon" style="background: rgba(16, 185, 129, 0.1); color: #10b981;"><i class="bi bi-check2-all"></i></div>
+                <div class="metric-value">{{ emails_sent }}</div>
+                <div class="metric-label">Emails Delivered</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="metric-icon" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6;"><i class="bi bi-chat-left-dots"></i></div>
+                <div class="metric-value">{{ sms_sent }}</div>
+                <div class="metric-label">SMS Dispatched</div>
+                <div class="mt-2 border-top border-secondary pt-2 opacity-75">
+                    {% if twilio_creds_ok %}
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="status-badge" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">🟢 Credentials Loaded</span>
+                        </div>
+                        <div class="d-flex align-items-center gap-2 mt-1">
+                            {% if twilio_number_active %}
+                                <span class="status-badge" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">🟢 Live Ready</span>
+                            {% else %}
+                                <span class="status-badge" style="background: rgba(200, 138, 45, 0.1); color: #C88A2D;">🟡 Sender Number Pending</span>
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        <span class="status-badge" style="background: rgba(197, 90, 90, 0.1); color: #c55a5a;">🔴 API Credentials Missing</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- TREND CHART -->
+        <div class="col-lg-8">
+            <div class="chart-container">
+                <div class="chart-header">
+                    <span class="chart-title">Weekly Communication Volume</span>
+                    <i class="bi bi-three-dots text-muted"></i>
+                </div>
+                <div id="trendChart"></div>
+            </div>
+        </div>
+
+        <!-- DELIVERY DISTRIBUTION -->
+        <div class="col-lg-4">
+            <div class="chart-container">
+                <div class="chart-header">
+                    <span class="chart-title">Channel Distribution</span>
+                </div>
+                <div id="distributionChart"></div>
+                <div class="mt-4 pt-3 border-top border-secondary opacity-50">
+                    <div class="d-flex justify-content-between mb-2">
+                        <small class="text-muted">Avg response time:</small>
+                        <small class="text-white fw-bold">{{ avg_response }}</small>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <small class="text-muted">Total Errors Detected:</small>
+                        <small class="text-danger fw-bold">{{ error_count }}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Parse daily trend data from backend with fallback
+        const rawTrend = '{{ daily_trend_js|safe }}';
+        const trendData = rawTrend ? JSON.parse(rawTrend) : [];
+        
+        const dates = trendData.length ? trendData.map(d => d.day) : ['Today'];
+        const counts = trendData.length ? trendData.map(d => d.count) : [0];
+
+        // 📈 TREND CHART (Line)
+        new ApexCharts(document.querySelector("#trendChart"), {
+            series: [{ name: 'Alerts', data: counts }],
+            chart: { height: 350, type: 'area', toolbar: { show: false }, background: 'transparent' },
+            colors: ['#00DCE5'],
+            dataLabels: { enabled: false },
+            stroke: { curve: 'smooth', width: 3 },
+            fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0.1 } },
+            grid: { borderColor: 'rgba(255,255,255,0.05)', strokeDashArray: 4 },
+            theme: { mode: 'dark' },
+            xaxis: { categories: dates, axisBorder: { show: false }, axisTicks: { show: false } }
+        }).render();
+
+        // 🍩 DISTRIBUTION CHART (Donut)
+        // Defensive Check: Ensure we have data before rendering to avoid NaN errors
+        const emailVal = parseInt("{{ emails_sent|default:0 }}");
+        const smsVal = parseInt("{{ sms_sent|default:0 }}");
+        const pushVal = parseInt("{{ push_sent|default:0 }}");
+
+        new ApexCharts(document.querySelector("#distributionChart"), {
+            series: [emailVal, smsVal, pushVal],
+            chart: { 
+                type: 'donut', 
+                height: 300,
+                animations: { enabled: true, easing: 'easeinout', speed: 800 }
+            },
+            labels: ['Email', 'SMS', 'Push'],
+            colors: ['#10b981', '#3b82f6', '#00DCE5'],
+            legend: { 
+                position: 'bottom', 
+                labels: { colors: 'rgba(156, 149, 143, 0.7)' },
+                markers: { radius: 12 }
+            },
+            plotOptions: { 
+                pie: { 
+                    donut: { 
+                        size: '75%', 
+                        background: 'transparent',
+                        labels: {
+                            show: true,
+                            name: { show: true, color: 'rgba(156, 149, 143, 0.7)' },
+                            value: { show: true, color: '#fff', fontSize: '20px', fontWeight: '800' },
+                            total: { show: true, label: 'Total', color: '#00DCE5' }
+                        }
+                    } 
+                } 
+            },
+            theme: { mode: 'dark' },
+            stroke: { show: false },
+            noData: {
+                text: 'No Data Available',
+                style: { color: 'rgba(156, 149, 143, 0.6)', fontSize: '14px' }
+            }
+        }).render();
+    });
+</script>
+{% endblock %}

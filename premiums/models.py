@@ -1,8 +1,11 @@
+import uuid as uuid_lib
+
 from django.db import models
 from policy.models import Policy
 
 
 class PremiumSchedule(models.Model):
+    public_id = models.UUIDField(default=uuid_lib.uuid4, unique=True, editable=False, db_index=True)
 
     PAYMENT_FREQUENCY = [
         ("monthly", "Monthly"),
@@ -52,6 +55,7 @@ class PremiumSchedule(models.Model):
 
 
 class PremiumPayment(models.Model):
+    public_id = models.UUIDField(default=uuid_lib.uuid4, unique=True, editable=False, db_index=True)
 
     STATUS = [
         ("upcoming", "Upcoming"),

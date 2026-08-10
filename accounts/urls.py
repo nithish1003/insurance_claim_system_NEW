@@ -4,6 +4,7 @@ from . import views
 app_name = "accounts"
 
 urlpatterns = [
+path("", views.home_redirect, name="home"),
 
 path("register/",views.register_view,name="register"),
 path("login/",views.login_view,name="login"),
@@ -13,13 +14,22 @@ path("admin-dashboard/",views.admin_dashboard,name="admin_dashboard"),
 path("admin-create-staff/", views.admin_create_staff, name="admin_create_staff"),
 path("staff-dashboard/",views.staff_dashboard,name="staff_dashboard"),
 path("policyholder-dashboard/",views.policyholder_dashboard,name="policyholder_dashboard"),
+path("unauthorized/", views.unauthorized, name="unauthorized"),
 path("profile/",views.profile_view,name="profile"),
+path("profile/<uuid:profile_id>/", views.profile_view, name="profile_detail"),
 path("profile/edit/",views.edit_profile,name="edit_profile"),
+path("reupload-id/", views.reupload_id, name="reupload_id"),
+path("kyc/<uuid:verification_id>/", views.kyc_detail, name="kyc_detail"),
 
     path("password-reset/", views.CustomPasswordResetView.as_view(), name="password_reset"),
     path("password-reset/done/", views.CustomPasswordResetDoneView.as_view(), name="password_reset_done"),
     path("password-reset-confirm/<uidb64>/<token>/", views.CustomPasswordResetConfirmView.as_view(), name="password_reset_confirm"),
     path("password-reset-complete/", views.CustomPasswordResetCompleteView.as_view(), name="password_reset_complete"),
 
+    path("kyc/dashboard/", views.kyc_dashboard, name="kyc_dashboard"),
     path("staff-search-suggestions/", views.staff_search_suggestions, name="staff_search_suggestions"),
+    path("api/check-auth/", views.check_auth_api, name="check_auth"),
+    path("api/kyc-logs/", views.kyc_logs_api, name="kyc_logs_api"),
+    path("api/kyc-history/", views.kyc_history_api, name="kyc_history_api"),
+    path("api/pdf-report-data/", views.pdf_user_report_data_api, name="pdf_user_report_data"),
 ]

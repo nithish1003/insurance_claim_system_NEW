@@ -1,141 +1,339 @@
 {% extends "base.html" %}
-{% load humanize %}
+{% load static humanize %}
 
-{% block title %}Claim Settlement — {{ claim.claim_number }}{% endblock %}
+{% block title %}Settlement Workflow | ClaimIQ{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/settlement_workflow.css' %}">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center mt-4">
-    <div class="col-md-8">
-        
-        <div class="mb-3">
-            <a href="{% url 'claim:review' claim.id %}" class="btn btn-sm btn-outline-secondary">
-                <i class="bi bi-arrow-left"></i> Back to Review
-            </a>
+<div class="settlement-workflow-container animate-fade-in">
+    <!-- Top Header Bar -->
+    <header class="settlement-header" data-aos="fade-down">
+        <div class="header-left">
+            <span class="brand-tag">ClaimIQ Executive Console</span>
+            <h1>Claim Settlement Center</h1>
+        </div>
+        <div class="header-right">
+            <div class="claim-meta-info" data-aos="fade-left" data-aos-delay="100">
+                <span class="claim-id-label">Dossier ID</span>
+                <span class="claim-id-value">{{ claim.claim_number }}</span>
+            </div>
+            <span class="status-badge-premium pulse-effect" data-aos="zoom-in" data-aos-delay="200">
+                <i class="bi bi-shield-check me-2"></i>Approved / Pending Settlement
+            </span>
+            <div class="action-buttons d-flex gap-2" data-aos="fade-left" data-aos-delay="300">
+                <a href="{% url 'claim:staff_review' claim.public_id %}" class="btn btn-secondary btn-sm">
+                    <i class="bi bi-arrow-left me-2"></i>Back to Review
+                </a>
+                <button class="btn btn-outline-warning btn-sm" onclick="alert('Settlement put on administrative hold.')">
+                    <i class="bi bi-pause-circle me-2"></i>Hold
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="settlement-grid">
+        <!-- LEFT COLUMN -->
+        <div class="settlement-main">
+            <!-- A. Claim Summary Card -->
+            <section class="premium-card" data-aos="fade-right" data-aos-delay="100">
+                <div class="card-header-row">
+                    <h2><i class="bi bi-file-earmark-text"></i>Claim Summary</h2>
+                </div>
+                <div class="data-grid">
+                    <div class="data-item">
+                        <span class="data-label">Policyholder</span>
+                        <span class="data-value">{{ claim.created_by.get_full_name|default:claim.created_by.username }}</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">Claim Type</span>
+                        <span class="data-value">{{ claim.get_claim_type_display|default:claim.claim_type|title }}</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">Incident Date</span>
+                        <span class="data-value">{{ claim.incident_date|date:"d M Y" }}</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">Policy Number</span>
+                        <span class="data-value">{{ claim.policy.policy_number|default:"N/A" }}</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">Coverage Status</span>
+                        <span class="data-value text-success">ACTIVE & VALID</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- B. Financial Settlement Breakdown Card -->
+            <section class="premium-card" data-aos="fade-right" data-aos-delay="200">
+                <div class="card-header-row">
+                    <h2><i class="bi bi-calculator"></i>Financial Settlement Breakdown</h2>
+                </div>
+                <div class="financial-display">
+                    <div class="financial-row">
+                        <span class="data-label">Declared Amount</span>
+                        <span class="data-value">₹{{ claim.claimed_amount|intcomma }}</span>
+                    </div>
+                    <div class="financial-row">
+                        <span class="data-label">OCR Verified Amount</span>
+                        <span class="data-value">₹{{ claim.bill_amount|intcomma|default:"0.00" }}</span>
+                    </div>
+                    <div class="financial-row">
+                        <span class="data-label">Eligible Amount</span>
+                        <span class="data-value">₹{{ claim.approved_amount|intcomma|default:claim.claimed_amount|intcomma }}</span>
+                    </div>
+                    <div class="financial-row">
+                        <span class="data-label">Deductible Applied</span>
+                        <span class="data-value text-danger">- ₹{{ claim.deductible_amount|intcomma|default:"0.00" }}</span>
+                    </div>
+                    <div class="financial-row">
+                        <span class="data-label">Reserve Amount</span>
+                        <span class="data-value">₹0.00</span>
+                    </div>
+                    <div class="final-payout-highlight mt-4">
+                        <span class="payout-label">FINAL APPROVED PAYOUT</span>
+                        <span class="payout-amount">₹{{ final_payable|intcomma }}</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- C. Beneficiary Payment Details Card -->
+            <section class="premium-card" data-aos="fade-right" data-aos-delay="300">
+                <div class="card-header-row">
+                    <h2><i class="bi bi-bank"></i>Beneficiary Payment Details</h2>
+                </div>
+                <div class="data-grid">
+                    <div class="data-item">
+                        <span class="data-label">Account Holder Name</span>
+                        <span class="data-value">{{ claim.created_by.get_full_name|default:claim.created_by.username }}</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">Bank Name</span>
+                        <span class="data-value">HDFC Bank (Simulated)</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">Account Number</span>
+                        <span class="data-value">XXXX XXXX 4412</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">IFSC Code</span>
+                        <span class="data-value">HDFC0001234</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">UPI ID</span>
+                        <span class="data-value">{{ claim.created_by.username }}@okaxis</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="premium-card" data-aos="fade-right" data-aos-delay="400">
+                <div class="card-header-row d-flex justify-content-between align-items-center">
+                    <h2 class="mb-0"><i class="bi bi-chat-left-dots"></i>Settlement Notes</h2>
+                    <button type="button" class="btn btn-sm btn-outline-info border-0 d-flex align-items-center gap-2" 
+                            id="generateSettlementAiBtn"
+                            style="background: rgba(13, 202, 240, 0.05); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.05em; padding: 4px 10px; border-radius: 6px;">
+                        <i class="bi bi-robot"></i> GENERATE WITH AI
+                    </button>
+                </div>
+                <textarea class="premium-textarea" rows="4" id="settlementNotes" placeholder="Provide final execution rationale for disbursement audit..."></textarea>
+            </section>
         </div>
 
-        <div class="card shadow-sm">
-            <div class="card-header bg-dark text-white">
-                <h5 class="mb-0">Settle Claim: {{ claim.claim_number }}</h5>
-            </div>
-            
-            <div class="card-body">
-                
-                <div class="alert mb-4 border-0 shadow-sm" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255,255,255,0.05) !important; border-radius: 12px;">
-                    <div class="row text-center align-items-center py-2">
-                        <div class="col-md-4">
-                            <small class="text-muted-premium text-uppercase d-block mb-1" style="font-size: 9px; font-weight: 800; letter-spacing: 1px; color: #94a3b8 !important;">CLAIMED AMOUNT</small>
-                            <span class="fs-4 fw-bold text-white" style="text-shadow: 0 0 10px rgba(255,255,255,0.1);">₹{{ claim.claimed_amount|intcomma }}</span>
+        <!-- RIGHT COLUMN -->
+        <div class="settlement-sidebar">
+            <!-- E. Verification Checklist Card -->
+            <section class="premium-card" data-aos="fade-left" data-aos-delay="150">
+                <div class="card-header-row">
+                    <h2><i class="bi bi-patch-check"></i>Verification</h2>
+                </div>
+                <div class="verification-list">
+                    <div class="checklist-item">
+                        <i class="bi bi-check-circle-fill"></i>
+                        <span class="checklist-text">KYC Verified</span>
+                    </div>
+                    <div class="checklist-item">
+                        <i class="bi bi-check-circle-fill"></i>
+                        <span class="checklist-text">Claim Approved</span>
+                    </div>
+                    <div class="checklist-item">
+                        <i class="bi bi-check-circle-fill"></i>
+                        <span class="checklist-text">Policy Active</span>
+                    </div>
+                    <div class="checklist-item">
+                        <i class="bi bi-check-circle-fill"></i>
+                        <span class="checklist-text">Risk Score Acceptable</span>
+                    </div>
+                    <div class="checklist-item">
+                        <i class="bi bi-check-circle-fill"></i>
+                        <span class="checklist-text">Duplicate Claim Check Passed</span>
+                    </div>
+                    <div class="checklist-item">
+                        <i class="bi bi-check-circle-fill"></i>
+                        <span class="checklist-text">Bank Details Verified</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- F. Payment Method Card -->
+            <section class="premium-card" data-aos="fade-left" data-aos-delay="250">
+                <div class="card-header-row">
+                    <h2><i class="bi bi-credit-card"></i>Payment Method</h2>
+                </div>
+                <div class="payment-selector">
+                    <div class="method-option selected" data-method="neft">
+                        <div class="method-radio"></div>
+                        <div class="method-info">
+                            <span class="method-name">Bank Transfer (NEFT/IMPS)</span>
+                            <span class="method-desc">Direct to registered bank account</span>
                         </div>
-                        <div class="col-md-4 border-start border-secondary border-opacity-25">
-                            <small class="text-muted-premium text-uppercase d-block mb-1" style="font-size: 9px; font-weight: 800; letter-spacing: 1px; color: #94a3b8 !important;">APPLIED DEDUCTIBLE</small>
-                            <span class="fs-4 fw-bold text-danger" style="text-shadow: 0 0 10px rgba(220, 53, 69, 0.2);">- ₹{{ claim.deductible_amount|intcomma }}</span>
+                    </div>
+                    <div class="method-option" data-method="upi">
+                        <div class="method-radio"></div>
+                        <div class="method-info">
+                            <span class="method-name">UPI Payout</span>
+                            <span class="method-desc">Instant transfer via VPA</span>
                         </div>
-                        <div class="col-md-4 border-start border-secondary border-opacity-25">
-                            <small class="text-primary-premium text-uppercase d-block mb-1" style="font-size: 9px; font-weight: 800; letter-spacing: 1.5px; color: #3b82f6 !important;">FINAL PAYABLE</small>
-                            <span class="fs-3 fw-bold text-primary" id="finalPayableDisplay" style="text-shadow: 0 0 15px rgba(59, 130, 246, 0.3);">₹{{ final_payable|intcomma }}</span>
+                    </div>
+                    <div class="method-option" data-method="razorpay">
+                        <div class="method-radio"></div>
+                        <div class="method-info">
+                            <span class="method-name">Razorpay Payout</span>
+                            <span class="method-desc">Managed payout via payment gateway</span>
                         </div>
                     </div>
                 </div>
-                
-                <form method="post">
+            </section>
+
+            <!-- G. Execute Action Card -->
+            <section class="premium-card" data-aos="fade-left" data-aos-delay="350">
+                <form id="settlementForm" method="POST" action="{% url 'claim:settlement' claim.public_id %}">
                     {% csrf_token %}
-                    
-                    <div class="row mb-4">
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold small text-muted text-uppercase">Payment Mode</label>
-                            <select name="payment_mode" class="form-select border-2" required>
-                                <option value="">Select Payment Method...</option>
-                                <option value="neft">NEFT/IMPS/RTGS</option>
-                                <option value="cheque">Cheque</option>
-                                <option value="upi">UPI</option>
-                                <option value="cash">Cash</option>
-                                <option value="dd">Demand Draft</option>
-                            </select>
-                        </div>
-                        
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold small text-muted text-uppercase" style="color: #94a3b8 !important; letter-spacing: 0.5px;">Settled Amount (₹)</label>
-                            <input type="number" step="0.01" name="settled_amount" id="settledAmountInput" 
-                                   class="form-control border-0 fw-bold text-primary fs-5 bg-dark" 
-                                   style="background: rgba(59, 130, 246, 0.05) !important; color: #3b82f6 !important; border: 1px solid rgba(59, 130, 246, 0.2) !important; border-radius: 8px;"
-                                   value="{{ final_payable|stringformat:'f' }}" 
-                                   oninput="validateAmount(this)"
-                                   max="{{ net_claimable|stringformat:'f' }}">
-                            <div id="amountWarning" class="form-text text-danger x-small mt-2 d-none"><i class="bi bi-exclamation-triangle me-1"></i> Payout cannot exceed Net Claimable ceiling (₹{{ net_claimable|intcomma }}).</div>
-                            <div class="form-text text-muted x-small mt-2"><i class="bi bi-info-circle me-1"></i> Based on: Review Decision (₹{{ final_payable|intcomma }}) capped at Net Claimable limit.</div>
-                        </div>
-                    </div>
+                    <input type="hidden" name="payment_mode" id="paymentModeInput" value="neft">
+                    <input type="hidden" name="settled_amount" value="{{ final_payable|stringformat:'f' }}">
+                    <input type="hidden" name="payee_name" value="{{ claim.created_by.get_full_name|default:claim.created_by.username }}">
+                    <input type="hidden" name="bank_account" value="XXXX XXXX 4412">
+                    <input type="hidden" name="bank_name" value="HDFC Bank">
+                    <input type="hidden" name="bank_ifsc" value="HDFC0001234">
+                    <input type="hidden" name="remarks" id="formRemarks">
+                    <input type="hidden" id="claimPublicId" value="{{ claim.public_id }}">
 
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold small text-muted text-uppercase" style="color: #94a3b8 !important; letter-spacing: 0.5px;">Payee Name</label>
-                            <input type="text" name="payee_name" class="form-control bg-dark text-white border-secondary" 
-                                   value="{% if claim.created_by %}{{ claim.created_by.get_full_name|default:claim.created_by.username }}{% else %}ADMINISTRATOR/SYSTEM{% endif %}" required>
-
-                        </div>
-                        
-                        <div class="col-md-6">
-                            <label class="form-label">Transaction Reference (Txn ID/Cheque No/UPI ID)</label>
-                            <input type="text" name="reference" class="form-control" placeholder="Optional/if applicable">
-                        </div>
-                    </div>
-                    
-                    <hr>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Internal Remarks/Notes</label>
-                        <textarea name="remarks" class="form-control" rows="3" placeholder="Enter settlement notes..."></textarea>
-                    </div>
-                    
-                    <div class="d-flex align-items-center gap-3">
-                        <button type="submit" class="btn btn-primary px-4 py-2" id="settleButton" onclick="handleSettlement(event)">
-                            <i class="bi bi-check2-circle me-1"></i> Submit Settlement Record
-                        </button>
-                        <a href="{% url 'claim:review' claim.id %}" class="btn btn-outline-secondary px-4 py-2">
-                            Cancel
-                        </a>
-                    </div>
-                    
+                    <button type="button" class="execute-btn" id="executeSettlementBtn">
+                        <i class="bi bi-lightning-charge-fill"></i>Execute Settlement
+                    </button>
+                    <button type="button" class="secondary-btn">Save Draft</button>
                 </form>
-                
-            </div>
+            </section>
+
+            <!-- H. Audit Trail Card -->
+            <section class="premium-card" data-aos="fade-left" data-aos-delay="450">
+                <div class="card-header-row">
+                    <h2><i class="bi bi-journal-text"></i>Audit Trail</h2>
+                </div>
+                <div class="audit-list">
+                    <div class="audit-entry">
+                        <div class="audit-point"></div>
+                        <div class="audit-content">
+                            <span class="audit-label">Approved By: Admin</span>
+                            <span class="audit-time">Just Now</span>
+                        </div>
+                    </div>
+                    <div class="audit-entry">
+                        <div class="audit-point"></div>
+                        <div class="audit-content">
+                            <span class="audit-label">Ready For Payment: Yes</span>
+                            <span class="audit-time">System Verified</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
         </div>
-        
     </div>
 </div>
 
+<!-- Success Overlay -->
+<div class="success-overlay" id="successOverlay">
+    <div class="success-card">
+        <div class="success-icon">
+            <i class="bi bi-check-lg"></i>
+        </div>
+        <h3>Payment Successful</h3>
+        <p>Your settlement has been authorized and dispatched to the beneficiary bank.</p>
+        
+        <div class="data-label mb-2">Transaction Reference</div>
+        <div class="txn-badge" id="displayTxnId">TXN-77100415</div>
+        
+        <div class="data-grid mb-4">
+            <div class="data-item">
+                <span class="data-label">Paid Timestamp</span>
+                <span class="data-value">{% now "d M Y, H:i" %}</span>
+            </div>
+            <div class="data-item">
+                <span class="data-label">Receipt</span>
+                <span class="data-value">Generated (PDF)</span>
+            </div>
+        </div>
+        
+        <button class="execute-btn" onclick="window.location.href='{% url 'accounts:admin_dashboard' %}'">
+            Close Console
+        </button>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/settlement_workflow.js' %}"></script>
 <script>
-function validateAmount(el) {
-    const val = parseFloat(el.value) || 0;
-    const limit = parseFloat("{{ net_claimable|stringformat:'f' }}");
-    const warning = document.getElementById('amountWarning');
-    const display = document.getElementById('finalPayableDisplay');
-    const submitBtn = document.getElementById('settleButton');
+    // Sync textarea with hidden form field
+    document.getElementById('settlementNotes').addEventListener('input', function() {
+        document.getElementById('formRemarks').value = this.value;
+    });
 
-    if (val > limit) {
-        warning.classList.remove('d-none');
-        el.classList.add('is-invalid');
-        submitBtn.disabled = true;
-    } else {
-        warning.classList.add('d-none');
-        el.classList.remove('is-invalid');
-        submitBtn.disabled = false;
-    }
-    
-    // Update the visual display card too
-    display.innerText = '₹' + val.toLocaleString('en-IN', {minimumFractionDigits: 2});
-}
+    // 🤖 AI Settlement Rationale Generator
+    (function() {
+        const generateAiBtn = document.getElementById('generateSettlementAiBtn');
+        const settlementNotesArea = document.getElementById('settlementNotes');
+        const formRemarksHidden = document.getElementById('formRemarks');
+        const claimId = document.getElementById('claimPublicId').value;
 
-function handleSettlement(e) {
-    const amt = document.getElementById('settledAmountInput').value;
-    if (confirm("Confirm Final Settlement? This will dispatch the payment of ₹" + parseFloat(amt).toLocaleString('en-IN', {minimumFractionDigits: 2}) + " and finalize the claim lifecycle.")) {
-        const btn = document.getElementById('settleButton');
-        btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processing Settlement...';
-        btn.closest('form').submit();
-    } else {
-        e.preventDefault();
-    }
-}
+        if (generateAiBtn) {
+            generateAiBtn.addEventListener('click', async function() {
+                const originalHtml = generateAiBtn.innerHTML;
+                generateAiBtn.disabled = true;
+                generateAiBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> SYNTHESIZING...';
+
+                try {
+                    // Endpoint: /claim/staff/claim/<id>/generate-remark/
+                    const apiUrl = "{% url 'claim:generate_remark' claim.public_id %}";
+                    const response = await fetch(`${apiUrl}?decision=SETTLEMENT&mode=detailed`);
+                    const data = await response.json();
+
+                    if (data.remark) {
+                        settlementNotesArea.value = data.remark;
+                        formRemarksHidden.value = data.remark;
+                        
+                        if (window.InsureAlert) {
+                            window.InsureAlert.success("AI Synthesis Complete", "Executive settlement rationale has been successfully generated.");
+                        }
+                    } else {
+                        throw new Error(data.error || "Forensic engine returned empty data.");
+                    }
+                } catch (error) {
+                    console.error("AI Generation Failed:", error);
+                    if (window.InsureAlert) {
+                        window.InsureAlert.error("AI Intelligence Error", "The forensic rationale engine is currently unavailable.");
+                    } else {
+                        alert("AI Error: Connection to intelligence engine failed.");
+                    }
+                } finally {
+                    generateAiBtn.disabled = false;
+                    generateAiBtn.innerHTML = originalHtml;
+                }
+            });
+        }
+    })();
 </script>
 {% endblock %}

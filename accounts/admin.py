@@ -1,12 +1,12 @@
 from django.contrib import admin
 
-from .models import User, PasswordResetAttempt, UserProfile
+from .models import AadhaarKYCVerification, User, PasswordResetAttempt, UserProfile
 
 class UserProfileInline(admin.StackedInline):
     model = UserProfile
     can_delete = False
     verbose_name_plural = 'Identity Verification'
-    readonly_fields = ('aadhaar_number', 'full_name', 'id_proof')
+    readonly_fields = ('public_id', 'aadhaar_number', 'full_name', 'id_proof')
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
@@ -17,10 +17,45 @@ class UserAdmin(admin.ModelAdmin):
 
 @admin.register(UserProfile)
 class UserProfileAdmin(admin.ModelAdmin):
-    list_display = ('user', 'full_name', 'masked_aadhaar', 'is_verified', 'created_at')
+    list_display = ('public_id', 'user', 'full_name', 'masked_aadhaar', 'is_verified', 'created_at')
     list_filter = ('is_verified', 'created_at')
-    search_fields = ('user__username', 'full_name', 'aadhaar_number')
-    readonly_fields = ('aadhaar_number',)
+    search_fields = ('public_id', 'user__username', 'full_name', 'aadhaar_number')
+    readonly_fields = ('public_id', 'aadhaar_number')
+
+
+@admin.register(AadhaarKYCVerification)
+class AadhaarKYCVerificationAdmin(admin.ModelAdmin):
+    list_display = (
+        'public_id',
+        'user',
+        'submitted_full_name',
+        'status',
+        'created_at',
+        'verified_at',
+    )
+    list_filter = ('status', 'created_at', 'verified_at')
+    search_fields = (
+        'public_id',
+        'user__username',
+        'submitted_full_name',
+        'submitted_aadhaar_number',
+        'extracted_name',
+        'extracted_number',
+    )
+    readonly_fields = (
+        'public_id',
+        'user',
+        'profile',
+        'submitted_full_name',
+        'submitted_aadhaar_number',
+        'extracted_name',
+        'extracted_number',
+        'source_document_name',
+        'status',
+        'details',
+        'created_at',
+        'verified_at',
+    )
 
 @admin.register(PasswordResetAttempt)
 class PasswordResetAttemptAdmin(admin.ModelAdmin):

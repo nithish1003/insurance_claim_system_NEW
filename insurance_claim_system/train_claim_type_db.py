@@ -98,27 +98,28 @@ def train_model_from_database():
         logger.info(f"📈 Training set: {len(X_train)} samples")
         logger.info(f"📈 Test set: {len(X_test)} samples")
         
-        # 6. Feature extraction (TF-IDF with 1,2 ngrams)
+        # 6. Feature extraction (TF-IDF with 1 ngram to prevent feature dilution, sublinear TF scaling)
         logger.info("🔄 Converting text to features...")
         vectorizer = TfidfVectorizer(
-            ngram_range=(1, 2),
+            ngram_range=(1, 1),
             stop_words='english',
-            max_features=1500, # Increased features
-            min_df=2, # Require at least 2 occurrences
-            max_df=0.85
+            max_features=1500,
+            min_df=1,
+            max_df=0.85,
+            sublinear_tf=True
         )
         
         X_train_vec = vectorizer.fit_transform(X_train)
         X_test_vec = vectorizer.transform(X_test)
         
-        # 7. Train model (Increased iterations, Balanced weights)
+        # 7. Train model (Increased iterations, Balanced weights, tuned regularization C=5.0)
         logger.info("🤖 Training Improved Logistic Regression model...")
         model = LogisticRegression(
             random_state=42,
-            max_iter=2000, # Increased iterations
-            multi_class='multinomial',
+            max_iter=2000,
+            C=5.0,
             solver='lbfgs',
-            class_weight='balanced' # Balance classes
+            class_weight='balanced'
         )
         
         model.fit(X_train_vec, y_train)

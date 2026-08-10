@@ -1,0 +1,1154 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<div id="kycIntelligenceLoader" class="kyc-intelligence-loader" aria-live="polite" aria-label="Loading KYC intelligence dashboard">
+    <div class="kyc-loader-panel">
+        <div class="kyc-loader-orbit">
+            <div class="orbit-ring orbit-ring-a"></div>
+            <div class="orbit-ring orbit-ring-b"></div>
+            <div class="loader-node"><i class="bi bi-shield-lock-fill"></i></div>
+        </div>
+        <div class="loader-kicker">Compliance Intelligence</div>
+        <h2>KYC Intelligence Engine</h2>
+        <p id="kycLoadingText">Collecting verification telemetry...</p>
+        <div class="kyc-loader-progress">
+            <div id="kycLoadingProgress"></div>
+        </div>
+        <div class="loader-footnote">Identity graph, OCR clusters, and audit queue are being prepared.</div>
+    </div>
+</div>
+
+<div id="kycDashboardShell" class="kyc-dashboard-container kyc-dashboard-loading"
+    style="background: linear-gradient(135deg, #F4EEE2 0%, #FFFFFF 100%); min-height: 100vh; padding: 110px 2rem 5rem;">
+    <!-- Cinematic Ambient Infrastructure -->
+    <div class="ambient-glow" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; overflow: hidden;">
+        <div class="glow-orb" style="top: -10%; right: -5%; background: radial-gradient(circle, rgba(0, 242, 255, 0.08) 0%, transparent 70%);"></div>
+        <div class="glow-orb" style="bottom: -10%; left: -5%; background: radial-gradient(circle, rgba(99, 102, 241, 0.08) 0%, transparent 70%);"></div>
+        <div class="glow-orb" style="top: 40%; left: 30%; width: 400px; height: 400px; background: radial-gradient(circle, rgba(168, 85, 247, 0.04) 0%, transparent 70%);"></div>
+    </div>
+
+    <div class="content-wrapper" style="position: relative; z-index: 1; max-width: 1440px; margin: 0 auto;">
+        <!-- Futuristic Header -->
+        <header style="margin-bottom: 3.5rem; display: flex; justify-content: space-between; align-items: flex-end;">
+            <div class="title-group">
+                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
+                    <a href="{% url 'accounts:admin_dashboard' %}" class="back-command-btn-v2">
+                        <div class="cmd-icon-v2"><i class="bi bi-chevron-left"></i></div>
+                        <div class="cmd-text-v2">
+                            <span class="cmd-super-v2">Return to Control</span>
+                            <span class="cmd-sub-v2">Admin Dashboard</span>
+                        </div>
+                    </a>
+                    <div style="width: 40px; height: 3px; background: #00f2ff; border-radius: 2px;"></div>
+                    <span
+                        style="color: #00f2ff; text-transform: uppercase; letter-spacing: 3px; font-size: 0.75rem; font-weight: 700;">Compliance
+                        Intelligence</span>
+                </div>
+                <h1 class="gradient-title" style="font-size: 3rem; font-weight: 900; letter-spacing: -1px; margin: 0;">
+                    KYC Verification Admin Panel
+                </h1>
+            </div>
+
+            <div class="time-selector"
+                style="display: flex; background: rgba(255,255,255,0.03); padding: 4px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.05);">
+                <a href="?range=7" class="nav-filter {% if current_range == '7' %}active{% endif %}">7 Days</a>
+                <a href="?range=30" class="nav-filter {% if current_range == '30' %}active{% endif %}">30 Days</a>
+                <a href="?range=all" class="nav-filter {% if current_range == 'all' %}active{% endif %}">Lifetime</a>
+            </div>
+        </header>
+
+        <!-- High-Identity Metric Grid -->
+        <div class="metrics-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-bottom: 2.5rem;">
+            <div class="metric-card glass-panel shimmer">
+                <div class="metric-top">
+                    <div class="metric-label">Verified (Today)</div>
+                    <div class="metric-icon success"><i class="bi bi-person-check-fill"></i></div>
+                </div>
+                <div class="metric-value">{{ verified_today }}</div>
+                <div class="metric-footer-refined">Successful Dossiers</div>
+            </div>
+            
+            <div class="metric-card glass-panel shimmer">
+                <div class="metric-top">
+                    <div class="metric-label">Manual Review</div>
+                    <div class="metric-icon warning"><i class="bi bi-eye-fill"></i></div>
+                </div>
+                <div class="metric-value">{{ pending_reviews }}</div>
+                <div class="metric-footer-refined">Awaiting Audit</div>
+            </div>
+            
+            <div class="metric-card glass-panel shimmer">
+                <div class="metric-top">
+                    <div class="metric-label">Avg match</div>
+                    <div class="metric-icon primary"><i class="bi bi-lightning-charge-fill"></i></div>
+                </div>
+                <div class="metric-value">{{ avg_confidence|floatformat:1 }}<span class="unit">%</span></div>
+                <div class="metric-footer-track">
+                    <div class="track-progress"><div class="fill" style="width: {{ avg_confidence }}%;"></div></div>
+                </div>
+            </div>
+            
+            <div class="metric-card glass-panel shimmer danger-accent">
+                <div class="metric-top">
+                    <div class="metric-label">Fraud Signals</div>
+                    <div class="metric-icon danger"><i class="bi bi-shield-slash-fill"></i></div>
+                </div>
+                <div class="metric-value text-danger">{{ total_suspicious }}</div>
+                <div class="metric-footer-refined">Identity Alerts</div>
+            </div>
+        </div>
+
+        <!-- 📊 Analytics Visualization Engine -->
+        <div class="analytics-master-container"
+            style="display: flex; flex-direction: column; gap: 1.5rem; margin-bottom: 3.5rem;">
+            <!-- Row 1: Key Distribution & Trends -->
+            <div class="analytics-top-row" style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 1.5rem;">
+                <div class="glass-panel chart-card premium-shadow" style="padding: 2.25rem;">
+                    <h3 class="chart-header"><i class="bi bi-pie-chart-fill"
+                            style="color: #00f2ff; margin-right: 8px;"></i> <span class="gradient-title-cyan">Status Distribution</span></h3>
+                    <div style="height: 320px; position: relative; padding: 10px;">
+                        <canvas id="statusDonut"></canvas>
+                    </div>
+                </div>
+                <div class="glass-panel chart-card premium-shadow" style="padding: 2.25rem;">
+                    <h3 class="chart-header"><i class="bi bi-graph-up" style="color: #6366f1; margin-right: 8px;"></i>
+                        <span class="gradient-title-cyan">Daily Verification Trend</span></h3>
+                    <div style="height: 320px; position: relative; padding: 10px;">
+                        <canvas id="trendLine"></canvas>
+                    </div>
+                </div>
+            </div>
+            <!-- Row 2: Deep Forensic Analysis (Full Width) -->
+            <div class="analytics-bottom-row">
+                <div class="glass-panel chart-card premium-shadow" style="padding: 2.25rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                        <h3 class="chart-header" style="margin: 0;">
+                            <i class="bi bi-bar-chart-steps" style="color: #a855f7; margin-right: 8px;"></i> <span class="gradient-title-cyan">OCR Quality Clusters</span>
+                        </h3>
+                        <div class="cluster-status-pill">
+                            <span class="pulsing-dot-purple"></span> Processing Reliability High
+                        </div>
+                    </div>
+                    
+                    <div class="cluster-layout-grid" style="display: grid; grid-template-columns: 1.6fr 1fr; gap: 3rem; align-items: center;">
+                        <!-- Chart Column -->
+                        <div style="height: 350px; position: relative;">
+                            <canvas id="confidenceBar"></canvas>
+                        </div>
+
+                        <!-- Data Summary Table Column -->
+                        <div class="cluster-details-container">
+                            <div class="cluster-table-header">
+                                <span style="font-size: 0.7rem; color: #475569; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">Cluster Category</span>
+                                <span style="font-size: 0.7rem; color: #475569; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; text-align: right;">Dossiers</span>
+                            </div>
+                            
+                            <div class="cluster-data-list">
+                                <div class="cluster-item elite">
+                                    <div class="cluster-info">
+                                        <div class="cluster-marker"></div>
+                                        <span class="cluster-name">Elite Accuracy (81-100%)</span>
+                                    </div>
+                                    <span class="cluster-count" id="bucket-4">0</span>
+                                </div>
+                                <div class="cluster-item high">
+                                    <div class="cluster-info">
+                                        <div class="cluster-marker"></div>
+                                        <span class="cluster-name">High Integrity (61-80%)</span>
+                                    </div>
+                                    <span class="cluster-count" id="bucket-3">0</span>
+                                </div>
+                                <div class="cluster-item baseline">
+                                    <div class="cluster-info">
+                                        <div class="cluster-marker"></div>
+                                        <span class="cluster-name">Baseline (41-60%)</span>
+                                    </div>
+                                    <span class="cluster-count" id="bucket-2">0</span>
+                                </div>
+                                <div class="cluster-item suboptimal">
+                                    <div class="cluster-info">
+                                        <div class="cluster-marker"></div>
+                                        <span class="cluster-name">Sub-Optimal (21-40%)</span>
+                                    </div>
+                                    <span class="cluster-count" id="bucket-1">0</span>
+                                </div>
+                                <div class="cluster-item low">
+                                    <div class="cluster-info">
+                                        <div class="cluster-marker"></div>
+                                        <span class="cluster-name">Low Confidence (0-20%)</span>
+                                    </div>
+                                    <span class="cluster-count" id="bucket-0">0</span>
+                                </div>
+                            </div>
+
+                            <div class="cluster-aggregate-footer" style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center;">
+                                <span style="color: rgba(156, 149, 143, 0.6); font-size: 0.75rem; font-weight: 600;">Total Analyzed Artifacts</span>
+                                <span style="color: #fff; font-size: 0.85rem; font-weight: 800;" id="total-artifacts">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Workspace -->
+        <div class="workspace-grid"
+            style="display: grid; grid-template-columns: 2.5fr 1fr; gap: 2rem; align-items: start;">
+            <section class="queue-section glass-panel" style="padding: 0; overflow: hidden; border-radius: 20px; border: 1px solid rgba(0, 242, 255, 0.1);">
+                <div class="queue-header-container">
+                    <div class="queue-title-row">
+                        <h2 class="queue-header-title">
+                            <i class="bi bi-shield-lock-fill" style="color: #00f2ff;"></i> <span class="gradient-title-cyan">KYC Verification Queue</span>
+                        </h2>
+                        <div class="active-badge">Active Queue: {{ review_queue|length }}</div>
+                    </div>
+                    
+                    <div class="queue-utilities">
+                        <div class="search-box">
+                            <i class="bi bi-search"></i>
+                            <input type="text" placeholder="Search dossier or ID..." id="kycSearch">
+                        </div>
+                        <div class="filter-group">
+                            <select class="status-select" id="kycStatusFilter">
+                                <option value="all">All Filters</option>
+                                <option value="manual">Manual Review</option>
+                                <option value="pending">Processing</option>
+                                <option value="verified">Verified</option>
+                            </select>
+                            <button class="refresh-action" onclick="location.reload()" title="Refresh Queue">
+                                <i class="bi bi-arrow-clockwise"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-responsive-wrapper">
+                    <table class="kyc-premium-table">
+                        <thead>
+                            <tr>
+                                <th>Applicant Name</th>
+                                <th>Aadhaar Number</th>
+                                <th>OCR Match %</th>
+                                <th>KYC Status</th>
+                                <th>Submitted At</th>
+                                <th style="text-align: right; padding-right: 2rem;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in review_queue %}
+                            <tr class="kyc-row">
+                                <td data-label="Applicant Name">
+                                    <div class="applicant-info">
+                                        <div class="applicant-name">{{ item.submitted_full_name }}</div>
+                                        <div class="applicant-uid">UID: {{ item.public_id|stringformat:".8s" }}</div>
+                                    </div>
+                                </td>
+                                <td data-label="Aadhaar">
+                                    <code class="aadhaar-mask">XXXX XXXX {{ item.submitted_aadhaar_number|slice:"-4:" }}</code>
+                                </td>
+                                <td data-label="OCR Match">
+                                    <div class="match-cell">
+                                        <div class="match-bar-bg">
+                                            <div class="match-bar-fill" style="width: {{ item.details.ocr_confidence }}%;"></div>
+                                        </div>
+                                        <span class="match-value">{{ item.details.ocr_confidence|floatformat:1 }}%</span>
+                                    </div>
+                                </td>
+                                <td data-label="Status">
+                                    {% if item.status == 'verified' or item.status == 'approved_override' %}
+                                    <span class="kyc-badge verified">Verified</span>
+                                    {% elif item.status == 'manual_review' or item.status == 'pending' %}
+                                    <span class="kyc-badge manual">Manual Review</span>
+                                    {% elif item.status == 'rejected' or item.status == 'rejected_override' %}
+                                    <span class="kyc-badge rejected">Rejected</span>
+                                    {% else %}
+                                    <span class="kyc-badge pending">Pending</span>
+                                    {% endif %}
+                                </td>
+                                <td data-label="Submitted">{{ item.created_at|date:"M d, H:i" }}</td>
+                                <td style="text-align: right; padding-right: 2rem;">
+                                    <a href="{% url 'accounts:kyc_detail' item.public_id %}" class="inspect-btn">
+                                        Inspect <i class="bi bi-arrow-right"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6">
+                                    <div class="premium-empty-state">
+                                        <div class="empty-icon-shield">
+                                            <i class="bi bi-file-earmark-person"></i>
+                                            <div class="shield-scanner"></div>
+                                        </div>
+                                        <h3 class="empty-title">No pending KYC verifications</h3>
+                                        <p class="empty-subtitle">New submissions from policyholders will appear here automatically for forensic review.</p>
+                                        <div class="status-indicator">
+                                            <span class="pulsing-dot"></span> System Live & Monitoring
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+            <aside class="audit-aside glass-panel"
+                style="padding: 0; background: rgba(255,255,255,0.01); border-radius: 20px;">
+                <div
+                    style="padding: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.05); background: rgba(255,255,255,0.01);">
+                    <h2
+                        style="font-size: 1.1rem; color: #fff; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="bi bi-clock-history" style="color: #6366f1;"></i> <span class="gradient-title-cyan">KYC Audit Logs</span>
+                    </h2>
+                </div>
+                <div class="log-container" style="padding: 1.5rem; max-height: 550px; overflow-y: auto;">
+                    {% for item in feed_items %}
+                    <div class="log-item"
+                        style="border-left: 2px solid {% if item.color == 'success' %}#10b981{% elif item.color == 'warning' %}#C88A2D{% else %}#c55a5a{% endif %};">
+                        <div class="log-dot"
+                            style="background: {% if item.color == 'success' %}#10b981{% elif item.color == 'warning' %}#C88A2D{% else %}#c55a5a{% endif %}; box-shadow: 0 0 10px {% if item.color == 'success' %}#10b981{% elif item.color == 'warning' %}#C88A2D{% else %}#c55a5a{% endif %};">
+                        </div>
+                        <div class="log-content" style="flex-grow: 1;">
+                            <div class="log-msg">{{ item.msg }}</div>
+                            <div
+                                style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
+                                <div class="log-time">{{ item.time|timesince }} ago</div>
+                                <a href="{% url 'accounts:kyc_detail' item.record_id %}" class="log-view-btn">View
+                                    Details</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </aside>
+        </div>
+    </div>
+</div>
+
+    <!-- High-Fidelity Data Identity Injection (Safe for JS Parsers) -->
+    {{ status_distribution|json_script:"status-distribution-data" }}
+    {{ days_labels|json_script:"days-labels-data" }}
+    {{ success_trend|json_script:"success-trend-data" }}
+    {{ failed_trend|json_script:"failed-trend-data" }}
+    {{ score_buckets|json_script:"score-buckets-data" }}
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const loader = document.getElementById('kycIntelligenceLoader');
+        const shell = document.getElementById('kycDashboardShell');
+        const loadingText = document.getElementById('kycLoadingText');
+        const loadingProgress = document.getElementById('kycLoadingProgress');
+        const loadingStages = [
+            { delay: 250, progress: 22, text: 'Collecting verification telemetry...' },
+            { delay: 850, progress: 48, text: 'Preparing OCR quality clusters...' },
+            { delay: 1450, progress: 74, text: 'Synchronizing audit queue and identity logs...' },
+            { delay: 2050, progress: 100, text: 'Rendering compliance intelligence...' }
+        ];
+
+        loadingStages.forEach((stage) => {
+            window.setTimeout(() => {
+                if (loadingText) loadingText.textContent = stage.text;
+                if (loadingProgress) loadingProgress.style.width = `${stage.progress}%`;
+            }, stage.delay);
+        });
+
+        window.setTimeout(() => {
+            if (loader) loader.classList.add('is-complete');
+            if (shell) shell.classList.remove('kyc-dashboard-loading');
+        }, 2550);
+
+        // Data Extraction from Secure Identity Nodes
+        const extractData = (id, fallback) => {
+            const el = document.getElementById(id);
+            if (!el) return fallback;
+            try {
+                return JSON.parse(el.textContent);
+            } catch (e) {
+                console.error(`KYC Dashboard: Failed to parse data node ${id}`, e);
+                return fallback;
+            }
+        };
+
+        const statusDistribution = extractData('status-distribution-data', [0, 0, 0, 0]);
+        const daysLabels = extractData('days-labels-data', []);
+        const successTrend = extractData('success-trend-data', []);
+        const failedTrend = extractData('failed-trend-data', []);
+        const scoreBuckets = extractData('score-buckets-data', [0, 0, 0, 0, 0]);
+
+        // Chart Defaults
+        Chart.defaults.color = 'rgba(156, 149, 143, 0.7)';
+        Chart.defaults.font.family = "'Inter', sans-serif";
+        Chart.defaults.font.size = 12;
+
+        // 1. Status Donut
+        const statusDonutCtx = document.getElementById('statusDonut');
+        if (statusDonutCtx) {
+            new Chart(statusDonutCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Verified', 'Pending', 'Rejected', 'Manual Review'],
+                    datasets: [{
+                        data: statusDistribution,
+                        backgroundColor: ['#10b981', '#6366f1', '#c55a5a', '#C88A2D'],
+                        borderWidth: 0,
+                        hoverOffset: 15
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { boxWidth: 10, padding: 25, color: 'rgba(156, 149, 143, 0.7)', font: { weight: 'bold' } } }
+                    },
+                    cutout: '80%',
+                    animation: { animateScale: true, duration: 1500 }
+                }
+            });
+        }
+
+        // 2. Trend Line
+        const trendLineCtx = document.getElementById('trendLine');
+        if (trendLineCtx) {
+            new Chart(trendLineCtx, {
+                type: 'line',
+                data: {
+                    labels: daysLabels,
+                    datasets: [{
+                        label: 'Successful',
+                        data: successTrend,
+                        borderColor: '#00f2ff',
+                        backgroundColor: 'rgba(0, 242, 255, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        borderWidth: 3,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#00f2ff',
+                        pointBorderWidth: 0,
+                        pointHoverRadius: 6
+                    }, {
+                        label: 'System Flags',
+                        data: failedTrend,
+                        borderColor: '#c55a5a',
+                        fill: false,
+                        tension: 0.4,
+                        borderWidth: 2,
+                        pointRadius: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top', align: 'end', labels: { boxWidth: 12, color: 'rgba(156, 149, 143, 0.7)', padding: 15 } }
+                    },
+                    scales: {
+                        y: { grid: { color: 'rgba(255,255,255,0.03)' }, border: { display: false }, ticks: { padding: 10, precision: 0 } },
+                        x: { grid: { display: false }, ticks: { padding: 10 } }
+                    },
+                    animation: { duration: 2500, easing: 'easeOutQuart' }
+                }
+            });
+        }
+
+        // 3. Confidence Bar (Full Width & Enhanced)
+        const confidenceBarCtx = document.getElementById('confidenceBar');
+        if (confidenceBarCtx) {
+            new Chart(confidenceBarCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['0-20%', '21-40%', '41-60%', '61-80%', '81-100%'],
+                    datasets: [{
+                        data: scoreBuckets,
+                        backgroundColor: [
+                            'rgba(197, 90, 90, 0.4)',  // Low
+                            'rgba(200, 138, 45, 0.4)', // Sub-optimal
+                            'rgba(16, 185, 129, 0.4)', // Baseline
+                            'rgba(99, 102, 241, 0.4)', // High
+                            'rgba(168, 85, 247, 0.4)'  // Elite
+                        ],
+                        borderColor: [
+                            '#c55a5a',
+                            '#C88A2D',
+                            '#10b981',
+                            '#6366f1',
+                            '#a855f7'
+                        ],
+                        borderWidth: 2,
+                        borderRadius: 8,
+                        hoverBackgroundColor: [
+                            '#c55a5a',
+                            '#C88A2D',
+                            '#10b981',
+                            '#6366f1',
+                            '#a855f7'
+                        ],
+                        barThickness: 40
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { backgroundColor: '#FFFFFF', titleColor: '#fff', bodyColor: 'rgba(156, 149, 143, 0.7)', padding: 15, borderRadius: 10 }
+                    },
+                    scales: {
+                        y: { 
+                            grid: { color: 'rgba(255,255,255,0.03)' }, 
+                            border: { display: false }, 
+                            ticks: { padding: 15, precision: 0, font: { weight: 'bold' } } 
+                        },
+                        x: { 
+                            grid: { display: false }, 
+                            ticks: { 
+                                padding: 15, 
+                                font: { size: 10, weight: 'bold' }, 
+                                color: 'rgba(156, 149, 143, 0.6)',
+                                maxRotation: 0,
+                                minRotation: 0
+                            } 
+                        }
+                    },
+                    layout: { padding: { left: 20, right: 20, top: 0, bottom: 0 } },
+                    animation: { duration: 2000, delay: 300 }
+                }
+            });
+
+            // Populate Cluster Summary Table Data
+            scoreBuckets.forEach((val, idx) => {
+                const el = document.getElementById(`bucket-${idx}`);
+                if (el) el.textContent = val.toLocaleString();
+            });
+            const total = scoreBuckets.reduce((a, b) => a + b, 0);
+            const totalEl = document.getElementById('total-artifacts');
+            if (totalEl) totalEl.textContent = total.toLocaleString();
+        }
+    });
+</script>
+
+<style>
+    .kyc-intelligence-loader {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+        background:
+            radial-gradient(circle at 50% 35%, rgba(0, 242, 255, 0.14), transparent 34%),
+            radial-gradient(circle at 70% 70%, rgba(99, 102, 241, 0.12), transparent 30%),
+            rgba(2, 6, 23, 0.92);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        opacity: 1;
+        visibility: visible;
+        transition: opacity 0.75s ease, visibility 0.75s ease;
+    }
+
+    .kyc-intelligence-loader.is-complete {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+    }
+
+    .kyc-loader-panel {
+        width: min(440px, 92vw);
+        padding: 2.75rem;
+        text-align: center;
+        border-radius: 24px;
+        background:
+            radial-gradient(circle at top right, rgba(0, 242, 255, 0.1), transparent 38%),
+            rgba(15, 23, 42, 0.86);
+        border: 1px solid rgba(0, 242, 255, 0.24);
+        box-shadow:
+            0 28px 90px rgba(0, 0, 0, 0.58),
+            0 0 46px rgba(0, 242, 255, 0.12);
+    }
+
+    .kyc-loader-orbit {
+        position: relative;
+        width: 118px;
+        height: 118px;
+        margin: 0 auto 1.5rem;
+        display: grid;
+        place-items: center;
+        perspective: 700px;
+    }
+
+    .orbit-ring {
+        position: absolute;
+        inset: 8px;
+        border-radius: 50%;
+        border: 1px solid rgba(0, 242, 255, 0.36);
+    }
+
+    .orbit-ring-a {
+        animation: kyc-orbit-a 1.8s linear infinite;
+    }
+
+    .orbit-ring-b {
+        inset: 20px;
+        border-color: rgba(200, 138, 45, 0.42);
+        animation: kyc-orbit-b 2.6s linear infinite;
+    }
+
+    .loader-node {
+        width: 58px;
+        height: 58px;
+        display: grid;
+        place-items: center;
+        border-radius: 18px;
+        color: #F4EEE2;
+        background: linear-gradient(135deg, #00f2ff, #C88A2D);
+        box-shadow: 0 0 30px rgba(0, 242, 255, 0.45);
+        font-size: 1.35rem;
+        animation: kyc-node-pulse 1.6s ease-in-out infinite;
+    }
+
+    .loader-kicker {
+        color: #00f2ff;
+        font-size: 0.72rem;
+        font-weight: 900;
+        letter-spacing: 0.25em;
+        text-transform: uppercase;
+        margin-bottom: 0.7rem;
+    }
+
+    .kyc-loader-panel h2 {
+        color: #fff;
+        font-size: 1.45rem;
+        font-weight: 900;
+        margin: 0 0 0.75rem;
+        letter-spacing: -0.02em;
+    }
+
+    .kyc-loader-panel p {
+        color: rgba(156, 149, 143, 0.7);
+        min-height: 1.5rem;
+        margin-bottom: 1.25rem;
+        font-size: 0.95rem;
+        font-style: italic;
+    }
+
+    .kyc-loader-progress {
+        height: 7px;
+        overflow: hidden;
+        border-radius: 999px;
+        background: rgba(51, 65, 85, 0.9);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .kyc-loader-progress div {
+        width: 0%;
+        height: 100%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, #00f2ff, #6366f1, #C88A2D);
+        box-shadow: 0 0 18px rgba(0, 242, 255, 0.5);
+        transition: width 0.65s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .loader-footnote {
+        color: rgba(156, 149, 143, 0.6);
+        font-size: 0.68rem;
+        font-weight: 700;
+        margin-top: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+    }
+
+    .kyc-dashboard-loading {
+        opacity: 0;
+        transform: translateY(18px);
+    }
+
+    .kyc-dashboard-container {
+        opacity: 1;
+        transform: translateY(0);
+        transition: opacity 0.85s ease, transform 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes kyc-orbit-a {
+        from { transform: rotateX(68deg) rotateZ(0deg); }
+        to { transform: rotateX(68deg) rotateZ(360deg); }
+    }
+
+    @keyframes kyc-orbit-b {
+        from { transform: rotateY(64deg) rotateZ(360deg); }
+        to { transform: rotateY(64deg) rotateZ(0deg); }
+    }
+
+    @keyframes kyc-node-pulse {
+        0%, 100% { transform: scale(1); box-shadow: 0 0 22px rgba(0, 242, 255, 0.36); }
+        50% { transform: scale(1.08); box-shadow: 0 0 36px rgba(200, 138, 45, 0.34); }
+    }
+
+    /* Refined Metric Design */
+    .metric-card {
+        padding: 1.75rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .metric-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 0.75rem;
+    }
+
+    .metric-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+    }
+
+    .metric-icon.success { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+    .metric-icon.warning { background: rgba(200, 138, 45, 0.1); color: #C88A2D; }
+    .metric-icon.primary { background: rgba(99, 102, 241, 0.1); color: #6366f1; }
+    .metric-icon.danger { background: rgba(197, 90, 90, 0.1); color: #c55a5a; }
+
+    .metric-value {
+        font-size: 2.5rem;
+        font-weight: 900;
+        color: #fff;
+        line-height: 1;
+        margin-bottom: 0.5rem;
+        letter-spacing: -1.5px;
+    }
+
+    .metric-value .unit {
+        font-size: 1rem;
+        color: rgba(156, 149, 143, 0.6);
+        margin-left: 2px;
+    }
+
+    .metric-footer-refined {
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: rgba(156, 149, 143, 0.6);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .metric-footer-track {
+        margin-top: 1rem;
+    }
+
+    .track-progress {
+        height: 4px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 2px;
+        overflow: hidden;
+    }
+
+    .track-progress .fill {
+        height: 100%;
+        background: linear-gradient(90deg, #6366f1, #00f2ff);
+    }
+
+    .danger-accent { border-color: rgba(197, 90, 90, 0.15) !important; }
+
+    /* Shimmer Effect */
+    .shimmer::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.03), transparent);
+        animation: shimmer 4s infinite;
+    }
+
+    @keyframes shimmer {
+        0% { left: -100%; }
+        100% { left: 100%; }
+    }
+
+    /* Cinematic Glow Orbs */
+    .glow-orb {
+        position: absolute;
+        width: 600px;
+        height: 600px;
+        border-radius: 50%;
+        filter: blur(80px);
+        opacity: 0.5;
+        animation: float 20s infinite alternate ease-in-out;
+    }
+
+    @keyframes float {
+        0% { transform: translate(0, 0); }
+        100% { transform: translate(30px, 50px); }
+    }
+
+    .glass-panel {
+        background: rgba(15, 23, 42, 0.65);
+        backdrop-filter: blur(25px);
+        -webkit-backdrop-filter: blur(25px);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 24px;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .chart-card:hover { transform: translateY(-8px); border-color: rgba(0, 242, 255, 0.25); box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.8); }
+
+    /* Queue Header Enhancements */
+    .queue-header-container { padding: 1.75rem 2rem; background: rgba(255, 255, 255, 0.02); border-bottom: 1px solid rgba(255, 255, 255, 0.05); display: flex; flex-direction: column; gap: 1.5rem; }
+    .queue-title-row { display: flex; justify-content: space-between; align-items: center; }
+    .queue-header-title { font-size: 1.25rem; color: #fff; margin: 0; display: flex; align-items: center; gap: 0.75rem; font-weight: 700; letter-spacing: -0.5px; }
+    .active-badge { font-size: 0.7rem; color: #00f2ff; background: rgba(0, 242, 255, 0.1); padding: 4px 12px; border-radius: 20px; border: 1px solid rgba(0, 242, 255, 0.2); font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
+
+    .queue-utilities { display: flex; gap: 1rem; align-items: center; }
+    .search-box { position: relative; flex-grow: 1; }
+    .search-box i { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: rgba(156, 149, 143, 0.6); font-size: 0.9rem; }
+    .search-box input { width: 100%; background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 12px; padding: 0.6rem 1rem 0.6rem 2.8rem; color: #fff; font-size: 0.85rem; transition: all 0.3s; }
+    .search-box input:focus { outline: none; border-color: rgba(0, 242, 255, 0.4); background: rgba(0, 0, 0, 0.3); box-shadow: 0 0 15px rgba(0, 242, 255, 0.1); }
+
+    .filter-group { display: flex; gap: 0.75rem; }
+    .status-select { background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 12px; color: rgba(156, 149, 143, 0.7); padding: 0.6rem 2.5rem 0.6rem 1rem; font-size: 0.85rem; cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2394a3b8' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: calc(100% - 10px) center; }
+    .refresh-action { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05); color: rgba(156, 149, 143, 0.6); border-radius: 12px; width: 42px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s; }
+    .refresh-action:hover { color: #00f2ff; background: rgba(0, 242, 255, 0.05); border-color: rgba(0, 242, 255, 0.2); }
+
+    /* Premium Table Styles */
+    .table-responsive-wrapper { overflow-x: auto; }
+    .kyc-premium-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+    .kyc-premium-table thead { position: sticky; top: 0; z-index: 10; background: #FFFFFF; }
+    .kyc-premium-table th { padding: 1.25rem 1.5rem; text-align: left; color: #475569; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+    .kyc-row { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+    .kyc-row:hover { background: rgba(0, 242, 255, 0.02); }
+    .kyc-row td { padding: 1.5rem; vertical-align: middle; border-bottom: 1px solid rgba(255, 255, 255, 0.03); }
+
+    .applicant-info { display: flex; flex-direction: column; gap: 4px; }
+    .applicant-name { color: #fff; font-weight: 600; font-size: 0.95rem; }
+    .applicant-uid { font-size: 0.7rem; color: rgba(156, 149, 143, 0.6); font-family: 'Inter', monospace; }
+    .aadhaar-mask { color: rgba(156, 149, 143, 0.7); font-size: 0.9rem; letter-spacing: 1px; }
+
+    .match-cell { display: flex; align-items: center; gap: 12px; }
+    .match-bar-bg { width: 60px; height: 6px; background: rgba(255, 255, 255, 0.05); border-radius: 4px; overflow: hidden; }
+    .match-bar-fill { height: 100%; background: linear-gradient(90deg, #6366f1, #00f2ff); border-radius: 4px; }
+    .match-value { color: #fff; font-weight: 700; font-size: 0.8rem; }
+
+    /* Premium Empty State */
+    .premium-empty-state { padding: 6rem 2rem; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .empty-icon-shield { position: relative; width: 100px; height: 100px; background: rgba(0, 242, 255, 0.03); border: 1px solid rgba(0, 242, 255, 0.1); border-radius: 24px; display: flex; align-items: center; justify-content: center; margin-bottom: 2rem; font-size: 3rem; color: rgba(0, 242, 255, 0.5); }
+    .shield-scanner { position: absolute; top: 10%; left: 0; width: 100%; height: 2px; background: linear-gradient(90deg, transparent, #00f2ff, transparent); box-shadow: 0 0 15px #00f2ff; animation: scan 3s infinite ease-in-out; }
+    @keyframes scan { 0% { top: 10%; opacity: 0; } 50% { opacity: 1; } 100% { top: 90%; opacity: 0; } }
+
+    .empty-title { color: #fff; font-size: 1.5rem; font-weight: 800; margin-bottom: 0.75rem; letter-spacing: -0.5px; }
+    .empty-subtitle { color: rgba(156, 149, 143, 0.6); max-width: 400px; margin: 0 auto 2.5rem; line-height: 1.6; font-size: 0.95rem; }
+    .status-indicator { display: flex; align-items: center; gap: 10px; background: rgba(16, 185, 129, 0.05); padding: 8px 16px; border-radius: 30px; border: 1px solid rgba(16, 185, 129, 0.1); color: #10b981; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+    .pulsing-dot { width: 8px; height: 8px; background: #10b981; border-radius: 50%; box-shadow: 0 0 10px #10b981; animation: pulse-green 2s infinite; }
+    @keyframes pulse-green { 0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); } 70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); } 100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); } }
+
+    /* Responsiveness & Original Logic */
+    .inspect-btn { display: inline-flex; align-items: center; padding: 0.6rem 1rem; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; color: #fff; font-size: 0.75rem; font-weight: 700; text-decoration: none; transition: all 0.3s; gap: 8px; }
+    .inspect-btn:hover { background: #00f2ff; color: #F4EEE2; border-color: #00f2ff; box-shadow: 0 10px 20px -5px rgba(0, 242, 255, 0.5); }
+    .kyc-badge { padding: 5px 12px; border-radius: 6px; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
+    .kyc-badge.verified { background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); }
+    .kyc-badge.manual { background: rgba(200, 138, 45, 0.1); color: #C88A2D; border: 1px solid rgba(200, 138, 45, 0.2); }
+    .kyc-badge.rejected { background: rgba(197, 90, 90, 0.1); color: #c55a5a; border: 1px solid rgba(197, 90, 90, 0.2); }
+    .kyc-badge.pending { background: rgba(99, 102, 241, 0.1); color: #6366f1; border: 1px solid rgba(99, 102, 241, 0.2); }
+
+    @media (max-width: 992px) { .queue-utilities { flex-direction: column; align-items: stretch; } }
+    @media (max-width: 768px) {
+        .kyc-premium-table thead { display: none; }
+        .kyc-row { display: block; background: rgba(255, 255, 255, 0.02); margin-bottom: 1rem; border-radius: 12px; padding: 1rem; border: 1px solid rgba(255, 255, 255, 0.05); }
+        .kyc-row td { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid rgba(255, 255, 255, 0.03); }
+        .kyc-row td::before { content: attr(data-label); font-size: 0.7rem; color: rgba(156, 149, 143, 0.6); text-transform: uppercase; font-weight: 800; }
+    }
+
+    .log-view-btn {
+        font-size: 0.65rem;
+        font-weight: 800;
+        color: #00f2ff;
+        text-decoration: none;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 2px 8px;
+        border: 1px solid rgba(0, 242, 255, 0.2);
+        border-radius: 4px;
+        transition: all 0.2s;
+    }
+
+    .log-view-btn:hover {
+        background: rgba(0, 242, 255, 0.1);
+        border-color: #00f2ff;
+    }
+
+    .log-item {
+        position: relative;
+        padding-left: 1.5rem;
+        margin-bottom: 2rem;
+        transition: padding 0.3s;
+    }
+
+    .log-item:hover {
+        padding-left: 1.75rem;
+    }
+
+    .log-dot {
+        position: absolute;
+        left: -5.5px;
+        top: 4px;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        border: 3px solid #FFFFFF;
+    }
+
+    .log-msg {
+        color: #e2e8f0;
+        font-size: 0.85rem;
+        font-weight: 500;
+        margin-bottom: 4px;
+    }
+
+    .log-time {
+        color: #475569;
+        font-size: 0.7rem;
+        font-weight: 700;
+    }
+
+    .nav-filter {
+        padding: 0.6rem 1.5rem;
+        color: rgba(156, 149, 143, 0.6);
+        text-decoration: none;
+        font-size: 0.8rem;
+        font-weight: 800;
+        border-radius: 10px;
+        transition: all 0.3s;
+    }
+
+    .nav-filter:hover {
+        color: #fff;
+    }
+
+    .nav-filter.active {
+        background: #fff;
+        color: #F4EEE2;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .log-container::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    .log-container::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+    }
+
+    /* OCR Cluster Premium Table Styles */
+    .cluster-details-container {
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 20px;
+        padding: 1.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.03);
+    }
+
+    .cluster-table-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 1.25rem;
+        padding: 0 0.5rem;
+    }
+
+    .cluster-data-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .cluster-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.85rem 1rem;
+        background: rgba(255, 255, 255, 0.02);
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        border: 1px solid transparent;
+    }
+
+    .cluster-item:hover {
+        background: rgba(255, 255, 255, 0.05);
+        transform: scale(1.02);
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .cluster-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .cluster-marker {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+    }
+
+    .cluster-name {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: rgba(156, 149, 143, 0.7);
+    }
+
+    .cluster-count {
+        font-family: 'Inter', monospace;
+        font-weight: 800;
+        color: #fff;
+        font-size: 1rem;
+    }
+
+    /* Cluster Specific Colors */
+    .elite .cluster-marker { background: #a855f7; box-shadow: 0 0 10px #a855f7; }
+    .high .cluster-marker { background: #6366f1; box-shadow: 0 0 10px #6366f1; }
+    .baseline .cluster-marker { background: #10b981; box-shadow: 0 0 10px #10b981; }
+    .suboptimal .cluster-marker { background: #C88A2D; box-shadow: 0 0 10px #C88A2D; }
+    .low .cluster-marker { background: #c55a5a; box-shadow: 0 0 10px #c55a5a; }
+
+    .cluster-status-pill {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: rgba(168, 85, 247, 0.08);
+        padding: 6px 14px;
+        border-radius: 30px;
+        border: 1px solid rgba(168, 85, 247, 0.2);
+        color: #a855f7;
+        font-size: 0.7rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .pulsing-dot-purple {
+        width: 8px;
+        height: 8px;
+        background: #a855f7;
+        border-radius: 50%;
+        box-shadow: 0 0 10px #a855f7;
+        animation: pulse-purple 2s infinite;
+    }
+
+    @keyframes pulse-purple {
+        0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(168, 85, 247, 0.7); }
+        70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(168, 85, 247, 0); }
+        100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(168, 85, 247, 0); }
+    }
+
+    @media (max-width: 1200px) {
+        .cluster-layout-grid {
+            grid-template-columns: 1fr !important;
+            gap: 2rem !important;
+        }
+    }
+
+    @media (max-width: 1200px) {
+        .analytics-top-row {
+            grid-template-columns: 1fr !important;
+        }
+
+        .workspace-grid {
+            grid-template-columns: 1fr !important;
+        }
+    }
+    /* 🚀 High-Fidelity Command Button v2 */
+    .back-command-btn-v2 {
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+        text-decoration: none;
+        padding: 0.85rem 1.5rem;
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 18px;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        margin-right: 1.5rem;
+    }
+
+    .back-command-btn-v2:hover {
+        background: rgba(0, 242, 255, 0.05);
+        border-color: rgba(0, 242, 255, 0.4);
+        transform: translateX(-8px);
+        box-shadow: 0 15px 35px -10px rgba(0, 242, 255, 0.2);
+    }
+
+    .cmd-icon-v2 {
+        width: 42px;
+        height: 42px;
+        background: rgba(0, 242, 255, 0.1);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #00f2ff;
+        font-size: 1.2rem;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .back-command-btn-v2:hover .cmd-icon-v2 {
+        background: #00f2ff;
+        color: #F4EEE2;
+        box-shadow: 0 0 15px rgba(0, 242, 255, 0.5);
+    }
+
+    .cmd-text-v2 {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .cmd-super-v2 {
+        color: rgba(156, 149, 143, 0.6);
+        font-size: 0.65rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        transition: color 0.3s;
+    }
+
+    .cmd-sub-v2 {
+        color: #fff;
+        font-size: 1rem;
+        font-weight: 800;
+        letter-spacing: -0.5px;
+        white-space: nowrap;
+    }
+
+    .back-command-btn-v2:hover .cmd-super-v2 {
+        color: #00f2ff;
+    }
+
+    /* Original Hover Overrides */
+    .back-link-premium:hover {
+        color: #00f2ff !important;
+        transform: translateX(-5px);
+        text-shadow: 0 0 10px rgba(0, 242, 255, 0.5);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .kyc-intelligence-loader,
+        .kyc-dashboard-container,
+        .orbit-ring-a,
+        .orbit-ring-b,
+        .loader-node,
+        .kyc-loader-progress div {
+            animation: none !important;
+            transition: none !important;
+        }
+    }
+</style>
+{% endblock %}

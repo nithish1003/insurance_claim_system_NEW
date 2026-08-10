@@ -39,7 +39,18 @@ class AIClaimService:
             vectorizer_path = os.path.join(settings.BASE_DIR, "ai_features", "models", "claim_type_vectorizer.pkl")
 
             if os.path.exists(model_path) and os.path.exists(vectorizer_path):
-                self._model = joblib.load(model_path)
+                # Standardized Loading Pattern
+                loaded_obj = joblib.load(model_path)
+                if isinstance(loaded_obj, dict):
+                    self._model = loaded_obj.get('model') or loaded_obj.get('classifier') or loaded_obj.get('regressor')
+                else:
+                    self._model = loaded_obj
+                
+                print("CLAIM TYPE MODEL TYPE:", type(self._model))
+                if self._model and not hasattr(self._model, "predict"):
+                    logger.error("❌ Loaded object is not a valid predictor")
+                    self._model = None
+
                 self._vectorizer = joblib.load(vectorizer_path)
                 self._model_path = model_path
                 self._vectorizer_path = vectorizer_path
@@ -50,7 +61,12 @@ class AIClaimService:
                 vectorizer_path = os.path.join(settings.BASE_DIR, "vectorizer.pkl")
 
                 if os.path.exists(model_path) and os.path.exists(vectorizer_path):
-                    self._model = joblib.load(model_path)
+                    loaded_obj = joblib.load(model_path)
+                    if isinstance(loaded_obj, dict):
+                        self._model = loaded_obj.get('model') or loaded_obj.get('classifier') or loaded_obj.get('regressor')
+                    else:
+                        self._model = loaded_obj
+                    
                     self._vectorizer = joblib.load(vectorizer_path)
                     self._model_path = model_path
                     self._vectorizer_path = vectorizer_path

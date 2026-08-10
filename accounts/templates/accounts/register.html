@@ -1,690 +1,689 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>ClaimIQ — Register</title>
-
-    <link
-        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Serif+Display&display=swap"
-        rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-
-    <style>
-        body {
-            font-family: 'DM Sans', sans-serif;
-            background: #0a1628;
-            color: white;
-            margin: 0;
-            padding: 30px 20px;
-            background-image:
-                radial-gradient(circle at 15% 50%, rgba(26, 110, 245, 0.08), transparent 25%),
-                radial-gradient(circle at 85% 30%, rgba(26, 110, 245, 0.08), transparent 25%);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            padding: 60px 20px;
-        }
-
-        .auth-wrapper {
-            width: 100%;
-            max-width: 1000px;
-            background: rgba(17, 28, 53, 0.6);
-            backdrop-filter: blur(15px);
-            border-radius: 20px;
-            display: flex;
-            overflow: hidden;
-            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            position: relative;
-            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-
-        .auth-wrapper:hover {
-            transform: translateY(-5px);
-            border-color: rgba(26, 110, 245, 0.3);
-        }
-
-        /* LEFT SIDE - BRANDING */
-        .auth-left {
-            width: 40%;
-            padding: 50px 40px;
-            background: linear-gradient(135deg, rgba(15, 27, 51, 0.5) 0%, rgba(10, 22, 40, 0.8) 100%);
-            border-right: 1px solid rgba(255, 255, 255, 0.05);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            gap: 30px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .auth-left::before {
-            content: '';
-            position: absolute;
-            top: -100px;
-            left: -100px;
-            width: 400px;
-            height: 400px;
-            background: radial-gradient(circle, rgba(26, 110, 245, 0.1) 0%, rgba(0, 0, 0, 0) 70%);
-            border-radius: 50%;
-            z-index: 0;
-        }
-
-        .brand-header {
-            z-index: 1;
-        }
-
-        .brand-header h1 {
-            font-family: 'DM Serif Display', serif;
-            font-size: 42px;
-            margin-bottom: 8px;
-            color: white;
-            letter-spacing: 0.5px;
-            position: relative;
-            display: inline-block;
-        }
-
-        .brand-header h1::after {
-            content: '';
-            position: absolute;
-            bottom: -4px;
-            left: 0;
-            width: 60px;
-            height: 4px;
-            background: #1a6ef5;
-            border-radius: 2px;
-        }
-
-        .brand-header p {
-            color: #9fb3d1;
-            font-size: 15px;
-            line-height: 1.6;
-            margin-top: 20px;
-        }
-
-        .features {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            margin-top: 10px;
-            z-index: 1;
-        }
-
-        .feature-card {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            padding: 15px;
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.04);
-            border-radius: 14px;
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        .feature-card:hover {
-            border-color: rgba(26, 110, 245, 0.5);
-            transform: translateX(10px);
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .feature-icon {
-            width: 45px;
-            height: 45px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            flex-shrink: 0;
-        }
-
-        .icon-blue {
-            background: rgba(26, 110, 245, 0.15);
-            color: #3d8bff;
-        }
-
-        .icon-green {
-            background: rgba(0, 198, 100, 0.15);
-            color: #00c664;
-        }
-
-        .icon-gold {
-            background: rgba(255, 193, 7, 0.15);
-            color: #ffd32a;
-        }
-
-        .feature-text h4 {
-            color: white;
-            font-size: 15px;
-            font-weight: 600;
-            margin: 0 0 4px 0;
-        }
-
-        .feature-text p {
-            color: #7a8ba8;
-            font-size: 13px;
-            margin: 0;
-            line-height: 1.4;
-        }
-
-        /* RIGHT SIDE - FORM */
-        .auth-right {
-            width: 60%;
-            padding: 50px;
-            background: transparent;
-        }
-
-        .auth-right .form-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-        }
-
-        .btn-refresh {
-            color: rgba(255, 255, 255, 0.4);
-            font-size: 1.2rem;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.9rem;
-            padding: 5px 12px;
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .btn-refresh:hover {
-            color: white;
-            background: rgba(255, 255, 255, 0.1);
-            transform: translateY(-1px);
-        }
-
-        .btn-refresh:hover i {
-            transform: rotate(180deg);
-        }
-
-        .btn-refresh i {
-            transition: transform 0.4s ease;
-        }
-
-        .auth-right h2 {
-            font-family: 'DM Serif Display', serif;
-            font-size: 32px;
-            margin: 0;
-            color: white;
-        }
-
-        .auth-right>p {
-            color: #9fb3d1;
-            margin-bottom: 25px;
-            font-size: 15px;
-        }
-
-
-        .form-label {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 12px;
-            font-weight: 600;
-            margin-bottom: 8px;
-            display: block;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        .form-control {
-            width: 100%;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: white;
-            border-radius: 10px;
-            padding: 12px 18px;
-            transition: all 0.3s ease;
-        }
-
-        .form-control:focus {
-            background: rgba(255, 255, 255, 0.06);
-            border-color: #1a6ef5;
-            color: white;
-            outline: none;
-            box-shadow: 0 0 0 4px rgba(26, 110, 245, 0.1);
-        }
-
-        .form-control::placeholder {
-            color: rgba(255, 255, 255, 0.15);
-        }
-
-        .password-container {
-            position: relative;
-        }
-
-        .password-toggle {
-            position: absolute;
-            right: 18px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #7a8ba8;
-            cursor: pointer;
-            font-size: 18px;
-            transition: 0.3s ease;
-            z-index: 10;
-        }
-
-        .password-toggle:hover {
-            color: white;
-        }
-
-        .field-error {
-            color: #ff6b81;
-            font-size: 11px;
-            font-weight: 700;
-            margin-top: 6px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            animation: slideInLeft 0.3s ease-out;
-        }
-
-        .field-error::before {
-            content: '\F33A';
-            font-family: "bootstrap-icons";
-            font-size: 10px;
-        }
-
-        .form-control.is-invalid {
-            border-color: #ff6b81 !important;
-            background: rgba(255, 107, 129, 0.03) !important;
-        }
-
-        .btn-register {
-
-
-            width: 100%;
-            padding: 15px;
-            border: none;
-            border-radius: 12px;
-            background: linear-gradient(135deg, #1a6ef5 0%, #0d5ddb 100%);
-            color: white;
-            font-weight: 700;
-            font-size: 16px;
-            cursor: pointer;
-            margin-top: 15px;
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 12px;
-            box-shadow: 0 10px 25px rgba(26, 110, 245, 0.3);
-        }
-
-        .btn-register:hover {
-            transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 15px 35px rgba(26, 110, 245, 0.4);
-            background: linear-gradient(135deg, #3d8bff 0%, #1a6ef5 100%);
-        }
-
-        .auth-footer {
-            margin-top: 30px;
-            text-align: center;
-            font-size: 14px;
-            color: #7a8ba8;
-        }
-
-        .auth-footer a {
-            color: #3d8bff;
-            text-decoration: none;
-            font-weight: 700;
-            transition: 0.3s ease;
-            padding: 6px 16px;
-            background: rgba(26, 110, 245, 0.1);
-            border: 1px solid rgba(26, 110, 245, 0.2);
-            border-radius: 50px;
-            margin-left: 8px;
-            display: inline-block;
-        }
-
-        .auth-footer a:hover {
-            background: #1a6ef5;
-            color: white;
-            border-color: #1a6ef5;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(26, 110, 245, 0.25);
-        }
-
-        .alert-message {
-            padding: 15px 18px;
-            border-radius: 10px;
-            margin-bottom: 25px;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            background: rgba(220, 53, 69, 0.1);
-            color: #ff6b81;
-            border: 1px solid rgba(220, 53, 69, 0.2);
-        }
-
-        .alert-message.success {
-            background: rgba(0, 198, 100, 0.1) !important;
-            color: #00c664 !important;
-            border-color: rgba(0, 198, 100, 0.2) !important;
-        }
-
-        /* Stagger Logic */
-        .stagger-container>* {
-            opacity: 0;
-        }
-
-        .stagger-active>*:nth-child(1) {
-            animation: slideUp 0.5s ease forwards 0.1s;
-        }
-
-        .stagger-active>*:nth-child(2) {
-            animation: slideUp 0.5s ease forwards 0.2s;
-        }
-
-        .stagger-active>*:nth-child(3) {
-            animation: slideUp 0.5s ease forwards 0.3s;
-        }
-
-        .stagger-active>*:nth-child(4) {
-            animation: slideUp 0.5s ease forwards 0.4s;
-        }
-
-        .stagger-active>*:nth-child(5) {
-            animation: slideUp 0.5s ease forwards 0.5s;
-        }
-
-        .stagger-active>*:nth-child(n+6) {
-            animation: slideUp 0.5s ease forwards 0.6s;
-        }
-
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(15px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @media (max-width: 992px) {
-            body {
-                padding: 20px 15px;
-                align-items: flex-start;
-            }
-
-            .auth-wrapper {
-                flex-direction: column;
-            }
-
-            .auth-left,
-            .auth-right {
-                width: 100%;
-                padding: 40px 30px;
-            }
-
-            .auth-left {
-                border-right: none;
-                border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            }
-        }
-    </style>
-
-</head>
-
-<body>
-
-    <div class="auth-wrapper" data-aos="zoom-in" data-aos-duration="1000">
-
-        <!-- LEFT SIDE - BRANDING -->
-        <div class="auth-left" data-aos="fade-right" data-aos-delay="200">
-
-            <div class="brand-header">
-                <h1 data-aos="fade-down" data-aos-delay="400">ClaimIQ</h1>
-                <p data-aos="fade-up" data-aos-delay="600">
-                    Insurance Claims Reimagined with advanced automation.
-                    Submit, process, and track your claims faster than ever before.
-                </p>
-            </div>
-
-            <div class="features stagger-container" id="brand-features">
-
-                <div class="feature-card">
-                    <div class="feature-icon icon-blue">
-                        <i class="bi bi-robot"></i>
-                    </div>
-                    <div class="feature-text">
-                        <h4>Smart Document Analysis</h4>
-                        <p>Instantly extracts data from documents using accurate OCR parsing.</p>
-                    </div>
-                </div>
-
-                <div class="feature-card">
-                    <div class="feature-icon icon-green">
-                        <i class="bi bi-activity"></i>
-                    </div>
-                    <div class="feature-text">
-                        <h4>Real-time Tracking</h4>
-                        <p>Monitor your claim status with instant live dashboard updates.</p>
-                    </div>
-                </div>
-
-                <div class="feature-card">
-                    <div class="feature-icon icon-gold">
-                        <i class="bi bi-shield-check"></i>
-                    </div>
-                    <div class="feature-text">
-                        <h4>Secure Processing</h4>
-                        <p>Bank-grade encryption protecting all your sensitive insurance info.</p>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-
-
-        <!-- RIGHT SIDE - FORM -->
-        <div class="auth-right" data-aos="fade-left" data-aos-delay="200">
-
-            <div class="form-header" data-aos="fade-down" data-aos-delay="400">
-                <h2>Join ClaimIQ</h2>
-                <a href="{% url 'accounts:register' %}" class="btn-refresh" title="Clear and Refresh">
-                    <i class="bi bi-arrow-clockwise"></i> Reset Form
-                </a>
-            </div>
-            <p data-aos="fade-up" data-aos-delay="500">Register your policyholder account to start managing claims instantly.</p>
-
-
-            {% if messages %}
-            {% for message in messages %}
-            <div class="alert-message {{ message.tags }}" data-aos="shake">
-                {% if message.tags == 'success' %}
-                <i class="bi bi-check-circle-fill"></i>
-                {% elif message.tags == 'warning' %}
-                <i class="bi bi-exclamation-circle-fill"></i>
-                {% else %}
-                <i class="bi bi-exclamation-triangle-fill"></i>
-                {% endif %}
-                {{ message }}
-            </div>
-            {% endfor %}
-            {% endif %}
-
-            <form method="POST" action="{% url 'accounts:register' %}" enctype="multipart/form-data"
-                class="stagger-container" id="register-form">
-                {% csrf_token %}
-
-                {% if form.non_field_errors %}
-                <div class="alert-message warning">
-                    <i class="bi bi-exclamation-circle-fill"></i>
-                    {{ form.non_field_errors|striptags }}
-                </div>
-                {% endif %}
-
-
-
-                <div class="mb-3">
-                    <label class="form-label">Full Name (as per ID Proof)</label>
-                    <input type="text" name="full_name"
-                        class="form-control {% if form.errors.full_name %}is-invalid{% endif %}" required
-                        placeholder="Ex: John Alexander Doe" value="{{ form.data.full_name|default:'' }}">
-                    {% if form.full_name.errors %}
-                        <div class="field-error">{{ form.full_name.errors.0 }}</div>
-                    {% endif %}
-                </div>
-
-                <div class="row g-3 mb-3">
-                    <div class="col-md-6">
-                        <label class="form-label">Username</label>
-                        <input type="text" name="username"
-                            class="form-control {% if form.errors.username %}is-invalid{% endif %}" required
-                            placeholder="Choose a unique username" value="{{ form.data.username|default:'' }}">
-                        {% if form.username.errors %}
-                            <div class="field-error">{{ form.username.errors.0 }}</div>
-                        {% endif %}
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Email Address</label>
-                        <input type="email" name="email"
-                            class="form-control {% if form.errors.email %}is-invalid{% endif %}" required
-                            placeholder="name@example.com" value="{{ form.data.email|default:'' }}">
-                        {% if form.email.errors %}
-                            <div class="field-error">{{ form.email.errors.0 }}</div>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <div class="row g-3 mb-3">
-                    <div class="col-md-6">
-                        <label class="form-label">Aadhaar Number (12 Digits)</label>
-                        <input type="text" name="aadhaar_number"
-                            class="form-control {% if form.errors.aadhaar_number %}is-invalid{% endif %}" required
-                            placeholder="XXXX XXXX XXXX" value="{{ form.data.aadhaar_number|default:'' }}">
-                        {% if form.aadhaar_number.errors %}
-                            <div class="field-error">{{ form.aadhaar_number.errors.0 }}</div>
-                        {% endif %}
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Upload ID Proof (PDF/JPG)</label>
-                        <input type="file" name="id_proof"
-                            class="form-control {% if form.errors.id_proof %}is-invalid{% endif %}" required>
-                        {% if form.id_proof.errors %}
-                            <div class="field-error">{{ form.id_proof.errors.0 }}</div>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <div class="row g-3 mb-3">
-                    <div class="col-md-6">
-                        <label class="form-label">Phone Number</label>
-                        <input type="text" name="phone"
-                            class="form-control {% if form.errors.phone %}is-invalid{% endif %}" required
-                            placeholder="Ex: +91 9876543210" value="{{ form.data.phone|default:'' }}">
-                        {% if form.phone.errors %}
-                            <div class="field-error">{{ form.phone.errors.0 }}</div>
-                        {% endif %}
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Residential Address</label>
-                        <input type="text" name="address"
-                            class="form-control {% if form.errors.address %}is-invalid{% endif %}" required
-                            placeholder="House No, City, State" value="{{ form.data.address|default:'' }}">
-                        {% if form.address.errors %}
-                            <div class="field-error">{{ form.address.errors.0 }}</div>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <div class="row g-3 mb-4">
-                    <div class="col-md-6">
-                        <label class="form-label">Password</label>
-                        <div class="password-container">
-                            <input type="password" name="password" id="password_input"
-                                class="form-control pr-5 {% if form.errors.password %}is-invalid{% endif %}" required
-                                placeholder="••••••••">
-                            <i class="bi bi-eye password-toggle" onclick="togglePassword('password_input', this)"></i>
-                        </div>
-                        {% if form.password.errors %}
-                            <div class="field-error">{{ form.password.errors.0 }}</div>
-                        {% endif %}
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Confirm Password</label>
-                        <div class="password-container">
-                            <input type="password" name="confirm_password" id="confirm_password_input"
-                                class="form-control pr-5 {% if form.errors.confirm_password %}is-invalid{% endif %}"
-                                required placeholder="••••••••">
-                            <i class="bi bi-eye password-toggle"
-                                onclick="togglePassword('confirm_password_input', this)"></i>
-                        </div>
-                        {% if form.confirm_password.errors %}
-                            <div class="field-error">{{ form.confirm_password.errors.0 }}</div>
-                        {% endif %}
-                    </div>
-                </div>
-
-
-                <button type="submit" class="btn-register hover-scale">
-                    Register Securely <i class="bi bi-shield-lock-fill"></i>
-                </button>
-
-            </form>
-
-            <div class="auth-footer" data-aos="fade-up" data-aos-delay="800">
-                Already have an active account?
-                <a href="{% url 'accounts:login' %}" class="hover-scale">Sign in here</a>
-            </div>
-
-        </div>
-
-    </div>
-
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <title>Join ClaimIQ — Enterprise AI Setup</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            AOS.init({
-                duration: 800,
-                easing: 'ease-out-cubic',
-                once: true
-            });
-
-            // Trigger staggers
-            setTimeout(() => {
-                document.getElementById('brand-features').classList.add('stagger-active');
-                document.getElementById('register-form').classList.add('stagger-active');
-            }, 600);
-        });
-
-        function togglePassword(inputId, icon) {
-            const input = document.getElementById(inputId);
-            if (input.type === "password") {
-                input.type = "text";
-                icon.classList.remove("bi-eye");
-                icon.classList.add("bi-eye-slash");
-            } else {
-                input.type = "password";
-                icon.classList.remove("bi-eye-slash");
-                icon.classList.add("bi-eye");
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        primary: '#65604F',
+                        primaryHover: '#575243',
+                        gold: '#AA8758',
+                        slate: '#4E6987',
+                        bg: '#FAF9F7',
+                        bgAlt: '#F7F4EC',
+                        surface: '#FCFAF6',
+                        neutral: '#E4DACB',
+                        borderLight: '#DDD3C6',
+                        textMain: '#605E5B',
+                        textSec: '#7A746E',
+                        textMuted: '#9C958F',
+                        success: '#3E7C45',
+                        danger: '#B04A4A',
+                    },
+                    boxShadow: {
+                        'glass': '0 10px 40px -10px rgba(101, 96, 79, 0.1)',
+                        'glass-hover': '0 20px 50px -10px rgba(101, 96, 79, 0.15)',
+                        'glass-deep': '0 30px 60px -15px rgba(101, 96, 79, 0.2)',
+                        'input': '0 2px 4px 0 rgba(101, 96, 79, 0.02)',
+                        'btn-glow': '0 0 20px rgba(170, 135, 88, 0.4)',
+                    }
+                }
             }
         }
     </script>
+    <style>
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #FAF9F7; 
+            overflow-x: hidden;
+            background-image: radial-gradient(rgba(170, 135, 88, 0.25) 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+        
+        .glass-panel {
+            background: rgba(252, 250, 246, 0.65);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.9);
+        }
+        
+        .float-slow { animation: float 8s ease-in-out infinite; }
+        .float-medium { animation: float 6s ease-in-out 1s infinite; }
+        .float-fast { animation: float 4s ease-in-out 2s infinite; }
+        
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-12px); }
+            100% { transform: translateY(0px); }
+        }
 
+        @keyframes scan {
+            0% { top: 0%; opacity: 0; }
+            5% { opacity: 1; }
+            95% { opacity: 1; }
+            100% { top: 100%; opacity: 0; }
+        }
+
+        @keyframes progress {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        .animate-progress { animation: progress 2s ease-in-out infinite; }
+        
+        @keyframes fade-in-up {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in { animation: fade-in-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        
+        .btn-loading .btn-text, .btn-loading .btn-icon { display: none; }
+        .btn-loading::after {
+            content: "";
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Remove arrows from number input */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+    </style>
+</head>
+<body class="min-h-screen flex text-textMain relative">
+    
+    <!-- Warm Cream Gradient Base -->
+    <div class="fixed inset-0 bg-gradient-to-br from-white via-bgAlt to-neutral opacity-50 -z-10 pointer-events-none"></div>
+
+    <!-- Soft Radial Glows for Depth -->
+    <div class="absolute top-[10%] left-[20%] w-[500px] h-[500px] bg-gold/15 rounded-full blur-[100px] pointer-events-none mix-blend-multiply"></div>
+    <div class="absolute bottom-[10%] right-[10%] w-[600px] h-[600px] bg-primary/10 rounded-full blur-[120px] pointer-events-none mix-blend-multiply"></div>
+
+    <!-- LEFT: Enterprise Dashboard Panel (Same as Login) -->
+    <!-- LEFT: Enterprise Dashboard Panel -->
+    <div class="hidden lg:flex w-[55%] relative flex-col justify-start items-center pt-16 lg:pt-28 p-8 2xl:p-12 overflow-hidden border-r border-borderLight/30">
+        <div class="relative w-full max-w-[800px] perspective-1000">
+            <!-- Ambient Glow -->
+            <div class="absolute inset-0 bg-gold/15 blur-[100px] rounded-full z-0 transform scale-110 pointer-events-none"></div>
+            
+            <!-- Dashboard Container -->
+            <div class="glass-panel bg-white/70 border border-white/80 p-8 rounded-[2.5rem] shadow-glass-deep relative z-10 w-full flex flex-col gap-6 float-slow">
+                
+                <!-- Header -->
+                <div class="flex justify-between items-center px-2">
+                    <div class="flex items-center gap-5">
+                        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-gold flex items-center justify-center text-white shadow-[0_8px_20px_rgba(101,96,79,0.25)] relative overflow-hidden">
+                            <i data-lucide="shield-check" class="w-7 h-7 relative z-10"></i>
+                            <div class="absolute inset-0 bg-white/20 animate-pulse"></div>
+                        </div>
+                        <div>
+                            <h3 class="font-black text-[#4F4A42] text-[1.4rem] tracking-tight mb-0.5">Secure Onboarding</h3>
+                            <div class="flex items-center gap-1.5">
+                                <i data-lucide="lock" class="w-3 h-3 text-success"></i>
+                                <span class="text-[10px] uppercase tracking-widest font-extrabold text-success">End-to-End Encrypted</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Top Right Badge -->
+                    <div class="glass-panel bg-white p-3 pr-6 rounded-2xl shadow-sm border border-borderLight/40 flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-full bg-success/10 flex items-center justify-center text-success relative">
+                            <i data-lucide="fingerprint" class="w-4.5 h-4.5"></i>
+                            <div class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-success rounded-full border-2 border-white animate-[pulse_2s_ease-in-out_infinite]"></div>
+                        </div>
+                        <div>
+                            <div class="text-xs font-black text-[#4F4A42]">Biometrics Valid</div>
+                            <div class="text-[10px] font-medium text-textSec mt-0.5">Matching records...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Central Diagram Section -->
+                <div class="relative flex justify-center items-center w-full py-2 min-h-[300px]">
+                    
+                    <!-- SVG Connectors -->
+                    <svg class="absolute inset-0 w-[110%] -left-[5%] h-full pointer-events-none z-0" preserveAspectRatio="none" viewBox="0 0 1000 400">
+                        <path d="M 180 80 C 260 80 280 200 400 200" fill="none" stroke="#AA8758" stroke-width="1.5" stroke-dasharray="4 4" opacity="0.4" />
+                        <path d="M 180 200 C 260 200 280 200 400 200" fill="none" stroke="url(#gradGold)" stroke-width="2" />
+                        <path d="M 180 320 C 260 320 280 200 400 200" fill="none" stroke="#AA8758" stroke-width="1.5" stroke-dasharray="4 4" opacity="0.4" />
+                        
+                        <path d="M 560 200 C 660 200 740 70 820 70" fill="none" stroke="#AA8758" stroke-width="1.5" stroke-dasharray="4 4" opacity="0.4" />
+                        <path d="M 560 200 C 660 200 740 155 820 155" fill="none" stroke="#AA8758" stroke-width="1.5" stroke-dasharray="4 4" opacity="0.4" />
+                        <path d="M 560 200 C 660 200 740 245 820 245" fill="none" stroke="#3E7C45" stroke-width="1.5" stroke-dasharray="4 4" opacity="0.6" />
+                        <path d="M 560 200 C 660 200 740 330 820 330" fill="none" stroke="#3E7C45" stroke-width="1.5" stroke-dasharray="4 4" opacity="0.6" />
+                        
+                        <defs>
+                            <linearGradient id="gradGold" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stop-color="#AA8758" stop-opacity="0.2" />
+                                <stop offset="100%" stop-color="#AA8758" stop-opacity="1" />
+                            </linearGradient>
+                        </defs>
+                    </svg>
+
+                    <!-- LEFT CARDS -->
+                    <div class="absolute -left-12 top-1/2 -translate-y-1/2 flex flex-col gap-10 z-20">
+                        <div class="glass-panel bg-white/95 p-2.5 pr-4 rounded-xl shadow-[0_4px_10px_rgba(0,0,0,0.03)] border border-white flex items-center gap-3 relative transition-transform hover:-translate-y-1 float-medium group scale-[0.9] origin-left">
+                            <div class="w-7 h-7 rounded-lg bg-success/10 flex items-center justify-center text-success"><i data-lucide="scan" class="w-3.5 h-3.5"></i></div>
+                            <div>
+                                <div class="text-[9px] font-black text-[#4F4A42]">OCR Scanning</div>
+                                <div class="text-[8px] font-medium text-textSec mt-0.5">Extracting data...</div>
+                            </div>
+                            <div class="absolute -right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-success flex items-center justify-center shadow-sm"><i data-lucide="check" class="w-2 h-2 text-white"></i></div>
+                        </div>
+                        
+                        <div class="glass-panel bg-white/95 p-2.5 pr-4 rounded-xl shadow-[0_4px_10px_rgba(0,0,0,0.03)] border border-white flex items-center gap-3 relative transition-transform hover:-translate-y-1 float-slow group scale-[0.9] origin-left">
+                            <div class="w-7 h-7 rounded-lg bg-gold/10 flex items-center justify-center text-gold"><i data-lucide="user-check" class="w-3.5 h-3.5"></i></div>
+                            <div>
+                                <div class="text-[9px] font-black text-[#4F4A42]">Face Match</div>
+                                <div class="text-[10px] font-extrabold text-success mt-0.5">99.8%</div>
+                            </div>
+                            <div class="absolute -right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-gold flex items-center justify-center shadow-sm"><i data-lucide="check" class="w-2 h-2 text-white"></i></div>
+                        </div>
+                        
+                        <div class="glass-panel bg-white/95 p-2.5 pr-4 rounded-xl shadow-[0_4px_10px_rgba(0,0,0,0.03)] border border-white flex items-center gap-3 relative transition-transform hover:-translate-y-1 float-fast group scale-[0.9] origin-left">
+                            <div class="w-7 h-7 rounded-lg bg-success/10 flex items-center justify-center text-success"><i data-lucide="fingerprint" class="w-3.5 h-3.5"></i></div>
+                            <div>
+                                <div class="text-[9px] font-black text-[#4F4A42]">Biometric Check</div>
+                                <div class="text-[8px] font-medium text-textSec mt-0.5">Verifying identity...</div>
+                            </div>
+                            <div class="absolute -right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-success flex items-center justify-center shadow-sm"><i data-lucide="check" class="w-2 h-2 text-white"></i></div>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT CARDS -->
+                    <div class="absolute -right-12 top-1/2 -translate-y-1/2 flex flex-col gap-8 z-20">
+                        <div class="glass-panel bg-white/95 p-2.5 pl-4 rounded-xl shadow-[0_4px_10px_rgba(0,0,0,0.03)] border border-white flex items-center gap-3 relative transition-transform hover:-translate-y-1 float-fast group scale-[0.9] origin-right">
+                            <div class="absolute -left-1.5 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-gold flex items-center justify-center shadow-sm"><i data-lucide="check" class="w-2 h-2 text-white"></i></div>
+                            <div class="w-7 h-7 rounded-lg bg-gold/10 flex items-center justify-center text-gold"><i data-lucide="file-check" class="w-3.5 h-3.5"></i></div>
+                            <div class="flex-1 w-24">
+                                <div class="text-[9px] font-black text-[#4F4A42]">Document Verified</div>
+                                <div class="text-[8px] font-medium text-textSec mt-0.5">Authentic & Valid</div>
+                            </div>
+                        </div>
+                        
+                        <div class="glass-panel bg-white/95 p-2.5 pl-4 rounded-xl shadow-[0_4px_10px_rgba(0,0,0,0.03)] border border-white flex items-center gap-3 relative transition-transform hover:-translate-y-1 float-medium group scale-[0.9] origin-right">
+                            <div class="absolute -left-1.5 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-gold flex items-center justify-center shadow-sm"><i data-lucide="check" class="w-2 h-2 text-white"></i></div>
+                            <div class="w-7 h-7 rounded-lg bg-gold/10 flex items-center justify-center text-gold"><i data-lucide="shield-alert" class="w-3.5 h-3.5"></i></div>
+                            <div class="flex-1 w-24">
+                                <div class="text-[9px] font-black text-[#4F4A42]">Fraud Risk Analysis</div>
+                                <div class="text-[9px] font-extrabold text-success mt-0.5">Low Risk</div>
+                            </div>
+                        </div>
+
+                        <div class="glass-panel bg-white/95 p-2.5 pl-4 rounded-xl shadow-[0_4px_10px_rgba(0,0,0,0.03)] border border-white flex items-center gap-3 relative transition-transform hover:-translate-y-1 float-slow group scale-[0.9] origin-right">
+                            <div class="absolute -left-1.5 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-success flex items-center justify-center shadow-sm"><i data-lucide="check" class="w-2 h-2 text-white"></i></div>
+                            <div class="w-7 h-7 rounded-lg bg-success/10 flex items-center justify-center text-success"><i data-lucide="clipboard-check" class="w-3.5 h-3.5"></i></div>
+                            <div class="flex-1 w-24">
+                                <div class="text-[9px] font-black text-[#4F4A42]">Policy Validation</div>
+                                <div class="text-[9px] font-extrabold text-success mt-0.5">Eligible</div>
+                            </div>
+                        </div>
+
+                        <div class="glass-panel bg-white/95 p-2.5 pl-4 rounded-xl shadow-[0_4px_10px_rgba(0,0,0,0.03)] border border-white flex items-center gap-3 relative transition-transform hover:-translate-y-1 float-medium group scale-[0.9] origin-right">
+                            <div class="absolute -left-1.5 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-success flex items-center justify-center shadow-sm"><i data-lucide="check" class="w-2 h-2 text-white"></i></div>
+                            <div class="w-7 h-7 rounded-lg bg-borderLight/30 flex items-center justify-center text-primary"><i data-lucide="user-check" class="w-3.5 h-3.5"></i></div>
+                            <div class="flex-1 w-24">
+                                <div class="text-[9px] font-black text-[#4F4A42]">Account Status</div>
+                                <div class="text-[9px] font-extrabold text-success mt-0.5">Approved</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Central ID Card -->
+                    <div class="relative z-30 shadow-[0_0_80px_rgba(170,135,88,0.5)] rounded-[1.5rem] bg-[#FCFAF6] border border-gold/30 p-5 w-[300px] -ml-5 transform hover:scale-[1.03] transition-transform duration-500 overflow-hidden flex-shrink-0 group">
+                        <!-- Card background watermark pattern -->
+                        <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9InJnYmEoMTcwLCAxMzUsIDg4LCAwLjE1KSIvPjwvc3ZnPg==')] opacity-30"></div>
+                        
+                        <div class="relative z-10 flex flex-col gap-4">
+                            <!-- ID Header -->
+                            <div class="flex justify-between items-start">
+                                <div class="flex gap-3 items-center">
+                                    <div class="w-10 h-10 opacity-70 flex items-center justify-center bg-gold/10 rounded-full"><i data-lucide="landmark" class="w-5 h-5 text-gold"></i></div>
+                                    <div>
+                                        <div class="text-[9px] font-bold text-textSec">GOVERNMENT OF INDIA</div>
+                                        <div class="text-[8px] font-medium text-textMuted mt-0.5">UNIQUE IDENTIFICATION</div>
+                                    </div>
+                                </div>
+                                <div class="px-2.5 py-1 bg-success/10 border border-success/30 rounded-md flex items-center gap-1.5">
+                                    <i data-lucide="check-circle-2" class="w-3 h-3 text-success"></i>
+                                    <span class="text-[9px] font-black text-success tracking-wide">VERIFIED</span>
+                                </div>
+                            </div>
+                            
+                            <!-- ID Body -->
+                            <div class="flex gap-5">
+                                <!-- Photo Placeholder -->
+                                <div class="w-24 h-28 rounded-lg bg-borderLight/30 overflow-hidden relative shadow-inner border border-white/50">
+                                    <img src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" alt="Profile Photo" class="w-full h-full object-cover">
+                                </div>
+                                <!-- Details -->
+                                <div class="flex-1 space-y-2.5 py-1">
+                                    <div class="text-base font-black text-[#4F4A42]">Nithish N</div>
+                                    <div class="text-[10px] font-bold text-textMain tracking-wide">ID: IN1234 5678 9012</div>
+                                    <div class="text-[9px] font-medium text-textSec flex gap-2"><span>DOB: 10 Aug 2001</span><span>|</span><span>Gender: Male</span></div>
+                                    <div class="text-[9px] font-medium text-textSec mt-1">
+                                        Address:<br>Tamil Nadu, India
+                                    </div>
+                                    <div class="w-16 h-4 border-b border-textMain/40 relative mt-2">
+                                        <span class="absolute bottom-0 text-[10px] text-textMain italic" style="font-family: cursive;">Nithish</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- MRZ code -->
+                            <div class="font-mono text-[9px] tracking-[0.2em] text-textMuted/60 leading-tight border-t border-borderLight/30 pt-3">
+                                IN123456789012&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;<br>
+                                NITHISH&lt;N&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;
+                            </div>
+                        </div>
+
+                        <!-- Scanning Line Animation -->
+                        <div class="absolute left-0 right-0 h-0.5 bg-success shadow-[0_0_15px_rgba(62,124,69,0.9)] z-30 animate-scan">
+                            <div class="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-success/20 to-transparent pointer-events-none"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Verification Progress Banner -->
+                <div class="glass-panel bg-white rounded-2xl p-4 shadow-[0_4px_15px_rgba(0,0,0,0.03)] border border-borderLight/40 flex items-center justify-between mt-2 transition-transform hover:-translate-y-0.5">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-full bg-gold/15 flex items-center justify-center text-gold relative shadow-inner">
+                            <i data-lucide="sparkles" class="w-5 h-5 relative z-10 animate-pulse"></i>
+                        </div>
+                        <div>
+                            <div class="text-[11px] font-black text-[#4F4A42]">AI Verification in Progress...</div>
+                            <div class="text-[9px] font-medium text-textSec mt-0.5 flex items-center gap-1">
+                                <i data-lucide="clock" class="w-3 h-3 text-gold"></i>
+                                <span class="animate-pulse">~3 seconds remaining</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Progress Bar -->
+                    <div class="w-48">
+                        <div class="flex justify-between items-center mb-1.5">
+                            <span class="text-[9px] font-bold text-textSec uppercase tracking-widest">4 of 5 Checks Completed</span>
+                            <span class="text-[10px] font-extrabold text-gold relative">
+                                92%
+                                <span class="absolute -inset-1 bg-gold/20 rounded-full blur animate-pulse"></span>
+                            </span>
+                        </div>
+                        <div class="h-1.5 w-full bg-borderLight/40 rounded-full overflow-hidden relative">
+                            <div class="absolute inset-y-0 left-0 bg-gradient-to-r from-primary to-gold w-[92%] rounded-full shadow-[0_0_8px_rgba(170,135,88,0.6)] animate-pulse"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bottom Info Stats Grid -->
+                <div class="grid grid-cols-4 gap-3 pt-6 border-t border-borderLight/40 relative">
+                    <!-- Connected Timeline -->
+                    <div class="absolute top-0 left-8 right-8 h-0.5 bg-borderLight/30 -translate-y-[15px]">
+                        <!-- Green progress line -->
+                        <div class="h-full bg-success w-[80%] shadow-[0_0_10px_rgba(62,124,69,0.5)]"></div>
+                    </div>
+                    <div class="absolute top-0 left-0 right-0 flex justify-between px-6 -translate-y-[22px]">
+                        <div class="flex flex-col items-center gap-1.5 group relative">
+                            <div class="w-4 h-4 rounded-full bg-success flex items-center justify-center shadow-[0_0_8px_rgba(62,124,69,0.4)] relative z-10"><i data-lucide="check" class="w-2.5 h-2.5 text-white"></i></div>
+                            <div class="text-[8px] font-black text-[#4F4A42] uppercase tracking-widest text-center transition-colors">OCR Scan</div>
+                        </div>
+                        <div class="flex flex-col items-center gap-1.5 group relative">
+                            <div class="w-4 h-4 rounded-full bg-success flex items-center justify-center shadow-[0_0_8px_rgba(62,124,69,0.4)] relative z-10"><i data-lucide="check" class="w-2.5 h-2.5 text-white"></i></div>
+                            <div class="text-[8px] font-black text-[#4F4A42] uppercase tracking-widest text-center transition-colors">Face Match</div>
+                        </div>
+                        <div class="flex flex-col items-center gap-1.5 group relative">
+                            <div class="w-4 h-4 rounded-full bg-success flex items-center justify-center shadow-[0_0_8px_rgba(62,124,69,0.4)] relative z-10"><i data-lucide="check" class="w-2.5 h-2.5 text-white"></i></div>
+                            <div class="text-[8px] font-black text-[#4F4A42] uppercase tracking-widest text-center transition-colors">Biometrics</div>
+                        </div>
+                        <div class="flex flex-col items-center gap-1.5 group relative">
+                            <div class="w-4 h-4 rounded-full bg-success flex items-center justify-center shadow-[0_0_8px_rgba(62,124,69,0.4)] relative z-10"><i data-lucide="check" class="w-2.5 h-2.5 text-white"></i></div>
+                            <div class="text-[8px] font-black text-[#4F4A42] uppercase tracking-widest text-center transition-colors">Risk Analysis</div>
+                        </div>
+                        <div class="flex flex-col items-center gap-1.5 group relative">
+                            <div class="w-4 h-4 rounded-full bg-white border-2 border-borderLight flex items-center justify-center relative z-10"><div class="w-1.5 h-1.5 rounded-full bg-gold animate-pulse"></div></div>
+                            <div class="text-[8px] font-bold text-textMuted uppercase tracking-widest text-center">Approved</div>
+                        </div>
+                    </div>
+
+                    <!-- Bottom Cards -->
+                    <div class="glass-panel bg-white/70 p-3 rounded-2xl flex items-center gap-3 shadow-sm border border-borderLight/30 hover:shadow-md transition-shadow">
+                        <div class="w-8 h-8 rounded-xl bg-gold/15 flex items-center justify-center text-gold"><i data-lucide="lock" class="w-4 h-4"></i></div>
+                        <div>
+                            <div class="text-[8px] font-bold text-textSec uppercase tracking-widest mb-0.5">Data Security</div>
+                            <div class="text-[11px] font-black text-[#4F4A42]">AES-256</div>
+                        </div>
+                    </div>
+                    <div class="glass-panel bg-white/70 p-3 rounded-2xl flex items-center gap-3 shadow-sm border border-borderLight/30 hover:shadow-md transition-shadow">
+                        <div class="w-8 h-8 rounded-xl bg-success/10 flex items-center justify-center text-success"><i data-lucide="server" class="w-4 h-4"></i></div>
+                        <div>
+                            <div class="text-[8px] font-bold text-textSec uppercase tracking-widest mb-0.5">Infrastructure</div>
+                            <div class="text-[11px] font-black text-[#4F4A42]">SOC2 Cert</div>
+                        </div>
+                    </div>
+                    <div class="glass-panel bg-white/70 p-3 rounded-2xl flex items-center gap-3 shadow-sm border border-borderLight/30 hover:shadow-md transition-shadow">
+                        <div class="w-8 h-8 rounded-xl bg-gold/15 flex items-center justify-center text-gold"><i data-lucide="brain" class="w-4 h-4"></i></div>
+                        <div>
+                            <div class="text-[8px] font-bold text-textSec uppercase tracking-widest mb-0.5">AI Confidence</div>
+                            <div class="text-[11px] font-black text-success">99.8%</div>
+                        </div>
+                    </div>
+                    <div class="glass-panel bg-white/70 p-3 rounded-2xl flex items-center gap-3 shadow-sm border border-borderLight/30 hover:shadow-md transition-shadow">
+                        <div class="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary"><i data-lucide="timer" class="w-4 h-4"></i></div>
+                        <div>
+                            <div class="text-[8px] font-bold text-textSec uppercase tracking-widest mb-0.5">Response Time</div>
+                            <div class="text-[11px] font-black text-[#4F4A42]">&lt; 2s</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Bottom Trust Badge -->
+                <div class="text-center mt-0.5 flex justify-center">
+                    <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/50 border border-borderLight/40">
+                        <i data-lucide="shield-check" class="w-3 h-3 text-textMuted"></i>
+                        <span class="text-[9px] font-bold text-textSec">Your data is protected with enterprise-grade security</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- RIGHT: Registration Form Area -->
+    <div class="w-full lg:w-[45%] flex flex-col justify-start items-center pt-16 lg:pt-28 p-6 sm:p-12 relative z-10 pb-20">
+        
+        <div class="w-full max-w-[420px] opacity-0 animate-fade-in">
+            <!-- Mobile Logo -->
+            <div class="lg:hidden flex justify-center mb-6">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primaryHover shadow-glass-hover flex items-center justify-center text-white">
+                    <i data-lucide="shield-check" class="w-6 h-6"></i>
+                </div>
+            </div>
+
+            <!-- Header -->
+            <div class="mb-8 text-center lg:text-left">
+                <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/5 border border-primary/10 text-[10px] font-bold uppercase tracking-widest text-primary mb-4">
+                    <i data-lucide="user-plus" class="w-3 h-3"></i> Create Account
+                </div>
+                
+                <h1 class="text-4xl lg:text-[2.75rem] font-extrabold text-[#4F4A42] mb-2 tracking-tight leading-tight">Join ClaimIQ</h1>
+                <p class="text-textSec text-sm font-medium">Create your enterprise policyholder account.</p>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="mb-8 bg-white p-4 rounded-2xl border border-borderLight shadow-sm">
+                <div class="flex justify-between items-end mb-3">
+                    <span class="text-[10px] font-extrabold uppercase tracking-widest text-textMuted" id="step-label">Step 1 of 4</span>
+                    <span class="text-[10px] font-extrabold uppercase tracking-widest text-gold" id="step-title">Basic Info</span>
+                </div>
+                <div class="h-1.5 w-full bg-borderLight/50 rounded-full overflow-hidden">
+                    <div class="h-full bg-[#B08A57] transition-all duration-500 w-1/4 rounded-full shadow-[0_0_10px_rgba(176,138,87,0.4)]" id="progress-bar"></div>
+                </div>
+            </div>
+
+            {% if form.errors or messages %}
+            <div class="bg-danger/5 border border-danger/20 p-4 rounded-xl mb-6 shadow-sm">
+                {% for message in messages %}
+                    <p class="text-danger text-xs font-bold flex items-center gap-2 mb-1"><i data-lucide="alert-circle" class="w-4 h-4"></i> {{ message }}</p>
+                {% endfor %}
+                {% if form.non_field_errors %}
+                    {% for error in form.non_field_errors %}
+                        <p class="text-danger text-xs font-bold flex items-center gap-2 mb-1"><i data-lucide="alert-circle" class="w-4 h-4"></i> {{ error }}</p>
+                    {% endfor %}
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <form method="POST" action="{% url 'accounts:register' %}" enctype="multipart/form-data" id="regForm">
+                {% csrf_token %}
+                
+                <!-- STEP 1: BASIC INFO -->
+                <div class="reg-step space-y-7" id="step1">
+                    <div class="relative group">
+                        <i data-lucide="user" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-textMuted group-focus-within:text-gold transition-colors pointer-events-none z-10"></i>
+                        <input type="text" name="full_name" id="full_name" class="peer w-full bg-[#FAF8F4] border-[#E6DED1] hover:border-gold/50 focus:bg-white rounded-xl pl-12 pr-4 pt-7 pb-2 text-sm font-semibold text-textMain outline-none shadow-input focus:ring-4 focus:ring-gold/15 focus:border-gold transition-all placeholder-transparent" required placeholder="Full Name" value="{{ form.data.full_name|default:'' }}">
+                        <label for="full_name" class="absolute left-12 top-2 text-[10px] uppercase tracking-widest font-bold text-textMuted transition-all peer-placeholder-shown:text-sm peer-placeholder-shown:normal-case peer-placeholder-shown:tracking-normal peer-placeholder-shown:font-medium peer-placeholder-shown:top-[1.1rem] pointer-events-none peer-focus:top-2 peer-focus:text-[10px] peer-focus:uppercase peer-focus:tracking-widest peer-focus:font-bold peer-focus:text-gold z-10">Full Name (as per ID)</label>
+                        {% if form.full_name.errors %}<span class="error-msg text-danger text-[10px] font-bold absolute -bottom-5 left-1 tracking-wide">⚠ {{ form.full_name.errors.0 }}</span>{% endif %}
+                    </div>
+
+                    <div class="relative group">
+                        <i data-lucide="at-sign" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-textMuted group-focus-within:text-gold transition-colors pointer-events-none z-10"></i>
+                        <input type="text" name="username" id="username" class="peer w-full bg-[#FAF8F4] border-[#E6DED1] hover:border-gold/50 focus:bg-white rounded-xl pl-12 pr-4 pt-7 pb-2 text-sm font-semibold text-textMain outline-none shadow-input focus:ring-4 focus:ring-gold/15 focus:border-gold transition-all placeholder-transparent" required placeholder="Username" value="{{ form.data.username|default:'' }}">
+                        <label for="username" class="absolute left-12 top-2 text-[10px] uppercase tracking-widest font-bold text-textMuted transition-all peer-placeholder-shown:text-sm peer-placeholder-shown:normal-case peer-placeholder-shown:tracking-normal peer-placeholder-shown:font-medium peer-placeholder-shown:top-[1.1rem] pointer-events-none peer-focus:top-2 peer-focus:text-[10px] peer-focus:uppercase peer-focus:tracking-widest peer-focus:font-bold peer-focus:text-gold z-10">Username</label>
+                        {% if form.username.errors %}<span class="error-msg text-danger text-[10px] font-bold absolute -bottom-5 left-1 tracking-wide">⚠ {{ form.username.errors.0 }}</span>{% endif %}
+                    </div>
+
+                    <div class="relative group">
+                        <i data-lucide="mail" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-textMuted group-focus-within:text-gold transition-colors pointer-events-none z-10"></i>
+                        <input type="email" name="email" id="email" class="peer w-full bg-[#FAF8F4] border-[#E6DED1] hover:border-gold/50 focus:bg-white rounded-xl pl-12 pr-4 pt-7 pb-2 text-sm font-semibold text-textMain outline-none shadow-input focus:ring-4 focus:ring-gold/15 focus:border-gold transition-all placeholder-transparent" required placeholder="Email" value="{{ form.data.email|default:'' }}">
+                        <label for="email" class="absolute left-12 top-2 text-[10px] uppercase tracking-widest font-bold text-textMuted transition-all peer-placeholder-shown:text-sm peer-placeholder-shown:normal-case peer-placeholder-shown:tracking-normal peer-placeholder-shown:font-medium peer-placeholder-shown:top-[1.1rem] pointer-events-none peer-focus:top-2 peer-focus:text-[10px] peer-focus:uppercase peer-focus:tracking-widest peer-focus:font-bold peer-focus:text-gold z-10">Email Address</label>
+                        {% if form.email.errors %}<span class="error-msg text-danger text-[10px] font-bold absolute -bottom-5 left-1 tracking-wide">⚠ {{ form.email.errors.0 }}</span>{% endif %}
+                    </div>
+
+                    <div class="pt-2">
+                        <button type="button" class="w-full py-4 bg-gradient-to-r from-primary to-gold text-white hover:shadow-[0_4px_20px_rgba(170,135,88,0.3)] hover:opacity-90 rounded-xl font-extrabold text-sm shadow-md transition-all flex items-center justify-center gap-2 group border-0" onclick="nextStep(2)">
+                            Continue <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- STEP 2: IDENTITY -->
+                <div class="reg-step space-y-5 hidden" id="step2">
+                    <div class="relative group">
+                        <i data-lucide="credit-card" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-textMuted group-focus-within:text-gold transition-colors pointer-events-none z-10"></i>
+                        <input type="number" name="aadhaar_number" id="aadhaar_number" class="peer w-full bg-[#FAF8F4] border-[#E6DED1] hover:border-gold/50 focus:bg-white rounded-xl pl-12 pr-4 pt-7 pb-2 text-sm font-semibold text-textMain outline-none shadow-input focus:ring-4 focus:ring-gold/15 focus:border-gold transition-all placeholder-transparent" required placeholder="Aadhaar" value="{{ form.data.aadhaar_number|default:'' }}">
+                        <label for="aadhaar_number" class="absolute left-12 top-2 text-[10px] uppercase tracking-widest font-bold text-textMuted transition-all peer-placeholder-shown:text-sm peer-placeholder-shown:normal-case peer-placeholder-shown:tracking-normal peer-placeholder-shown:font-medium peer-placeholder-shown:top-[1.1rem] pointer-events-none peer-focus:top-2 peer-focus:text-[10px] peer-focus:uppercase peer-focus:tracking-widest peer-focus:font-bold peer-focus:text-gold z-10">Aadhaar Number (12 digits)</label>
+                        {% if form.aadhaar_number.errors %}<span class="error-msg text-danger text-[10px] font-bold absolute -bottom-5 left-1 tracking-wide">⚠ {{ form.aadhaar_number.errors.0 }}</span>{% endif %}
+                    </div>
+
+                    <div class="relative group">
+                        <i data-lucide="upload-cloud" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-textMuted group-focus-within:text-gold transition-colors pointer-events-none z-10"></i>
+                        <input type="file" name="id_proof" id="id_proof" class="peer w-full bg-[#FAF8F4] border-[#E6DED1] hover:border-gold/50 focus:bg-white rounded-xl pl-12 pr-4 py-4 text-sm font-semibold text-textMain outline-none shadow-input focus:ring-4 focus:ring-gold/15 focus:border-gold transition-all file:mr-4 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-[10px] file:font-bold file:uppercase file:tracking-wider file:bg-gold/10 file:text-gold hover:file:bg-gold/20 file:cursor-pointer cursor-pointer" required>
+                        <!-- No floating label needed for file input -->
+                        {% if form.id_proof.errors %}<span class="error-msg text-danger text-[10px] font-bold absolute -bottom-5 left-1 tracking-wide">⚠ {{ form.id_proof.errors.0 }}</span>{% endif %}
+                    </div>
+
+                    <div class="pt-2 flex gap-3">
+                        <button type="button" class="w-1/3 py-4 bg-transparent border border-borderLight text-textSec hover:text-textMain hover:border-textMuted rounded-xl font-bold text-sm transition-colors flex items-center justify-center" onclick="prevStep(1)">
+                            Back
+                        </button>
+                        <button type="button" class="w-2/3 py-4 bg-gradient-to-r from-primary to-gold text-white hover:shadow-[0_4px_20px_rgba(170,135,88,0.3)] hover:opacity-90 rounded-xl font-extrabold text-sm shadow-md transition-all flex items-center justify-center gap-2 group border-0" onclick="nextStep(3)">
+                            Continue <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- STEP 3: CONTACT -->
+                <div class="reg-step space-y-5 hidden" id="step3">
+                    <div class="relative group">
+                        <i data-lucide="phone" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-textMuted group-focus-within:text-gold transition-colors pointer-events-none z-10"></i>
+                        <input type="text" name="phone" id="phone" class="peer w-full bg-[#FAF8F4] border-[#E6DED1] hover:border-gold/50 focus:bg-white rounded-xl pl-12 pr-4 pt-7 pb-2 text-sm font-semibold text-textMain outline-none shadow-input focus:ring-4 focus:ring-gold/15 focus:border-gold transition-all placeholder-transparent" required placeholder="Phone" value="{{ form.data.phone|default:'' }}">
+                        <label for="phone" class="absolute left-12 top-2 text-[10px] uppercase tracking-widest font-bold text-textMuted transition-all peer-placeholder-shown:text-sm peer-placeholder-shown:normal-case peer-placeholder-shown:tracking-normal peer-placeholder-shown:font-medium peer-placeholder-shown:top-[1.1rem] pointer-events-none peer-focus:top-2 peer-focus:text-[10px] peer-focus:uppercase peer-focus:tracking-widest peer-focus:font-bold peer-focus:text-gold z-10">Phone Number</label>
+                        {% if form.phone.errors %}<span class="error-msg text-danger text-[10px] font-bold absolute -bottom-5 left-1 tracking-wide">⚠ {{ form.phone.errors.0 }}</span>{% endif %}
+                    </div>
+
+                    <div class="relative group">
+                        <i data-lucide="map-pin" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-textMuted group-focus-within:text-gold transition-colors pointer-events-none z-10"></i>
+                        <input type="text" name="address" id="address" class="peer w-full bg-[#FAF8F4] border-[#E6DED1] hover:border-gold/50 focus:bg-white rounded-xl pl-12 pr-4 pt-7 pb-2 text-sm font-semibold text-textMain outline-none shadow-input focus:ring-4 focus:ring-gold/15 focus:border-gold transition-all placeholder-transparent" required placeholder="Address" value="{{ form.data.address|default:'' }}">
+                        <label for="address" class="absolute left-12 top-2 text-[10px] uppercase tracking-widest font-bold text-textMuted transition-all peer-placeholder-shown:text-sm peer-placeholder-shown:normal-case peer-placeholder-shown:tracking-normal peer-placeholder-shown:font-medium peer-placeholder-shown:top-[1.1rem] pointer-events-none peer-focus:top-2 peer-focus:text-[10px] peer-focus:uppercase peer-focus:tracking-widest peer-focus:font-bold peer-focus:text-gold z-10">Residential Address</label>
+                        {% if form.address.errors %}<span class="error-msg text-danger text-[10px] font-bold absolute -bottom-5 left-1 tracking-wide">⚠ {{ form.address.errors.0 }}</span>{% endif %}
+                    </div>
+
+                    <div class="pt-2 flex gap-3">
+                        <button type="button" class="w-1/3 py-4 bg-transparent border border-borderLight text-textSec hover:text-textMain hover:border-textMuted rounded-xl font-bold text-sm transition-colors flex items-center justify-center" onclick="prevStep(2)">
+                            Back
+                        </button>
+                        <button type="button" class="w-2/3 py-4 bg-gradient-to-r from-primary to-gold text-white hover:shadow-[0_4px_20px_rgba(170,135,88,0.3)] hover:opacity-90 rounded-xl font-extrabold text-sm shadow-md transition-all flex items-center justify-center gap-2 group border-0" onclick="nextStep(4)">
+                            Continue <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- STEP 4: SECURITY -->
+                <div class="reg-step space-y-5 hidden" id="step4">
+                    <div class="relative group">
+                        <i data-lucide="lock" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-textMuted group-focus-within:text-gold transition-colors pointer-events-none z-10"></i>
+                        <input type="password" name="password" id="pass1" class="peer w-full bg-[#FAF8F4] border-[#E6DED1] hover:border-gold/50 focus:bg-white rounded-xl pl-12 pr-12 pt-7 pb-2 text-sm font-semibold text-textMain outline-none shadow-input focus:ring-4 focus:ring-gold/15 focus:border-gold transition-all placeholder-transparent" required placeholder="Password">
+                        <label for="pass1" class="absolute left-12 top-2 text-[10px] uppercase tracking-widest font-bold text-textMuted transition-all peer-placeholder-shown:text-sm peer-placeholder-shown:normal-case peer-placeholder-shown:tracking-normal peer-placeholder-shown:font-medium peer-placeholder-shown:top-[1.1rem] pointer-events-none peer-focus:top-2 peer-focus:text-[10px] peer-focus:uppercase peer-focus:tracking-widest peer-focus:font-bold peer-focus:text-gold z-10">Password</label>
+                        <button type="button" class="absolute right-4 top-1/2 transform -translate-y-1/2 text-textMuted hover:text-textMain transition-colors focus:outline-none z-10" onclick="togglePassword('pass1', this)">
+                            <i data-lucide="eye" class="w-5 h-5"></i>
+                        </button>
+                        <span class="text-[10px] font-bold text-textMuted absolute -bottom-4 left-1 uppercase tracking-widest" id="pass-hint">⚠ Min 8 characters</span>
+                    </div>
+
+                    <div class="relative group mt-7">
+                        <i data-lucide="shield-check" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-textMuted group-focus-within:text-gold transition-colors pointer-events-none z-10"></i>
+                        <input type="password" name="confirm_password" id="pass2" class="peer w-full bg-[#FAF8F4] border-[#E6DED1] hover:border-gold/50 focus:bg-white rounded-xl pl-12 pr-12 pt-7 pb-2 text-sm font-semibold text-textMain outline-none shadow-input focus:ring-4 focus:ring-gold/15 focus:border-gold transition-all placeholder-transparent" required placeholder="Confirm">
+                        <label for="pass2" class="absolute left-12 top-2 text-[10px] uppercase tracking-widest font-bold text-textMuted transition-all peer-placeholder-shown:text-sm peer-placeholder-shown:normal-case peer-placeholder-shown:tracking-normal peer-placeholder-shown:font-medium peer-placeholder-shown:top-[1.1rem] pointer-events-none peer-focus:top-2 peer-focus:text-[10px] peer-focus:uppercase peer-focus:tracking-widest peer-focus:font-bold peer-focus:text-gold z-10">Confirm Password</label>
+                        <button type="button" class="absolute right-4 top-1/2 transform -translate-y-1/2 text-textMuted hover:text-textMain transition-colors focus:outline-none z-10" onclick="togglePassword('pass2', this)">
+                            <i data-lucide="eye" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+
+                    <div class="pt-2 flex gap-3">
+                        <button type="button" class="w-1/3 py-4 bg-transparent border border-borderLight text-textSec hover:text-textMain hover:border-textMuted rounded-xl font-bold text-sm transition-colors flex items-center justify-center" onclick="prevStep(3)">
+                            Back
+                        </button>
+                        <button type="submit" id="submitBtn" class="w-2/3 py-4 bg-gradient-to-r from-primary to-gold text-white rounded-xl font-bold text-[15px] shadow-btn-glow hover:shadow-[0_0_25px_rgba(170,135,88,0.6)] hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-2 group relative overflow-hidden">
+                            <div class="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent group-hover:animate-[progress_1s_ease-in-out]"></div>
+                            <span class="btn-text relative z-10">Create Account</span> 
+                            <i data-lucide="check-circle" class="w-4 h-4 btn-icon relative z-10"></i>
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Navigation Links -->
+            <div class="mt-12 flex flex-col items-center gap-3">
+                <p class="text-[13px] text-textSec font-medium">Already have an account? <a href="{% url 'accounts:login' %}" class="text-gold font-bold hover:text-primary transition-colors">Sign in</a></p>
+                <a href="/" class="inline-flex items-center gap-1.5 text-xs font-bold text-textMuted hover:text-textMain transition-colors">
+                    <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Back to home
+                </a>
+            </div>
+
+            <!-- Footer Links -->
+            <div class="mt-8 flex flex-wrap justify-center gap-x-6 gap-y-2 text-[11px] font-semibold text-textMuted border-t border-borderLight/40 pt-6">
+                <a href="#" class="hover:text-textMain transition-colors">Privacy Policy</a>
+                <a href="#" class="hover:text-textMain transition-colors">Terms of Service</a>
+                <a href="#" class="hover:text-textMain transition-colors">Security</a>
+                <span class="text-borderLight">|</span>
+                <span>© ClaimIQ 2026</span>
+            </div>
+            
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        lucide.createIcons();
+
+        let currentStep = 1;
+        const totalSteps = 4;
+        const stepTitles = ["Basic Info", "Identity Verification", "Contact Details", "Security Setup"];
+
+        function updateProgress() {
+            document.getElementById('step-label').innerText = `Step ${currentStep} of ${totalSteps}`;
+            document.getElementById('step-title').innerText = stepTitles[currentStep - 1];
+            const progress = document.getElementById('progress-bar');
+            if (progress) progress.style.width = `${(currentStep / totalSteps) * 100}%`;
+        }
+
+        function showStep(step) {
+            document.querySelectorAll('.reg-step').forEach(s => {
+                s.classList.add('hidden');
+                s.classList.remove('animate-fade-in');
+            });
+            const target = document.getElementById(`step${step}`);
+            if (target) {
+                target.classList.remove('hidden');
+                target.classList.add('animate-fade-in');
+                currentStep = step;
+                updateProgress();
+            }
+        }
+
+        function nextStep(step) {
+            const currentFields = document.getElementById(`step${currentStep}`).querySelectorAll('input[required]');
+            let valid = true;
+            currentFields.forEach(f => {
+                if(!f.value) {
+                    f.classList.add('border-danger', 'ring-1', 'ring-danger');
+                    valid = false;
+                } else {
+                    f.classList.remove('border-danger', 'ring-1', 'ring-danger');
+                }
+            });
+
+            if(!valid) return;
+            showStep(step);
+        }
+
+        function prevStep(step) {
+            showStep(step);
+        }
+
+        // Smart Error Detection for Django Forms
+        document.addEventListener('DOMContentLoaded', function() {
+            let errorStep = 0;
+            for (let i = 1; i <= totalSteps; i++) {
+                const stepEl = document.getElementById(`step${i}`);
+                if (stepEl && stepEl.querySelector('.error-msg')) {
+                    errorStep = i;
+                    break;
+                }
+            }
+
+            if (errorStep > 0) {
+                showStep(errorStep);
+            } else {
+                updateProgress();
+            }
+        });
+
+        function togglePassword(inputId, button) {
+            const input = document.getElementById(inputId);
+            const icon = button.querySelector('i');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.setAttribute('data-lucide', 'eye-off');
+            } else {
+                input.type = 'password';
+                icon.setAttribute('data-lucide', 'eye');
+            }
+            lucide.createIcons();
+        }
+
+        document.getElementById('regForm').addEventListener('submit', function(e) {
+            const p1 = document.getElementById('pass1').value;
+            const p2 = document.getElementById('pass2').value;
+
+            if(p1 !== p2) {
+                e.preventDefault();
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Passwords Mismatch',
+                    text: 'Please ensure both passwords match.',
+                    background: '#FCFAF6',
+                    color: '#605E5B',
+                    confirmButtonColor: '#65604F'
+                });
+                return;
+            }
+
+            const btn = document.getElementById('submitBtn');
+            btn.classList.add('btn-loading');
+        });
+    </script>
 </body>
-
 </html>

@@ -1,451 +1,294 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
+{% extends "base.html" %}
+{% load humanize %}
 
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+{% block title %}Policy Analytics - {{ policy.policy_number }}{% endblock %}
 
-<title>Policy Detail — InsureAI Portal</title>
-
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet"/>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-
-<style>
-
-body{
-font-family:'DM Sans',sans-serif;
-background:#0a1628;
-color:white;
-margin:0;
-}
-
-.app{
-display:flex;
-min-height:100vh;
-}
-
-/* SIDEBAR MATCHING BASE.HTML */
-.sidebar{
-width:240px;
-background:#111c35;
-min-height:100vh;
-position:fixed;
-left:0;
-top:0;
-color:white;
-padding: 0 !important;
-}
-
-.sidebar-header{
-padding: 20px;
-border-bottom: 1px solid #1f335c;
-text-align: center;
-}
-
-.sidebar-logo{
-font-family:'DM Serif Display',serif;
-font-size:20px;
-color:white;
-text-decoration:none;
-display: block;
-}
-
-.sidebar a{
-color:#9fb3d1;
-text-decoration:none;
-display:flex;
-align-items:center;
-gap: 12px;
-padding:12px 18px;
-transition: all 0.3s ease;
-border-left: 3px solid transparent;
-font-size: 14px;
-}
-
-.sidebar a i {
-font-size: 18px;
-transition: transform 0.3s ease;
-}
-
-.sidebar a:hover{
-background:rgba(26, 110, 245, 0.1);
-color:white;
-padding-left: 24px;
-border-left-color: #1a6ef5;
-}
-
-.sidebar a.active{
-background:rgba(26, 110, 245, 0.15);
-color:white;
-border-left-color: #1a6ef5;
-}
-
-.sidebar a:hover i {
-transform: scale(1.15);
-color: #1a6ef5;
-}
-
-.sidebar-logout {
-border-top: 1px solid #1f335c;
-margin-top: auto;
-}
-
-/* MAIN */
-
-.main{
-flex:1;
-margin-left: 240px;
-}
-
-.topbar{
-display:flex;
-justify-content:space-between;
-align-items:center;
-padding:15px 25px;
-background:#0f1b33;
-border-bottom:1px solid #1f335c;
-}
-
-.content{
-padding:30px;
-}
-
-/* HERO */
-
-.policy-hero{
-background:#111c35;
-padding:30px;
-border-radius:10px;
-margin-bottom:20px;
-}
-
-.hero-pol-name{
-font-size:28px;
-font-family:'DM Serif Display',serif;
-}
-
-.hero-pol-num{
-font-size:13px;
-color:#9fb3d1;
-margin-bottom:10px;
-}
-
-.metric{
-margin-top:15px;
-display:flex;
-gap:40px;
-}
-
-.metric div{
-font-size:14px;
-}
-
-.badge{
-background:#1a6ef5;
-padding:5px 10px;
-border-radius:20px;
-font-size:12px;
-}
-
-.sec{
-background:#111c35;
-padding:20px;
-border-radius:10px;
-margin-bottom:20px;
-}
-
-.sec-title{
-font-size:18px;
-margin-bottom:15px;
-font-family:'DM Serif Display',serif;
-}
-
-.detail-row{
-margin-bottom:8px;
-font-size:14px;
-color:#cbd5e1;
-}
-
-.btn{
-padding:10px 18px;
-border:none;
-border-radius:6px;
-cursor:pointer;
-}
-
-.btn-primary{
-background:#1a6ef5;
-color:white;
-}
-
-.btn-secondary{
-background:#374151;
-color:white;
-}
-
-.btn-back {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: #9fb3d1 !important;
-    text-decoration: none !important;
-    padding: 8px 16px;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 500;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-    overflow: hidden;
-}
-
-.btn-back:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.2);
-    color: white !important;
-    transform: translateX(-4px);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-}
-
-.btn-back .back-icon {
-    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-.btn-back:hover .back-icon {
-    transform: translateX(-3px) scale(1.2);
-}
-
-.btn-back::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 50%;
-    height: 100%;
-    background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.1), transparent);
-    transform: skewX(-20deg);
-}
-
-.btn-back:hover::after {
-    animation: shimmer-btn 1.5s infinite;
-}
-
-@keyframes shimmer-btn {
-    0% { left: -100%; }
-    100% { left: 200%; }
-}
-
-</style>
-
-</head>
-
-<body>
-
-<div class="app">
-
-<!-- SIDEBAR -->
-<nav class="sidebar shadow">
-    <div class="sidebar-header">
-        <a class="sidebar-logo" href="/">
-            InsureCRM
-        </a>
+{% block content %}
+<div class="policy-details-wrapper" style="background: #F4EEE2; min-height: 100vh; padding: 110px 2rem 5rem;">
+    <!-- Ambient Glow -->
+    <div class="ambient-glow" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; overflow: hidden;">
+        <div style="position: absolute; top: -10%; right: -5%; width: 600px; height: 600px; background: radial-gradient(circle, rgba(101, 96, 79, 0.05) 0%, transparent 70%); border-radius: 50%;"></div>
     </div>
 
-    <div class="py-2">
-        {% if request.user.is_superuser or request.user.role == "admin" %}
-        <a href="{% url 'accounts:admin_dashboard' %}">
-            <i class="bi bi-speedometer2"></i> Dashboard
-        </a>
-        {% endif %}
+    <div class="content-container" style="position: relative; z-index: 1; max-width: 1400px; margin: 0 auto;">
+        
+        <!-- Top Summary Bar (Enterprise Grade) -->
+        <div class="summary-bar glass-panel" style="display: flex; justify-content: space-between; align-items: center; padding: 1.5rem 2.5rem; margin-bottom: 2rem; border-radius: 20px;">
+            <div class="summary-left" style="display: flex; align-items: center; gap: 1.5rem;">
+                <a href="javascript:history.back()" class="back-nav" title="Return to Previous Page">
+                    <i class="bi bi-chevron-left"></i>
+                </a>
+                <div class="policy-icon-box" style="width: 60px; height: 60px; background: rgba(62, 124, 69, 0.1); border: 1px solid rgba(62, 124, 69, 0.2); border-radius: 15px; display: flex; align-items: center; justify-content: center;">
+                    {% if "health" in policy.policy_type|lower %}
+                        <i class="bi bi-heart-pulse" style="font-size: 1.8rem; color: #3E7C45;"></i>
+                    {% elif "motor" in policy.policy_type|lower or "vehicle" in policy.policy_type|lower %}
+                        <i class="bi bi-car-front" style="font-size: 1.8rem; color: #3E7C45;"></i>
+                    {% elif "life" in policy.policy_type|lower %}
+                        <i class="bi bi-shield-lock" style="font-size: 1.8rem; color: #3E7C45;"></i>
+                    {% else %}
+                        <i class="bi bi-house-door" style="font-size: 1.8rem; color: #3E7C45;"></i>
+                    {% endif %}
+                </div>
+                <div class="policy-meta">
+                    <h1 class="gradient-title" style="font-size: 1.75rem; font-weight: 800; margin: 0; display: flex; align-items: center; gap: 0.75rem;">
+                        {{ policy.insurer_name|default:"Elite Shield" }} Premium
+                        <span class="status-badge active" style="font-size: 0.7rem; padding: 4px 10px; background: rgba(62, 124, 69, 0.1); color: #3E7C45; border: 1px solid rgba(62, 124, 69, 0.2); border-radius: 6px; text-transform: uppercase; letter-spacing: 1px;">Active Plan</span>
+                    </h1>
+                    <div style="display: flex; gap: 1.5rem; margin-top: 4px; color: rgba(156, 149, 143, 0.6); font-size: 0.85rem; font-weight: 600;">
+                        <span><i class="bi bi-hash"></i> {{ policy.policy_number }}</span>
+                        <span><i class="bi bi-grid"></i> {{ policy.policy_type }}</span>
+                        <span><i class="bi bi-shield-check"></i> Enterprise Certified</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="summary-right" style="text-align: right;">
+                <div style="font-size: 0.75rem; color: rgba(156, 149, 143, 0.7); text-transform: uppercase; letter-spacing: 2px; font-weight: 700; margin-bottom: 4px;">Total Coverage</div>
+                <div class="gradient-title" style="font-size: 2.25rem; font-weight: 900; letter-spacing: -1px;">₹{{ policy.sum_insured|intcomma }}</div>
+            </div>
+        </div>
 
-        {% if request.user.role == "staff" %}
-        <a href="{% url 'accounts:staff_dashboard' %}">
-            <i class="bi bi-speedometer2"></i> Staff Dashboard
-        </a>
-        {% endif %}
+        <div class="main-layout" style="display: grid; grid-template-columns: 2.5fr 1fr; gap: 2rem;">
+            
+            <div class="content-left" style="display: flex; flex-direction: column; gap: 2rem;">
+                <!-- KPI Card Grid -->
+                <div class="kpi-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem;">
+                    <div class="kpi-card glass-panel">
+                        <div class="kpi-icon" style="color: #65604F;"><i class="bi bi-safe"></i></div>
+                        <div class="kpi-label">Coverage Value</div>
+                        <div class="kpi-value">₹{{ policy.sum_insured|intcomma }}</div>
+                    </div>
+                    <div class="kpi-card glass-panel">
+                        <div class="kpi-icon" style="color: #3E7C45;"><i class="bi bi-credit-card"></i></div>
+                        <div class="kpi-label">Gross Premium</div>
+                        <div class="kpi-value">₹{{ policy.gross_premium|default:policy.base_premium|intcomma }}</div>
+                    </div>
+                    <div class="kpi-card glass-panel">
+                        <div class="kpi-icon" style="color: #C88A2D;"><i class="bi bi-calendar-event"></i></div>
+                        <div class="kpi-label">Plan Validity</div>
+                        <div class="kpi-value">365 Days</div>
+                    </div>
+                    <div class="kpi-card glass-panel">
+                        <div class="kpi-icon" style="color: #3E7C45;"><i class="bi bi-graph-up-arrow"></i></div>
+                        <div class="kpi-label">Claim Ratio</div>
+                        <div class="kpi-value">{{ policy.coverage_percentage }}%</div>
+                    </div>
+                    {% if "health" in policy.policy_type|lower or "medical" in policy.policy_type|lower %}
+                    <div class="kpi-card glass-panel" style="border-color: rgba(0, 242, 255, 0.3);">
+                        <div class="kpi-icon" style="color: #00f2ff;"><i class="bi bi-hospital"></i></div>
+                        <div class="kpi-label">Room Limit / Day</div>
+                        <div class="kpi-value">{{ policy.formatted_room_rent_limit }}</div>
+                    </div>
+                    {% endif %}
+                </div>
 
-        {% if not request.user.is_superuser and request.user.role == "policyholder" %}
-        <a href="{% url 'accounts:policyholder_dashboard' %}">
-            <i class="bi bi-house"></i> Dashboard
-        </a>
-        {% endif %}
+                <!-- Features & Benefits Section -->
+                <div class="benefits-container glass-panel" style="padding: 2.5rem; border-radius: 24px;">
+                    <h2 style="font-size: 1.25rem; color: #fff; margin-bottom: 2rem; display: flex; align-items: center; gap: 0.75rem;">
+                        <i class="bi bi-stars" style="color: #3E7C45;"></i> <span class="gradient-title-cyan">Strategic Benefits & Inclusions</span>
+                    </h2>
+                    <div class="benefits-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem;">
+                        {% if coverages %}
+                            {% for coverage in coverages %}
+                            <div class="benefit-card">
+                                <div class="benefit-icon"><i class="bi bi-check2-circle"></i></div>
+                                <div class="benefit-content">
+                                    <h4 class="benefit-title">{{ coverage.coverage_name }}</h4>
+                                    <p class="benefit-text">{{ coverage.description }}</p>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="benefit-card">
+                                <div class="benefit-icon"><i class="bi bi-check2-circle"></i></div>
+                                <div class="benefit-content">
+                                    <h4 class="benefit-title">Global Cashless Network</h4>
+                                    <p class="benefit-text">Access premium healthcare facilities worldwide with instant settlement protocols.</p>
+                                </div>
+                            </div>
+                            <div class="benefit-card">
+                                <div class="benefit-icon"><i class="bi bi-check2-circle"></i></div>
+                                <div class="benefit-content">
+                                    <h4 class="benefit-title">Neural Fraud Shield</h4>
+                                    <p class="benefit-text">Claims verified by AI-driven forensic intelligence for transparent adjudication.</p>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
 
-        <a href="{% url 'policy:list' %}" class="active">
-            <i class="bi bi-file-earmark-text"></i> Policies
-        </a>
+                <!-- Terms & Conditions Accordion -->
+                <div class="tc-container glass-panel" style="padding: 0; overflow: hidden; border-radius: 20px;">
+                    <details class="tc-accordion">
+                        <summary style="padding: 1.5rem 2rem; display: flex; justify-content: space-between; align-items: center; cursor: pointer; color: #fff; font-weight: 700; list-style: none;">
+                            <span style="display: flex; align-items: center; gap: 0.75rem;"><i class="bi bi-file-earmark-text" style="color: #65604F;"></i> <span class="gradient-title-cyan">Governance & Compliance Terms</span></span>
+                            <i class="bi bi-chevron-down accordion-arrow"></i>
+                        </summary>
+                        <div class="tc-content" style="padding: 0 2rem 2rem; color: rgba(156, 149, 143, 0.7); font-size: 0.9rem; line-height: 1.6; font-style: italic;">
+                            <p>This policy blueprint is governed by the ClaimIQ Smart Contract framework. Coverage activation is contingent upon successful identity verification (Aadhaar/KYC) and real-time premium realization.</p>
+                            <p style="margin-top: 1rem;">Policy Period: <strong>{{ policy.start_date|date:"M d, Y" }}</strong> to <strong>{{ policy.end_date|date:"M d, Y" }}</strong></p>
+                        </div>
+                    </details>
+                </div>
+            </div>
 
-        <a href="{% url 'claim:list' %}">
-            <i class="bi bi-shield-exclamation"></i> Claims
-        </a>
+            <!-- Right Sidebar: Controls -->
+            <div class="content-right" style="display: flex; flex-direction: column; gap: 1.5rem;">
+                
+                <div class="action-card glass-panel" style="padding: 2rem; border-color: rgba(99, 102, 241, 0.2); position: sticky; top: 110px;">
+                    <div class="pricing-box" style="text-align: center; margin-bottom: 2rem;">
+                        <span style="color: rgba(156, 149, 143, 0.7); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; font-weight: 700;">Annual Subscription</span>
+                        <div class="gradient-title" style="font-size: 3rem; font-weight: 900; margin-top: 0.5rem; letter-spacing: -2px;">₹{{ policy.gross_premium|default:policy.base_premium|intcomma }}</div>
+                        <span style="color: #3E7C45; font-size: 0.7rem; font-weight: 800; text-transform: uppercase;">GST Inclusive - Billed Annually</span>
+                    </div>
 
-        <a href="{% url 'claim:create' %}">
-            <i class="bi bi-plus-circle"></i> File Claim
-        </a>
+                    {% if request.user.role == 'admin' or request.user.is_superuser %}
+                    <!-- ADMIN ACTIONS -->
+                    <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                        <a href="{% url 'policy:edit' policy.public_id %}" class="btn admin-btn edit">
+                            <i class="bi bi-pencil-square"></i> Edit Policy
+                        </a>
+                        <button class="btn admin-btn deactivate">
+                            <i class="bi bi-pause-circle"></i> Deactivate
+                        </button>
+                        <form action="{% url 'policy:delete' policy.public_id %}" method="POST" onsubmit="return confirm('Archive this policy plan?')">
+                            {% csrf_token %}
+                            <button type="submit" class="btn admin-btn delete">
+                                <i class="bi bi-trash3"></i> Delete Plan
+                            </button>
+                        </form>
+                        <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.05); margin: 0.5rem 0;">
+                        <a href="#" class="btn admin-btn view">
+                            <i class="bi bi-people"></i> View Enrollments
+                        </a>
+                    </div>
+                    {% else %}
+                    <!-- USER ACTIONS -->
+                    <button class="btn buy-btn" onclick="buyPolicy(this, '{{ policy.public_id }}', '{{ policy.policy_number|escapejs }}')">
+                        <i class="bi bi-lightning-charge"></i> Acquire Plan
+                    </button>
+                    <div style="margin-top: 1rem; text-align: center; color: #475569; font-size: 0.7rem; font-weight: 600;">
+                        Secured with 256-bit AES Compliance
+                    </div>
+                    {% endif %}
+                </div>
 
-        <div style="margin-top: 40px;">
-            <a href="{% url 'accounts:logout' %}" style="color: #ff6b81;">
-                <i class="bi bi-box-arrow-right"></i> Logout
-            </a>
+                <div class="support-card glass-panel" style="padding: 1.25rem; display: flex; align-items: center; gap: 1rem;">
+                    <div style="width: 40px; height: 40px; background: rgba(255,255,255,0.05); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #00f2ff;">
+                        <i class="bi bi-headset"></i>
+                    </div>
+                    <div>
+                        <div style="color: #fff; font-size: 0.8rem; font-weight: 700;">Support Desk</div>
+                        <div style="color: rgba(156, 149, 143, 0.6); font-size: 0.7rem;">Active Monitoring Unit</div>
+                    </div>
+                </div>
+
+            </div>
         </div>
     </div>
-</nav>
-
-<!-- MAIN -->
-
-<div class="main">
-
-<div class="topbar">
-
-<div>
-
-<a href="{% if request.user.role == 'staff' %}{% url 'accounts:staff_dashboard' %}{% else %}{% url 'policy:list' %}{% endif %}" class="btn-back">
-    <span class="back-icon">←</span> Back to List
-</a>
-
 </div>
 
-<div>
+<style>
+    /* Premium Design Tokens */
+    .glass-panel {
+        background: #FFFFFF;
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 24px;
+    }
 
-Policy Detail
+    /* KPI Cards */
+    .kpi-card { padding: 1.5rem 1rem; position: relative; overflow: hidden; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); min-width: 0; }
+    .kpi-card:hover { transform: translateY(-5px); border-color: rgba(255,255,255,0.1); }
+    .kpi-icon { font-size: 1.5rem; margin-bottom: 0.75rem; }
+    .kpi-label { color: rgba(156, 149, 143, 0.6); font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.25rem; }
+    .kpi-value { color: #fff; font-size: 1.1rem; font-weight: 900; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-</div>
+    /* Benefit Cards */
+    .benefit-card {
+        display: flex; gap: 1.25rem; padding: 1.25rem; border-radius: 16px;
+        background: rgba(255,255,255,0.02); transition: background 0.3s;
+    }
+    .benefit-card:hover { background: rgba(255,255,255,0.04); }
+    .benefit-icon { color: #3E7C45; font-size: 1.25rem; }
+    .benefit-title { color: #fff; font-size: 0.95rem; font-weight: 700; margin-bottom: 0.25rem; }
+    .benefit-text { color: rgba(156, 149, 143, 0.6); font-size: 0.8rem; line-height: 1.4; }
 
-</div>
+    /* Buttons */
+    .btn {
+        width: 100%; padding: 1rem; border-radius: 12px; font-size: 0.8rem; font-weight: 800;
+        text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; justify-content: center; gap: 0.75rem;
+        transition: all 0.3s; border: none; cursor: pointer; text-decoration: none;
+    }
+    
+    .buy-btn {
+        background: #65604F; color: #fff; box-shadow: 0 10px 25px -5px rgba(101, 96, 79, 0.4);
+    }
+    .buy-btn:hover { background: #F4EEE2; transform: translateY(-2px); }
 
-<div class="content">
+    .admin-btn { background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1); }
+    .admin-btn:hover { background: rgba(255,255,255,0.1); color: #fff; transform: translateX(5px); }
+    .admin-btn.edit { border-color: rgba(62, 124, 69, 0.3); color: #3E7C45; }
+    .admin-btn.deactivate { border-color: rgba(200, 138, 45, 0.3); color: #C88A2D; }
+    .admin-btn.delete { border-color: rgba(197, 90, 90, 0.3); color: #c55a5a; }
+    .admin-btn.view { color: #65604F; border-color: rgba(101, 96, 79, 0.3); }
 
-<!-- HERO -->
+    /* Accordion Customization */
+    .tc-accordion[open] .accordion-arrow { transform: rotate(180deg); }
+    .accordion-arrow { transition: transform 0.3s; }
 
-<div class="policy-hero">
+    /* Back Navigation */
+    .back-nav {
+        width: 40px; height: 40px; border-radius: 12px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: rgba(156, 149, 143, 0.7); display: flex; align-items: center; justify-content: center;
+        text-decoration: none; transition: all 0.3s;
+    }
+    .back-nav:hover {
+        background: #65604F; color: #fff; border-color: #65604F;
+        transform: translateX(-3px);
+        box-shadow: 0 0 15px rgba(101, 96, 79, 0.3);
+    }
+</style>
 
-<div class="hero-pol-num">
+{% block extra_js %}
+<script>
+    async function buyPolicy(btn, policyId, policyNumber) {
+        const originalHtml = btn.innerHTML;
+        try {
+            const result = await InsureAlert.confirm("Acquire Plan", `Confirm application for ${policyNumber}?`, "Deploy Now");
+            if (!result.isConfirmed) return;
 
-Policy Number · {{ policy.policy_number }}
+            btn.innerHTML = '<i class="bi bi-arrow-repeat animate-spin"></i> INITIALIZING...';
+            btn.disabled = true;
 
-</div>
+            const response = await fetch(`/policy/buy-policy/${policyId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json'
+                }
+            });
 
-<div class="hero-pol-name">
-
-{{ policy.insurer_name|default:"-" }}
-
-</div>
-
-<br>
-
-<span class="badge">
-{{ policy.get_policy_type_display }}
-</span>
-
-<div class="metric">
-
-<div>
-<strong>Sum Insured</strong><br>
-₹{{ policy.sum_insured }}
-</div>
-
-<div>
-<strong>Premium</strong><br>
-{% if latest_schedule %}
-₹{{ latest_schedule.gross_premium }}
-{% else %}
--
-{% endif %}
-</div>
-
-<div>
-<strong>Start Date</strong><br>
-{{ policy.start_date }}
-</div>
-
-<div>
-<strong>End Date</strong><br>
-{{ policy.end_date }}
-</div>
-
-</div>
-
-</div>
-
-<!-- POLICY DETAILS -->
-
-<div class="sec">
-
-<div class="sec-title">
-
-Policy Information
-
-</div>
-
-<div class="detail-row">
-Policy Number : {{ policy.policy_number }}
-</div>
-
-<div class="detail-row">
-Policy Type : {{ policy.get_policy_type_display }}
-</div>
-
-<div class="detail-row">
-Insurer : {{ policy.insurer_name }}
-</div>
-
-<div class="detail-row">
-Sum Insured : ₹{{ policy.sum_insured }}
-</div>
-
-<div class="detail-row">
-Deductible Amount : ₹{{ policy.deductible }}
-</div>
-
-<div class="detail-row">
-Premium : {% if latest_schedule %}₹{{ latest_schedule.gross_premium }}{% else %}-{% endif %}
-</div>
-
-<div class="detail-row">
-Start Date : {{ policy.start_date }}
-</div>
-
-<div class="detail-row">
-End Date : {{ policy.end_date }}
-</div>
-
-<div class="detail-row">
-Status : <span class="badge" style="background: 
-    {% if policy.status == 'active' %}#00c664
-    {% elif policy.status == 'expired' %}#ff5a5a
-    {% elif policy.status == 'pending' %}#ffd32a
-    {% else %}#374151{% endif %}">
-    {{ policy.get_status_display }}
-</span>
-</div>
-
-</div>
-
-<!-- ACTIONS -->
-
-<div class="sec">
-
-<div class="sec-title">
-Actions
-</div>
-
-<button class="btn btn-secondary" onclick="alert('Download Policy feature is coming soon!')">
-Download Policy
-</button>
-
-<button class="btn btn-secondary" onclick="alert('Renew Policy feature is coming soon!')">
-Renew Policy
-</button>
-
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-</body>
-</html>
+            const data = await response.json();
+            if (response.ok) {
+                btn.innerHTML = '<i class="bi bi-check-lg"></i> DEPLOYED';
+                btn.className = 'btn admin-btn view';
+                await InsureAlert.success('Success', data.message || 'Application submitted successfully.');
+                window.location.href = "{% url 'policy:my_applications' %}";
+            } else {
+                InsureAlert.error('Error', data.error || 'Acquisition failed.');
+                btn.innerHTML = originalHtml;
+                btn.disabled = false;
+            }
+        } catch (error) {
+            InsureAlert.error('System Error', 'Service temporarily unavailable.');
+            btn.innerHTML = originalHtml;
+            btn.disabled = false;
+        }
+    }
+</script>
+{% endblock %}
+{% endblock %}

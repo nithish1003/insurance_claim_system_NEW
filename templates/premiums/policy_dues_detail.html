@@ -1,0 +1,388 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Policy Dues{% endblock %}
+
+{% block breadcrumb %}Policy Dues{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --accent-blue: #3b82f6;
+        --accent-blue-glow: rgba(59, 130, 246, 0.4);
+        --glass-bg: rgba(30, 41, 59, 0.45);
+        --glass-border: rgba(255, 255, 255, 0.08);
+        --text-dim: rgba(156, 149, 143, 0.7);
+    }
+
+    .detail-shell {
+        animation: fadeIn 0.6s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Premium Header */
+    .premium-header {
+        background: linear-gradient(90deg, rgba(30, 41, 59, 0.8), transparent);
+        border-left: 4px solid var(--accent-blue);
+        padding: 1.5rem 2rem;
+        border-radius: 0 16px 16px 0;
+        margin-bottom: 2rem;
+        backdrop-filter: blur(10px);
+    }
+
+    /* Glass Cards */
+    .glass-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid var(--glass-border);
+        border-radius: 24px;
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Hero Section */
+    .dues-hero {
+        position: relative;
+        padding: 1.25rem 1.75rem;
+        background: 
+            radial-gradient(circle at top right, rgba(59, 130, 246, 0.12), transparent 35%),
+            var(--glass-bg);
+    }
+
+    .dues-hero::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: url('https://www.transparenttextures.com/patterns/carbon-fibre.png');
+        opacity: 0.03;
+        pointer-events: none;
+    }
+
+    /* Modern Progress */
+    .progress-wrapper {
+        margin: 1rem 0 0.5rem 0;
+    }
+    .progress-label {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.85rem;
+        margin-bottom: 0.5rem;
+        color: var(--text-dim);
+    }
+    .progress-outer {
+        height: 8px;
+        background: rgba(255,255,255,0.05);
+        border-radius: 4px;
+        overflow: hidden;
+    }
+    .progress-inner {
+        height: 100%;
+        background: linear-gradient(90deg, #3b82f6, #60a5fa);
+        box-shadow: 0 0 15px var(--accent-blue-glow);
+        transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Metrics Grid */
+    .metric-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 0.75rem;
+    }
+    .metric-item {
+        background: rgba(15, 23, 42, 0.4);
+        padding: 0.85rem 1.25rem;
+        border-radius: 16px;
+        border: 1px solid rgba(255,255,255,0.04);
+        transition: all 0.3s ease;
+    }
+    .metric-item:hover {
+        border-color: rgba(59, 130, 246, 0.3);
+        background: rgba(15, 23, 42, 0.6);
+        transform: translateY(-2px);
+    }
+    .metric-label {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: var(--text-dim);
+        margin-bottom: 0.5rem;
+    }
+    .metric-value {
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: white;
+    }
+
+    /* Table Styling */
+    .timeline-table {
+        margin: 0;
+        width: 100%;
+    }
+    .timeline-table th {
+        background: rgba(15, 23, 42, 0.3);
+        padding: 1.25rem 1.5rem;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--text-dim);
+        border-bottom: 1px solid var(--glass-border);
+    }
+    .timeline-table td {
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        vertical-align: middle;
+        color: #e2e8f0;
+    }
+    .timeline-table tr {
+        transition: background 0.2s ease;
+    }
+    .timeline-table tr:hover {
+        background: rgba(255, 255, 255, 0.02);
+    }
+
+    /* Action Buttons */
+    .btn-action {
+        padding: 0.5rem 1rem;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 0.8rem;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .btn-pay {
+        background: linear-gradient(135deg, #65604F, #3b82f6);
+        color: white;
+        box-shadow: 0 4px 12px rgba(101, 96, 79, 0.3);
+    }
+    .btn-pay:hover {
+        transform: scale(1.05);
+        box-shadow: 0 6px 20px rgba(101, 96, 79, 0.5);
+        color: white;
+    }
+
+    /* Status Badges */
+    .badge-modern {
+        padding: 0.4rem 0.8rem;
+        border-radius: 8px;
+        font-size: 0.7rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    .badge-upcoming { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
+    .badge-paid { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .badge-overdue { background: rgba(197, 90, 90, 0.15); color: #f87171; border: 1px solid rgba(197, 90, 90, 0.3); }
+
+    /* Filter Pills */
+    .pills-container {
+        display: flex;
+        gap: 0.5rem;
+        background: rgba(15, 23, 42, 0.3);
+        padding: 0.4rem;
+        border-radius: 14px;
+        width: fit-content;
+    }
+    .pill-link {
+        padding: 0.5rem 1.25rem;
+        border-radius: 10px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--text-dim);
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+    .pill-link.active {
+        background: var(--accent-blue);
+        color: white;
+        box-shadow: 0 4px 12px var(--accent-blue-glow);
+    }
+
+    @media (max-width: 768px) {
+        .metric-grid { grid-template-columns: 1fr 1fr; }
+        .timeline-table th:nth-child(5), 
+        .timeline-table td:nth-child(5),
+        .timeline-table th:nth-child(6), 
+        .timeline-table td:nth-child(6) {
+            display: none;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="detail-shell">
+    
+    <!-- Navigation & Title -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1" style="background:transparent; padding:0;">
+                    <li class="breadcrumb-item"><a href="{% url 'premiums:history' %}" class="text-dim">Billing</a></li>
+                    <li class="breadcrumb-item active text-white" aria-current="page">Details</li>
+                </ol>
+            </nav>
+            <h2 class="text-white fw-bold mb-0" style="letter-spacing: -0.5px;">Installment Schedule</h2>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'premiums:history' %}" class="btn btn-sm btn-outline-secondary px-3" style="border-radius: 10px;">
+                <i class="bi bi-arrow-left me-1"></i> Back
+            </a>
+            <a href="{% url 'accounts:policyholder_dashboard' %}" class="btn btn-sm btn-outline-primary px-3" style="border-radius: 10px;">
+                <i class="bi bi-house me-1"></i> Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Hero Card -->
+    <div class="glass-card dues-hero">
+        <div class="row align-items-center g-3">
+            <div class="col-lg-6">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 40px; background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 4px 10px rgba(16, 185, 129, 0.25);">
+                        <i class="bi bi-credit-card-2-front text-white fs-5"></i>
+                    </div>
+                    <div>
+                        <h5 class="text-white mb-0 fw-bold">{{ schedule.policy.policy_number }}</h5>
+                        <span class="x-small text-primary fw-bold text-uppercase" style="letter-spacing: 1px; font-size: 0.65rem;">{{ schedule.policy.policy_type }} Insurance</span>
+                    </div>
+                </div>
+                
+                <div class="progress-wrapper">
+                    <div class="progress-label" style="font-size: 0.75rem;">
+                        <span class="fw-bold text-white">Payment Progress</span>
+                        <span class="text-white-50">{{ paid_count }} / {{ total_installments }} Paid</span>
+                    </div>
+                    <div class="progress-outer" style="height: 6px;">
+                        <div class="progress-inner" style="width: {{ paid_percentage }}%;"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-6">
+                <div class="metric-grid">
+                    <div class="metric-item">
+                        <div class="metric-label">Next Payment Due</div>
+                        <div class="metric-value">{% if next_due %}{{ next_due.due_date|date:"d M, Y" }}{% else %}None{% endif %}</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-label">Payable Amount</div>
+                        <div class="metric-value">{% if next_due %}₹{{ next_due.amount|floatformat:2|intcomma }}{% else %}₹0.00{% endif %}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="glass-card p-3 text-center">
+                <div class="text-dim x-small text-uppercase mb-1 fw-bold" style="font-size: 0.6rem;">Pending Count</div>
+                <div class="h5 text-warning mb-0 fw-bold">{{ pending_count }} Installments</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="glass-card p-3 text-center">
+                <div class="text-dim x-small text-uppercase mb-1 fw-bold" style="font-size: 0.6rem;">Remaining Balance</div>
+                <div class="h5 text-white mb-0 fw-bold">₹{{ total_remaining_amount|floatformat:2|intcomma }}</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="glass-card p-3 text-center">
+                <div class="text-dim x-small text-uppercase mb-1 fw-bold" style="font-size: 0.6rem;">Frequency</div>
+                <div class="h5 text-info mb-0 fw-bold">{{ schedule.get_payment_frequency_display }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Timeline List -->
+    <div class="glass-card">
+        <div class="p-4 border-bottom border-white border-opacity-10 d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <h5 class="text-white mb-0">Timeline Distribution</h5>
+                <p class="text-dim small mb-0">Chronological history of your policy installments</p>
+            </div>
+            
+            <div class="pills-container">
+                <a class="pill-link {% if not status_filter %}active{% endif %}" href="{% url 'premiums:policy_dues_detail' schedule.user_policy.public_id %}">All</a>
+                <a class="pill-link {% if status_filter == 'upcoming' %}active{% endif %}" href="{% url 'premiums:policy_dues_detail' schedule.user_policy.public_id %}?status=upcoming">Upcoming</a>
+                <a class="pill-link {% if status_filter == 'overdue' %}active{% endif %}" href="{% url 'premiums:policy_dues_detail' schedule.user_policy.public_id %}?status=overdue">Overdue</a>
+                <a class="pill-link {% if status_filter == 'paid' %}active{% endif %}" href="{% url 'premiums:policy_dues_detail' schedule.user_policy.public_id %}?status=paid">Paid</a>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table timeline-table text-nowrap">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Due Date</th>
+                        <th>Installment Amount</th>
+                        <th>Status</th>
+                        <th>Settled On</th>
+                        <th>Txn Reference</th>
+                        <th class="text-end">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for payment in payments %}
+                    <tr class="align-middle">
+                        <td><span class="text-white-50 small">#</span><span class="fw-bold">{{ payment.installment_number }}</span></td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-calendar-event text-dim"></i>
+                                <span class="fw-semibold">{{ payment.due_date|date:"d M, Y" }}</span>
+                            </div>
+                        </td>
+                        <td><span class="text-white fw-bold">₹{{ payment.amount|floatformat:2|intcomma }}</span></td>
+                        <td>
+                            <span class="badge-modern badge-{{ payment.display_status }}">
+                                {{ payment.display_status_label }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if payment.paid_date %}
+                                <span class="small">{{ payment.paid_date|date:"d M, Y" }}</span>
+                            {% else %}
+                                <span class="text-dim small">--</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="font-monospace small text-dim">{{ payment.transaction_reference|default:"REC-XXXXX" }}</span>
+                        </td>
+                        <td class="text-end">
+                            {% if payment.show_pay_now %}
+                                <a class="btn-action btn-pay" href="{% url 'premiums:pay' payment.public_id %}">
+                                    <i class="bi bi-wallet2"></i> Pay Securely
+                                </a>
+                            {% else %}
+                                <div class="text-success small fw-bold"><i class="bi bi-shield-check me-1"></i> Completed</div>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-5">
+                            <div class="text-dim opacity-40 mb-3">
+                                <i class="bi bi-clipboard2-x fs-1"></i>
+                            </div>
+                            <h6 class="text-white-50">No data found</h6>
+                            <p class="text-dim small">No installments match your current selection.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

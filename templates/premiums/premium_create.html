@@ -32,7 +32,7 @@
                         <select name="policy" id="id_policy" class="form-select bg-dark text-white border-secondary border-opacity-25" required>
                             <option value="">Select an active policy...</option>
                             {% for policy in policies %}
-                            <option value="{{ policy.id }}" {% if selected_policy_id == policy.id %}selected{% endif %}>{{ policy.policy_number }} | {{ policy.policy_type|title }}</option>
+                            <option value="{{ policy.public_id }}" {% if selected_policy_id == policy.public_id|stringformat:"s" %}selected{% endif %}>{{ policy.policy_number }} | {{ policy.policy_type|title }}</option>
                             {% endfor %}
                         </select>
                     </div>

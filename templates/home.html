@@ -1,0 +1,946 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>ClaimIQ | Enterprise AI Insurance Platform</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        primary: '#65604F',
+                        gold: '#AA8758',
+                        highlight: '#B08A57',
+                        bg: '#FAF9F7',
+                        bgAlt: '#F7F4EC',
+                        footerBg: '#36332E',
+                        footerText: '#F5F2EC',
+                        footerGold: '#C89B5A',
+                        heading: '#4F4A42',
+                        surface: '#FCFAF6',
+                        neutral: '#E4DACB',
+                        accent: '#4E6987',
+                        textMain: '#605E5B',
+                        textSec: '#7A746E',
+                        borderLight: '#DDD3C6',
+                        success: '#3E7C45',
+                        warning: '#D89A2B',
+                        danger: '#C04A4A',
+                    },
+                    borderRadius: {
+                        'xl': '18px',
+                        '2xl': '24px',
+                        '3xl': '32px',
+                    },
+                    boxShadow: {
+                        'soft': '0 10px 30px rgba(0,0,0,0.08)',
+                        'float': '0 20px 40px rgba(0,0,0,0.08)',
+                        'premium': '0 20px 60px rgba(0,0,0,0.05)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+    <style>
+        body {
+            background-color: theme('colors.bg');
+            color: theme('colors.textMain');
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .glass-nav {
+            background: rgba(252, 250, 246, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        .card-hover {
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .card-hover:hover {
+            transform: translateY(-6px);
+            box-shadow: theme('boxShadow.premium');
+        }
+
+        .btn-primary {
+            background-color: theme('colors.primary');
+            color: white;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .btn-primary:hover {
+            background-color: theme('colors.gold');
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(170,135,88,0.2);
+        }
+
+        .btn-outline {
+            background-color: theme('colors.surface');
+            border: 1px solid theme('colors.borderLight');
+            color: theme('colors.textMain');
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .btn-outline:hover {
+            border-color: theme('colors.gold');
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+        }
+        
+        .fade-mask {
+            -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+            mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+        }
+
+        /* Mockup specific animations */
+        .mockup-item {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        
+        .gsap-reveal {
+            opacity: 0;
+            transform: translateY(40px);
+        }
+        
+        .gradient-bg-1 {
+            background: radial-gradient(circle at top right, rgba(170, 135, 88, 0.15), transparent 40%);
+        }
+        .gradient-bg-2 {
+            background: radial-gradient(circle at bottom left, rgba(101, 96, 79, 0.1), transparent 50%);
+        }
+        
+        /* Modern Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: theme('colors.borderLight');
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: theme('colors.textSec');
+        }
+    </style>
+</head>
+<body class="overflow-x-hidden gradient-bg-1">
+
+    <!-- Background Decoration -->
+    <div class="fixed inset-0 gradient-bg-2 pointer-events-none -z-10"></div>
+
+    <!-- NAVBAR -->
+    <nav class="fixed top-0 w-full z-50 glass-nav border-b border-white/20 shadow-[0_4px_30px_rgba(0,0,0,0.03)]" style="border-bottom-left-radius: 24px; border-bottom-right-radius: 24px;">
+        <div class="max-w-7xl mx-auto px-6 h-[80px] flex items-center justify-between">
+            <!-- Logo -->
+            <div class="flex items-center gap-3 cursor-pointer group">
+                <div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white transition-transform group-hover:scale-105">
+                    <i data-lucide="shield-check" class="w-5 h-5"></i>
+                </div>
+                <span class="text-xl font-bold text-textMain tracking-tight">ClaimIQ</span>
+            </div>
+
+            <!-- Links -->
+            <div class="hidden md:flex items-center gap-10 text-sm font-medium text-textSec">
+                <a href="#" class="text-textMain hover:text-gold transition-colors">Home</a>
+                <a href="#features" class="hover:text-gold transition-colors">Features</a>
+                <a href="#process" class="hover:text-gold transition-colors">How It Works</a>
+                <a href="#ai-showcase" class="hover:text-gold transition-colors">AI Showcase</a>
+            </div>
+
+            <!-- Auth/Right Side -->
+            <div class="flex items-center gap-4">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'notifications:bell' %}" class="w-10 h-10 rounded-full hover:bg-neutral/50 flex items-center justify-center text-textSec hover:text-gold transition-colors border border-transparent hover:border-borderLight">
+                        <i data-lucide="bell" class="w-4 h-4"></i>
+                    </a>
+                    <a href="{% url 'accounts:profile' %}" class="w-10 h-10 rounded-full hover:bg-neutral/50 flex items-center justify-center text-textSec hover:text-gold transition-colors border border-transparent hover:border-borderLight mr-2">
+                        <i data-lucide="user" class="w-4 h-4"></i>
+                    </a>
+                    {% if user.role == 'admin' %}
+                        <a href="{% url 'accounts:dashboard_admin' %}" class="btn-primary px-5 py-2.5 rounded-xl text-sm font-medium shadow-sm">Dashboard</a>
+                    {% elif user.role == 'staff' %}
+                        <a href="{% url 'accounts:dashboard_staff' %}" class="btn-primary px-5 py-2.5 rounded-xl text-sm font-medium shadow-sm">Dashboard</a>
+                    {% else %}
+                        <a href="{% url 'accounts:dashboard_policyholder' %}" class="btn-primary px-5 py-2.5 rounded-xl text-sm font-medium shadow-sm">Dashboard</a>
+                    {% endif %}
+                {% else %}
+                    <a href="{% url 'accounts:login' %}" class="text-textSec font-medium hover:text-gold text-sm mr-4 transition-colors">Sign In</a>
+                    <a href="{% url 'accounts:register' %}" class="btn-primary px-6 py-2.5 rounded-xl text-sm font-medium shadow-sm">Get Started</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- HERO SECTION -->
+    <section class="pt-40 pb-24 px-6 max-w-7xl mx-auto min-h-[95vh] flex items-center">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center w-full">
+            
+            <!-- Left: Content -->
+            <div class="gsap-reveal z-10">
+                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-surface/60 backdrop-blur-sm border border-gold/30 text-xs font-semibold text-gold mb-8 shadow-sm">
+                    <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                    Enterprise-Grade AI Insurance Platform
+                </div>
+                <h1 class="text-5xl lg:text-6xl font-bold text-textMain leading-[1.1] mb-6 tracking-tighter">
+                    Smart Insurance<br/>Claims Management<br/>
+                    <span class="text-gold">Powered by AI.</span>
+                </h1>
+                <p class="text-lg text-textSec mb-10 max-w-md leading-relaxed font-normal">
+                    Submit claims securely, detect fraud intelligently, verify documents instantly, and receive faster settlements through an enterprise-grade AI platform.
+                </p>
+                <div class="flex flex-wrap items-center gap-4">
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'claims:claim_submit' %}" class="btn-primary px-8 py-4 rounded-xl font-medium flex items-center gap-2 shadow-soft">
+                            File a Claim <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                        </a>
+                    {% else %}
+                        <a href="{% url 'accounts:login' %}" class="btn-primary px-8 py-4 rounded-xl font-medium flex items-center gap-2 shadow-soft">
+                            File a Claim <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                        </a>
+                    {% endif %}
+                    <a href="#features" class="btn-outline px-8 py-4 rounded-xl font-medium shadow-sm">
+                        Explore Features
+                    </a>
+                </div>
+                
+                <div class="mt-12 flex items-center gap-4 text-sm text-textSec">
+                    <div class="flex -space-x-2">
+                        <img class="w-8 h-8 rounded-full border-2 border-bg" src="https://i.pravatar.cc/100?img=1" alt="User"/>
+                        <img class="w-8 h-8 rounded-full border-2 border-bg" src="https://i.pravatar.cc/100?img=2" alt="User"/>
+                        <img class="w-8 h-8 rounded-full border-2 border-bg" src="https://i.pravatar.cc/100?img=3" alt="User"/>
+                        <div class="w-8 h-8 rounded-full border-2 border-bg bg-primary text-white flex items-center justify-center text-[10px] font-bold">+2k</div>
+                    </div>
+                    <p>Trusted by over 2,000 agencies worldwide.</p>
+                </div>
+            </div>
+
+            <!-- Right: Premium Unified Dashboard Mockup -->
+            <div class="relative w-full h-[650px] perspective-1000 hidden lg:block">
+                <!-- Glowing Orbs -->
+                <div class="absolute top-1/4 right-0 -translate-y-1/2 w-[400px] h-[400px] bg-gold/20 rounded-full blur-[100px]"></div>
+                <div class="absolute bottom-0 left-10 w-[300px] h-[300px] bg-accent/15 rounded-full blur-[80px]"></div>
+                
+                <!-- Main Mockup Container -->
+                <div class="absolute inset-0 z-10 w-full h-full flex items-center justify-center mockup-item" id="hero-mockup">
+                    <div class="w-full max-w-2xl bg-surface rounded-3xl shadow-[0_30px_80px_rgba(101,96,79,0.15)] border border-white/60 flex flex-col overflow-hidden relative">
+                        <!-- Mac OS style top bar -->
+                        <div class="h-12 bg-bg/50 backdrop-blur-md border-b border-borderLight flex items-center px-5 gap-2">
+                            <div class="w-3 h-3 rounded-full bg-danger/80"></div>
+                            <div class="w-3 h-3 rounded-full bg-warning/80"></div>
+                            <div class="w-3 h-3 rounded-full bg-success/80"></div>
+                            <div class="flex-1 text-center text-xs text-textMain font-semibold opacity-80">ClaimIQ AI Dashboard</div>
+                            <div class="flex items-center gap-2">
+                                <div class="px-2 py-1 bg-success/10 text-success rounded text-[10px] font-bold tracking-wide">SYSTEM ONLINE</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Dashboard Body -->
+                        <div class="flex flex-1 p-5 gap-5 h-[460px] bg-[#FAFAFA]">
+                            <!-- Sidebar -->
+                            <div class="w-[140px] flex flex-col gap-3">
+                                <div class="flex items-center gap-2 p-2 rounded-lg bg-surface border border-borderLight shadow-sm text-primary font-medium text-xs">
+                                    <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Overview
+                                </div>
+                                <div class="flex items-center gap-2 p-2 rounded-lg text-textSec hover:bg-surface hover:shadow-sm transition-all text-xs font-medium cursor-pointer">
+                                    <i data-lucide="file-text" class="w-4 h-4"></i> All Claims
+                                </div>
+                                <div class="flex items-center gap-2 p-2 rounded-lg text-textSec hover:bg-surface hover:shadow-sm transition-all text-xs font-medium cursor-pointer">
+                                    <i data-lucide="shield-alert" class="w-4 h-4"></i> Fraud Risk
+                                </div>
+                                <div class="flex items-center gap-2 p-2 rounded-lg text-textSec hover:bg-surface hover:shadow-sm transition-all text-xs font-medium cursor-pointer">
+                                    <i data-lucide="scan-line" class="w-4 h-4"></i> OCR Engine
+                                </div>
+                                
+                                <div class="mt-auto bg-gradient-to-br from-bg to-white rounded-xl p-3 border border-borderLight relative overflow-hidden">
+                                    <i data-lucide="zap" class="absolute -right-2 -bottom-2 w-10 h-10 text-gold opacity-10"></i>
+                                    <div class="text-[10px] text-textSec font-medium mb-1">AI Accuracy</div>
+                                    <div class="text-lg font-bold text-primary">99.4%</div>
+                                    <div class="w-full bg-borderLight h-1 rounded-full mt-2"><div class="w-[99%] bg-gold h-full rounded-full"></div></div>
+                                </div>
+                            </div>
+                            
+                            <!-- Main Content Area -->
+                            <div class="flex-1 flex flex-col gap-5">
+                                <!-- Top Stats Row -->
+                                <div class="grid grid-cols-3 gap-4 h-[90px]">
+                                    <!-- Total Claims -->
+                                    <div class="bg-surface rounded-xl border border-borderLight p-3.5 flex flex-col justify-between shadow-sm relative overflow-hidden">
+                                        <div class="flex justify-between items-start">
+                                            <div class="text-[10px] font-semibold text-textSec uppercase">Total Claims</div>
+                                            <div class="w-6 h-6 rounded bg-primary/10 flex items-center justify-center text-primary"><i data-lucide="files" class="w-3.5 h-3.5"></i></div>
+                                        </div>
+                                        <div class="flex items-baseline gap-2">
+                                            <div class="text-2xl font-bold text-textMain">14,284</div>
+                                            <div class="text-[9px] text-success font-bold flex items-center"><i data-lucide="trending-up" class="w-3 h-3 mr-0.5"></i> 12%</div>
+                                        </div>
+                                    </div>
+                                    <!-- Settlement Amount -->
+                                    <div class="bg-surface rounded-xl border border-borderLight p-3.5 flex flex-col justify-between shadow-sm relative overflow-hidden">
+                                        <div class="flex justify-between items-start">
+                                            <div class="text-[10px] font-semibold text-textSec uppercase">Settled (MTD)</div>
+                                            <div class="w-6 h-6 rounded bg-gold/10 flex items-center justify-center text-gold"><i data-lucide="dollar-sign" class="w-3.5 h-3.5"></i></div>
+                                        </div>
+                                        <div class="flex items-baseline gap-2">
+                                            <div class="text-2xl font-bold text-textMain">$2.4M</div>
+                                            <div class="text-[9px] text-success font-bold flex items-center"><i data-lucide="trending-up" class="w-3 h-3 mr-0.5"></i> 8%</div>
+                                        </div>
+                                    </div>
+                                    <!-- Avg Approval Time -->
+                                    <div class="bg-gradient-to-br from-primary to-accent rounded-xl p-3.5 flex flex-col justify-between shadow-soft relative overflow-hidden text-white">
+                                        <div class="absolute top-0 right-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/noise-lines.png')] opacity-20"></div>
+                                        <div class="flex justify-between items-start relative z-10">
+                                            <div class="text-[10px] font-semibold text-white/80 uppercase">Approval Time</div>
+                                            <div class="w-6 h-6 rounded bg-surface/20 flex items-center justify-center text-white"><i data-lucide="clock" class="w-3.5 h-3.5"></i></div>
+                                        </div>
+                                        <div class="flex items-baseline gap-2 relative z-10">
+                                            <div class="text-2xl font-bold">1.2m</div>
+                                            <div class="text-[9px] text-gold font-bold flex items-center"><i data-lucide="trending-down" class="w-3 h-3 mr-0.5"></i> 30s</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Chart Area -->
+                                <div class="flex-1 bg-surface rounded-xl border border-borderLight p-5 flex flex-col relative shadow-sm overflow-hidden">
+                                    <div class="flex justify-between items-center mb-6">
+                                        <div>
+                                            <h4 class="text-sm font-bold text-textMain">Claim Processing Volume</h4>
+                                            <p class="text-[10px] text-textSec">Real-time throughput analysis</p>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <span class="flex items-center gap-1 text-[9px] font-medium text-textSec"><div class="w-2 h-2 rounded-full bg-primary"></div> Automated</span>
+                                            <span class="flex items-center gap-1 text-[9px] font-medium text-textSec"><div class="w-2 h-2 rounded-full bg-borderLight"></div> Manual</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Professional Bar/Line Chart Mockup -->
+                                    <div class="flex-1 w-full relative flex items-end justify-between gap-3 px-2 border-b border-borderLight/40 pb-2">
+                                        <!-- Y-Axis labels -->
+                                        <div class="absolute -left-1 flex flex-col justify-between h-full text-[8px] text-textSec pb-2">
+                                            <span>2k</span>
+                                            <span>1k</span>
+                                            <span>0</span>
+                                        </div>
+                                        
+                                        <!-- Bars -->
+                                        <div class="w-full flex flex-col justify-end h-full gap-0.5 group">
+                                            <div class="w-full bg-borderLight rounded-t-sm h-[15%] transition-all group-hover:opacity-80"></div>
+                                            <div class="w-full bg-primary/90 rounded-b-sm h-[45%] transition-all group-hover:opacity-80"></div>
+                                        </div>
+                                        <div class="w-full flex flex-col justify-end h-full gap-0.5 group">
+                                            <div class="w-full bg-borderLight rounded-t-sm h-[20%] transition-all group-hover:opacity-80"></div>
+                                            <div class="w-full bg-primary/90 rounded-b-sm h-[60%] transition-all group-hover:opacity-80"></div>
+                                        </div>
+                                        <div class="w-full flex flex-col justify-end h-full gap-0.5 group">
+                                            <div class="w-full bg-borderLight rounded-t-sm h-[10%] transition-all group-hover:opacity-80"></div>
+                                            <div class="w-full bg-primary/90 rounded-b-sm h-[30%] transition-all group-hover:opacity-80"></div>
+                                        </div>
+                                        <div class="w-full flex flex-col justify-end h-full gap-0.5 group relative">
+                                            <div class="absolute -top-7 left-1/2 -translate-x-1/2 bg-textMain text-white text-[9px] font-bold py-1 px-2 rounded shadow-md z-10 whitespace-nowrap">Peak: 1.8k</div>
+                                            <div class="w-full bg-borderLight rounded-t-sm h-[25%] transition-all group-hover:opacity-80"></div>
+                                            <div class="w-full bg-gold/90 rounded-b-sm h-[75%] transition-all group-hover:opacity-80 shadow-[0_0_15px_rgba(170,135,88,0.4)]"></div>
+                                        </div>
+                                        <div class="w-full flex flex-col justify-end h-full gap-0.5 group">
+                                            <div class="w-full bg-borderLight rounded-t-sm h-[15%] transition-all group-hover:opacity-80"></div>
+                                            <div class="w-full bg-primary/90 rounded-b-sm h-[50%] transition-all group-hover:opacity-80"></div>
+                                        </div>
+                                        <div class="w-full flex flex-col justify-end h-full gap-0.5 group">
+                                            <div class="w-full bg-borderLight rounded-t-sm h-[10%] transition-all group-hover:opacity-80"></div>
+                                            <div class="w-full bg-primary/90 rounded-b-sm h-[40%] transition-all group-hover:opacity-80"></div>
+                                        </div>
+                                        <div class="w-full flex flex-col justify-end h-full gap-0.5 group">
+                                            <div class="w-full bg-borderLight rounded-t-sm h-[5%] transition-all group-hover:opacity-80"></div>
+                                            <div class="w-full bg-primary/90 rounded-b-sm h-[65%] transition-all group-hover:opacity-80"></div>
+                                        </div>
+                                        
+                                        <!-- Trend Line SVG Overlay -->
+                                        <svg class="absolute inset-0 w-full h-full pointer-events-none drop-shadow-md" preserveAspectRatio="none" viewBox="0 0 100 100">
+                                            <path d="M 5,60 Q 20,40 35,65 T 50,30 T 70,50 T 95,40" fill="none" stroke="#AA8758" stroke-width="2.5" vector-effect="non-scaling-stroke" stroke-linecap="round"/>
+                                            <circle cx="50" cy="30" r="3" fill="#FFFFFF" stroke="#AA8758" stroke-width="2" vector-effect="non-scaling-stroke" />
+                                        </svg>
+                                    </div>
+                                    <div class="flex justify-between px-2 pt-2 text-[8px] text-textSec uppercase tracking-wider font-semibold">
+                                        <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Floating Badge 1: OCR Complete -->
+                    <div class="absolute top-10 -right-6 bg-surface rounded-xl p-3 shadow-[0_15px_35px_rgba(0,0,0,0.1)] border border-white flex items-center gap-3 z-20 mockup-item" style="animation-delay: 0.5s;">
+                        <div class="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center text-accent">
+                            <i data-lucide="scan-text" class="w-4 h-4"></i>
+                        </div>
+                        <div class="pr-2">
+                            <div class="text-xs font-bold text-textMain">OCR Complete</div>
+                            <div class="text-[10px] text-textSec">Medical_Bill.pdf extracted</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Floating Badge 2: AI Verified -->
+                    <div class="absolute bottom-8 -left-10 bg-surface rounded-xl p-3.5 shadow-[0_15px_35px_rgba(0,0,0,0.1)] border border-white flex items-center gap-3.5 z-20 mockup-item" style="animation-delay: 0.4s;">
+                        <div class="w-10 h-10 rounded-full bg-success/10 flex items-center justify-center text-success relative">
+                            <i data-lucide="shield-check" class="w-5 h-5"></i>
+                            <div class="absolute -top-1 -right-1 w-3 h-3 bg-success rounded-full border-2 border-white"></div>
+                        </div>
+                        <div class="pr-2">
+                            <div class="text-sm font-bold text-textMain">AI Verified</div>
+                            <div class="text-[10px] font-medium text-success bg-success/10 px-1.5 py-0.5 rounded inline-block mt-0.5">98% Confidence</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- TRUST SECTION -->
+    <section class="py-16 border-y border-borderLight bg-bgAlt">
+        <div class="max-w-7xl mx-auto px-6 fade-mask overflow-hidden">
+            <p class="text-center text-[11px] font-bold text-textSec uppercase tracking-[0.2em] mb-10">Trusted by industry leaders</p>
+            <div class="flex justify-center items-center gap-16 lg:gap-28 opacity-40 grayscale hover:grayscale-0 hover:opacity-80 transition-all duration-700 whitespace-nowrap">
+                <div class="flex items-center gap-3 text-xl font-bold tracking-tight text-textMain"><i data-lucide="building" class="w-6 h-6"></i> GLOBAL LIFE</div>
+                <div class="flex items-center gap-3 text-xl font-bold tracking-tight text-textMain"><i data-lucide="heart-pulse" class="w-6 h-6"></i> HEALTH FIRST</div>
+                <div class="flex items-center gap-3 text-xl font-bold tracking-tight text-textMain"><i data-lucide="shield" class="w-6 h-6"></i> SAFEGUARD CO.</div>
+                <div class="flex items-center gap-3 text-xl font-bold tracking-tight text-textMain"><i data-lucide="landmark" class="w-6 h-6"></i> GOV ALLIANCE</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- STATISTICS SECTION -->
+    <section class="py-32 relative">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-12 text-center divide-x divide-borderLight/60">
+                <div class="gsap-stat px-4">
+                    <h3 class="text-5xl font-bold text-primary mb-3 tracking-tighter"><span class="counter" data-target="15">0</span>K+</h3>
+                    <p class="text-sm text-textSec font-medium">Claims Processed</p>
+                </div>
+                <div class="gsap-stat px-4">
+                    <h3 class="text-5xl font-bold text-primary mb-3 tracking-tighter"><span class="counter" data-target="98">0</span>%</h3>
+                    <p class="text-sm text-textSec font-medium">AI Accuracy</p>
+                </div>
+                <div class="gsap-stat px-4">
+                    <h3 class="text-5xl font-bold text-primary mb-3 tracking-tighter"><span class="counter" data-target="2">0</span> Min</h3>
+                    <p class="text-sm text-textSec font-medium">Approval Time</p>
+                </div>
+                <div class="gsap-stat px-4 border-r-0">
+                    <h3 class="text-5xl font-bold text-primary mb-3 tracking-tighter"><span class="counter" data-target="99">0</span>%</h3>
+                    <p class="text-sm text-textSec font-medium">Customer Satisfaction</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FEATURES SECTION -->
+    <section id="features" class="py-24 bg-bgAlt relative rounded-[3rem] shadow-sm max-w-[1400px] mx-auto border border-borderLight/30 mb-20">
+        <div class="max-w-7xl mx-auto px-6 lg:px-8">
+            <div class="text-center max-w-2xl mx-auto mb-16 gsap-reveal">
+                <h2 class="text-4xl font-bold text-primary mb-5 tracking-tight">Enterprise AI Capabilities</h2>
+                <p class="text-base text-textSec leading-relaxed">Our platform leverages state-of-the-art machine learning models to automate and secure the entire claims lifecycle.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Feature 1 -->
+                <div class="bg-surface p-7 rounded-3xl border border-borderLight/60 hover:-translate-y-2 hover:shadow-premium hover:border-gold/40 transition-all duration-400 group flex flex-col h-full relative overflow-hidden gsap-reveal">
+                    <div class="absolute -right-16 -top-16 w-40 h-40 bg-gold/5 rounded-full blur-2xl group-hover:bg-gold/15 transition-all duration-500"></div>
+                    
+                    <div class="flex justify-between items-start mb-6 relative z-10">
+                        <div class="w-12 h-12 rounded-2xl bg-bg flex items-center justify-center text-primary group-hover:text-gold group-hover:scale-110 transition-all duration-300 shadow-sm border border-borderLight/30">
+                            <i data-lucide="brain" class="w-5 h-5"></i>
+                        </div>
+                        <div class="flex flex-col items-end gap-1.5">
+                            <span class="px-2 py-1 bg-primary/10 text-primary text-[9px] font-bold uppercase tracking-wider rounded-md">NLP</span>
+                            <span class="text-[10px] font-medium text-textSec flex items-center gap-1"><i data-lucide="bar-chart-2" class="w-3 h-3"></i> 15K+ Claims</span>
+                        </div>
+                    </div>
+                    
+                    <div class="relative z-10 flex-1">
+                        <h3 class="text-lg font-bold text-textMain mb-2 group-hover:text-primary transition-colors">AI Categorization</h3>
+                        <p class="text-textSec text-sm leading-relaxed mb-6">Auto-classifies complex claims and routes them to the correct department instantly.</p>
+                    </div>
+                    
+                    <div class="mt-auto relative z-10">
+                        <a href="#" class="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:text-gold transition-colors group/link">
+                            Learn More 
+                            <i data-lucide="arrow-right" class="w-4 h-4 group-hover/link:translate-x-1 transition-transform"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Feature 2 -->
+                <div class="bg-surface p-7 rounded-3xl border border-borderLight/60 hover:-translate-y-2 hover:shadow-premium hover:border-gold/40 transition-all duration-400 group flex flex-col h-full relative overflow-hidden gsap-reveal">
+                    <div class="absolute -right-16 -top-16 w-40 h-40 bg-gold/5 rounded-full blur-2xl group-hover:bg-gold/15 transition-all duration-500"></div>
+                    
+                    <div class="flex justify-between items-start mb-6 relative z-10">
+                        <div class="w-12 h-12 rounded-2xl bg-bg flex items-center justify-center text-primary group-hover:text-gold group-hover:scale-110 transition-all duration-300 shadow-sm border border-borderLight/30">
+                            <i data-lucide="shield-alert" class="w-5 h-5"></i>
+                        </div>
+                        <div class="flex flex-col items-end gap-1.5">
+                            <span class="px-2 py-1 bg-primary/10 text-primary text-[9px] font-bold uppercase tracking-wider rounded-md">Machine Learning</span>
+                            <span class="text-[10px] font-medium text-textSec flex items-center gap-1"><i data-lucide="target" class="w-3 h-3"></i> 99.9% Detection</span>
+                        </div>
+                    </div>
+                    
+                    <div class="relative z-10 flex-1">
+                        <h3 class="text-lg font-bold text-textMain mb-2 group-hover:text-primary transition-colors">Fraud Detection</h3>
+                        <p class="text-textSec text-sm leading-relaxed mb-6">Identifies suspicious patterns and anomalies using historical data models.</p>
+                    </div>
+                    
+                    <div class="mt-auto relative z-10">
+                        <a href="#" class="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:text-gold transition-colors group/link">
+                            Learn More 
+                            <i data-lucide="arrow-right" class="w-4 h-4 group-hover/link:translate-x-1 transition-transform"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Feature 3 -->
+                <div class="bg-surface p-7 rounded-3xl border border-borderLight/60 hover:-translate-y-2 hover:shadow-premium hover:border-gold/40 transition-all duration-400 group flex flex-col h-full relative overflow-hidden gsap-reveal">
+                    <div class="absolute -right-16 -top-16 w-40 h-40 bg-gold/5 rounded-full blur-2xl group-hover:bg-gold/15 transition-all duration-500"></div>
+                    
+                    <div class="flex justify-between items-start mb-6 relative z-10">
+                        <div class="w-12 h-12 rounded-2xl bg-bg flex items-center justify-center text-primary group-hover:text-gold group-hover:scale-110 transition-all duration-300 shadow-sm border border-borderLight/30">
+                            <i data-lucide="scan-line" class="w-5 h-5"></i>
+                        </div>
+                        <div class="flex flex-col items-end gap-1.5">
+                            <span class="px-2 py-1 bg-primary/10 text-primary text-[9px] font-bold uppercase tracking-wider rounded-md">OCR</span>
+                            <span class="text-[10px] font-medium text-textSec flex items-center gap-1"><i data-lucide="zap" class="w-3 h-3"></i> &lt;2 sec Processing</span>
+                        </div>
+                    </div>
+                    
+                    <div class="relative z-10 flex-1">
+                        <h3 class="text-lg font-bold text-textMain mb-2 group-hover:text-primary transition-colors">OCR Verification</h3>
+                        <p class="text-textSec text-sm leading-relaxed mb-6">Extracts structured data from unstructured bills and police reports accurately.</p>
+                    </div>
+                    
+                    <div class="mt-auto relative z-10">
+                        <a href="#" class="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:text-gold transition-colors group/link">
+                            Learn More 
+                            <i data-lucide="arrow-right" class="w-4 h-4 group-hover/link:translate-x-1 transition-transform"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Feature 4 -->
+                <div class="bg-surface p-7 rounded-3xl border border-borderLight/60 hover:-translate-y-2 hover:shadow-premium hover:border-gold/40 transition-all duration-400 group flex flex-col h-full relative overflow-hidden gsap-reveal">
+                    <div class="absolute -right-16 -top-16 w-40 h-40 bg-gold/5 rounded-full blur-2xl group-hover:bg-gold/15 transition-all duration-500"></div>
+                    
+                    <div class="flex justify-between items-start mb-6 relative z-10">
+                        <div class="w-12 h-12 rounded-2xl bg-bg flex items-center justify-center text-primary group-hover:text-gold group-hover:scale-110 transition-all duration-300 shadow-sm border border-borderLight/30">
+                            <i data-lucide="calculator" class="w-5 h-5"></i>
+                        </div>
+                        <div class="flex flex-col items-end gap-1.5">
+                            <span class="px-2 py-1 bg-primary/10 text-primary text-[9px] font-bold uppercase tracking-wider rounded-md">AI Powered</span>
+                            <span class="text-[10px] font-medium text-textSec flex items-center gap-1"><i data-lucide="check-circle-2" class="w-3 h-3"></i> 98% Accuracy</span>
+                        </div>
+                    </div>
+                    
+                    <div class="relative z-10 flex-1">
+                        <h3 class="text-lg font-bold text-textMain mb-2 group-hover:text-primary transition-colors">Settlement AI</h3>
+                        <p class="text-textSec text-sm leading-relaxed mb-6">Predicts fair settlement amounts based on policy limits and historical payouts.</p>
+                    </div>
+                    
+                    <div class="mt-auto relative z-10">
+                        <a href="#" class="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:text-gold transition-colors group/link">
+                            Learn More 
+                            <i data-lucide="arrow-right" class="w-4 h-4 group-hover/link:translate-x-1 transition-transform"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PROCESS TIMELINE SECTION -->
+    <section id="process" class="py-32">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center max-w-2xl mx-auto mb-24 gsap-reveal">
+                <h2 class="text-4xl font-bold text-primary mb-6 tracking-tight">Streamlined Claims Process</h2>
+                <p class="text-lg text-textSec">From submission to settlement, every step is optimized for speed and accuracy.</p>
+            </div>
+            
+            <div class="relative w-full overflow-hidden py-10">
+                <!-- Connecting Line -->
+                <div class="absolute top-1/2 left-[5%] w-[90%] h-[2px] bg-borderLight -translate-y-1/2 hidden lg:block rounded-full"></div>
+                <div class="absolute top-1/2 left-[5%] h-[3px] bg-primary -translate-y-1/2 hidden lg:block rounded-full transition-all duration-300 shadow-[0_0_10px_rgba(101,96,79,0.5)]" id="process-progress" style="width: 0%"></div>
+
+                <div class="grid grid-cols-2 lg:grid-cols-6 gap-8 relative z-10">
+                    <!-- Steps -->
+                    <div class="flex flex-col items-center text-center gsap-process group">
+                        <div class="w-16 h-16 rounded-2xl bg-surface border border-borderLight flex items-center justify-center text-textSec font-bold mb-5 shadow-sm group-hover:border-gold group-hover:text-gold transition-colors duration-300"><i data-lucide="file-plus" class="w-6 h-6"></i></div>
+                        <h4 class="font-semibold text-textMain text-sm mb-1">Submit Claim</h4>
+                    </div>
+                    <div class="flex flex-col items-center text-center gsap-process group">
+                        <div class="w-16 h-16 rounded-2xl bg-surface border border-borderLight flex items-center justify-center text-textSec font-bold mb-5 shadow-sm group-hover:border-gold group-hover:text-gold transition-colors duration-300"><i data-lucide="upload-cloud" class="w-6 h-6"></i></div>
+                        <h4 class="font-semibold text-textMain text-sm mb-1">Upload Docs</h4>
+                    </div>
+                    <div class="flex flex-col items-center text-center gsap-process group">
+                        <div class="w-16 h-16 rounded-2xl bg-surface border border-borderLight flex items-center justify-center text-textSec font-bold mb-5 shadow-sm group-hover:border-gold group-hover:text-gold transition-colors duration-300"><i data-lucide="cpu" class="w-6 h-6"></i></div>
+                        <h4 class="font-semibold text-textMain text-sm mb-1">AI Processing</h4>
+                    </div>
+                    <div class="flex flex-col items-center text-center gsap-process group">
+                        <div class="w-16 h-16 rounded-2xl bg-surface border border-borderLight flex items-center justify-center text-textSec font-bold mb-5 shadow-sm group-hover:border-gold group-hover:text-gold transition-colors duration-300"><i data-lucide="users" class="w-6 h-6"></i></div>
+                        <h4 class="font-semibold text-textMain text-sm mb-1">Staff Review</h4>
+                    </div>
+                    <div class="flex flex-col items-center text-center gsap-process group">
+                        <div class="w-16 h-16 rounded-2xl bg-surface border border-borderLight flex items-center justify-center text-textSec font-bold mb-5 shadow-sm group-hover:border-gold group-hover:text-gold transition-colors duration-300"><i data-lucide="dollar-sign" class="w-6 h-6"></i></div>
+                        <h4 class="font-semibold text-textMain text-sm mb-1">Settlement</h4>
+                    </div>
+                    <div class="flex flex-col items-center text-center gsap-process group">
+                        <div class="w-16 h-16 rounded-2xl bg-primary flex items-center justify-center text-white font-bold mb-5 shadow-float"><i data-lucide="check-circle-2" class="w-6 h-6"></i></div>
+                        <h4 class="font-semibold text-textMain text-sm mb-1">Claim Closed</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- AI SHOWCASE SECTION -->
+    <section id="ai-showcase" class="py-40 overflow-hidden bg-bgAlt border-y border-borderLight/40">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-24 lg:gap-16 items-center">
+                <!-- Graphic Side -->
+                <div class="relative gsap-reveal w-full">
+                    <!-- Reduced decorative back card -->
+                    <div class="absolute -top-4 -right-4 w-full h-full bg-borderLight/30 rounded-[2.5rem] -z-10 transform rotate-2 blur-[1px]"></div>
+                    
+                    <!-- Main Dashboard Card -->
+                    <div class="bg-surface/70 backdrop-blur-lg rounded-[2.5rem] border border-white/60 p-7 shadow-[0_20px_40px_rgba(0,0,0,0.04)] relative z-10 w-full overflow-hidden">
+                        
+                        <!-- Header & KPIs -->
+                        <div class="mb-8">
+                            <div class="flex justify-between items-center mb-6">
+                                <div>
+                                    <h3 class="text-lg font-bold text-textMain tracking-tight">AI Risk Analytics</h3>
+                                    <p class="text-xs text-textSec font-medium mt-1">Real-time model inference</p>
+                                </div>
+                                <div class="px-2.5 py-1 bg-success/10 text-success rounded-md text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 border border-success/20 shadow-sm">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-success animate-pulse"></span> Live
+                                </div>
+                            </div>
+                            
+                            <!-- KPI Grid -->
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="bg-white/60 backdrop-blur-sm p-4 rounded-2xl border border-white/50 shadow-sm hover:shadow-md transition-shadow group">
+                                    <div class="text-[10px] font-bold text-textSec uppercase tracking-wider mb-2 flex items-center gap-1.5"><i data-lucide="target" class="w-3.5 h-3.5 text-gold group-hover:scale-110 transition-transform"></i> Accuracy</div>
+                                    <div class="text-2xl font-extrabold text-heading">98%</div>
+                                </div>
+                                <div class="bg-white/60 backdrop-blur-sm p-4 rounded-2xl border border-white/50 shadow-sm hover:shadow-md transition-shadow group">
+                                    <div class="text-[10px] font-bold text-textSec uppercase tracking-wider mb-2 flex items-center gap-1.5"><i data-lucide="layers" class="w-3.5 h-3.5 text-primary group-hover:scale-110 transition-transform"></i> Processed</div>
+                                    <div class="text-2xl font-extrabold text-heading">15K+</div>
+                                </div>
+                                <div class="bg-white/60 backdrop-blur-sm p-4 rounded-2xl border border-white/50 shadow-sm hover:shadow-md transition-shadow group">
+                                    <div class="text-[10px] font-bold text-textSec uppercase tracking-wider mb-2 flex items-center gap-1.5"><i data-lucide="shield-alert" class="w-3.5 h-3.5 text-danger group-hover:scale-110 transition-transform"></i> Fraud Det.</div>
+                                    <div class="text-2xl font-extrabold text-heading">99.2%</div>
+                                </div>
+                                <div class="bg-white/60 backdrop-blur-sm p-4 rounded-2xl border border-white/50 shadow-sm hover:shadow-md transition-shadow group">
+                                    <div class="text-[10px] font-bold text-textSec uppercase tracking-wider mb-2 flex items-center gap-1.5"><i data-lucide="zap" class="w-3.5 h-3.5 text-success group-hover:scale-110 transition-transform"></i> Time</div>
+                                    <div class="text-2xl font-extrabold text-heading">2 Min</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sophisticated Chart Area -->
+                        <div class="bg-white/50 backdrop-blur-md rounded-2xl border border-white/60 p-6 relative overflow-hidden shadow-sm">
+                            <!-- Subtle Grid Lines -->
+                            <div class="absolute inset-0 w-full h-full" style="background-image: linear-gradient(to right, rgba(221,211,198,0.3) 1px, transparent 1px), linear-gradient(to bottom, rgba(221,211,198,0.3) 1px, transparent 1px); background-size: 20px 20px;"></div>
+                            
+                            <!-- Legend -->
+                            <div class="flex justify-end gap-5 mb-6 relative z-10 text-[9px] font-bold uppercase tracking-wider text-textSec">
+                                <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-success shadow-sm"></span> Low Risk</span>
+                                <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-gold shadow-sm"></span> Medium Risk</span>
+                                <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-danger shadow-sm"></span> High Risk</span>
+                            </div>
+
+                            <!-- Bar Chart -->
+                            <div class="flex items-end gap-3 h-[140px] mt-4 relative z-10 w-full pb-1 border-b border-borderLight/50">
+                                <!-- Group 1 -->
+                                <div class="flex-1 flex flex-col justify-end items-center h-full group relative">
+                                    <div class="absolute -top-8 opacity-0 group-hover:opacity-100 transition-all duration-300 bg-heading text-white text-[10px] font-bold py-1 px-2 rounded-md shadow-xl transform -translate-y-2 group-hover:translate-y-0 z-20 pointer-events-none">85%</div>
+                                    <div class="w-full max-w-[32px] bg-gradient-to-t from-success/40 to-success rounded-t-md h-[85%] shadow-sm group-hover:shadow-md group-hover:from-success/50 transition-all duration-300"></div>
+                                </div>
+                                <!-- Group 2 -->
+                                <div class="flex-1 flex flex-col justify-end items-center h-full group relative">
+                                    <div class="absolute -top-8 opacity-0 group-hover:opacity-100 transition-all duration-300 bg-heading text-white text-[10px] font-bold py-1 px-2 rounded-md shadow-xl transform -translate-y-2 group-hover:translate-y-0 z-20 pointer-events-none">42%</div>
+                                    <div class="w-full max-w-[32px] bg-gradient-to-t from-gold/40 to-gold rounded-t-md h-[42%] shadow-sm group-hover:shadow-md group-hover:from-gold/50 transition-all duration-300"></div>
+                                </div>
+                                <!-- Group 3 -->
+                                <div class="flex-1 flex flex-col justify-end items-center h-full group relative">
+                                    <div class="absolute -top-8 opacity-0 group-hover:opacity-100 transition-all duration-300 bg-heading text-white text-[10px] font-bold py-1 px-2 rounded-md shadow-xl transform -translate-y-2 group-hover:translate-y-0 z-20 pointer-events-none">64%</div>
+                                    <div class="w-full max-w-[32px] bg-gradient-to-t from-success/40 to-success rounded-t-md h-[64%] shadow-sm group-hover:shadow-md group-hover:from-success/50 transition-all duration-300"></div>
+                                </div>
+                                <!-- Group 4 -->
+                                <div class="flex-1 flex flex-col justify-end items-center h-full group relative">
+                                    <div class="absolute -top-8 opacity-0 group-hover:opacity-100 transition-all duration-300 bg-heading text-white text-[10px] font-bold py-1 px-2 rounded-md shadow-xl transform -translate-y-2 group-hover:translate-y-0 z-20 pointer-events-none">18%</div>
+                                    <div class="w-full max-w-[32px] bg-gradient-to-t from-danger/40 to-danger rounded-t-md h-[18%] shadow-sm group-hover:shadow-md group-hover:from-danger/50 transition-all duration-300"></div>
+                                </div>
+                                <!-- Group 5 -->
+                                <div class="flex-1 flex flex-col justify-end items-center h-full group relative">
+                                    <div class="absolute -top-8 opacity-0 group-hover:opacity-100 transition-all duration-300 bg-heading text-white text-[10px] font-bold py-1 px-2 rounded-md shadow-xl transform -translate-y-2 group-hover:translate-y-0 z-20 pointer-events-none">72%</div>
+                                    <div class="w-full max-w-[32px] bg-gradient-to-t from-success/40 to-success rounded-t-md h-[72%] shadow-sm group-hover:shadow-md group-hover:from-success/50 transition-all duration-300"></div>
+                                </div>
+                                <!-- Group 6 -->
+                                <div class="flex-1 flex flex-col justify-end items-center h-full group relative">
+                                    <div class="absolute -top-8 opacity-0 group-hover:opacity-100 transition-all duration-300 bg-heading text-white text-[10px] font-bold py-1 px-2 rounded-md shadow-xl transform -translate-y-2 group-hover:translate-y-0 z-20 pointer-events-none">35%</div>
+                                    <div class="w-full max-w-[32px] bg-gradient-to-t from-gold/40 to-gold rounded-t-md h-[35%] shadow-sm group-hover:shadow-md group-hover:from-gold/50 transition-all duration-300"></div>
+                                </div>
+                                <!-- Group 7 -->
+                                <div class="flex-1 flex flex-col justify-end items-center h-full group relative">
+                                    <div class="absolute -top-8 opacity-0 group-hover:opacity-100 transition-all duration-300 bg-heading text-white text-[10px] font-bold py-1 px-2 rounded-md shadow-xl transform -translate-y-2 group-hover:translate-y-0 z-20 pointer-events-none">12%</div>
+                                    <div class="w-full max-w-[32px] bg-gradient-to-t from-danger/40 to-danger rounded-t-md h-[12%] shadow-sm group-hover:shadow-md group-hover:from-danger/50 transition-all duration-300"></div>
+                                </div>
+                            </div>
+                            <!-- X Axis Labels -->
+                            <div class="flex justify-between mt-3 text-[9px] font-bold text-textSec uppercase tracking-widest px-2 relative z-10">
+                                <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Content Side -->
+                <div class="gsap-reveal pl-0 lg:pl-10">
+                    <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-white border border-borderLight shadow-sm text-[10px] font-bold text-textSec uppercase tracking-wider mb-6">
+                        <i data-lucide="cpu" class="w-3.5 h-3.5 text-primary"></i> Neural Engine
+                    </div>
+                    
+                    <h2 class="text-4xl md:text-[2.75rem] font-extrabold text-heading mb-6 tracking-tight leading-[1.15]">
+                        Unrivaled Accuracy via <br class="hidden lg:block"/>
+                        <span class="text-highlight">Machine Learning</span>
+                    </h2>
+                    
+                    <p class="text-lg text-textSec mb-10 leading-relaxed max-w-lg">
+                        Our proprietary AI models analyze hundreds of data points per claim, cross-referencing historical data, policy documents, and user profiles to instantly flag anomalies with surgical precision.
+                    </p>
+                    
+                    <ul class="space-y-4">
+                        <li class="flex items-start gap-4 p-4 rounded-2xl hover:bg-white/60 transition-colors border border-transparent hover:border-white hover:shadow-sm group">
+                            <div class="w-12 h-12 rounded-xl bg-surface flex items-center justify-center text-success shrink-0 border border-borderLight shadow-sm group-hover:scale-105 transition-transform">
+                                <i data-lucide="check-circle-2" class="w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-heading text-lg mb-1">99.9% OCR Reliability</h4>
+                                <p class="text-textSec text-sm leading-relaxed">Computer vision models extract text from crumpled receipts and handwritten medical notes seamlessly.</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-4 p-4 rounded-2xl hover:bg-white/60 transition-colors border border-transparent hover:border-white hover:shadow-sm group">
+                            <div class="w-12 h-12 rounded-xl bg-surface flex items-center justify-center text-primary shrink-0 border border-borderLight shadow-sm group-hover:scale-105 transition-transform">
+                                <i data-lucide="zap" class="w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-heading text-lg mb-1">Real-time Fraud Scoring</h4>
+                                <p class="text-textSec text-sm leading-relaxed">Every submission gets a confidence score from 0-100 to guide staff reviews, saving thousands of hours.</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="bg-footerBg pt-24 pb-12 relative overflow-hidden border-t border-borderLight/30 shadow-[0_-15px_40px_rgba(0,0,0,0.03)]">
+        <!-- Subtle Top Gradient Glow -->
+        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[80%] h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[50%] h-32 bg-white/5 blur-[100px] pointer-events-none"></div>
+
+        <div class="max-w-7xl mx-auto px-6 relative z-10">
+            <div class="grid grid-cols-1 md:grid-cols-6 gap-16 mb-20">
+                <!-- Brand Column (wider) -->
+                <div class="col-span-1 md:col-span-2 lg:col-span-2">
+                    <div class="flex items-center gap-3.5 mb-8">
+                        <div class="w-12 h-12 rounded-xl bg-footerGold/10 flex items-center justify-center text-footerGold shadow-sm border border-footerGold/20">
+                            <i data-lucide="shield-check" class="w-6 h-6"></i>
+                        </div>
+                        <span class="text-3xl font-extrabold text-footerText tracking-tight">ClaimIQ</span>
+                    </div>
+                    <p class="text-base text-footerText/60 max-w-sm mb-10 leading-relaxed font-light">
+                        The enterprise standard for AI-powered insurance claim processing. Secure, reliable, and intelligently automated for the modern era.
+                    </p>
+                    
+                    <!-- Security Badges -->
+                    <div class="flex flex-wrap gap-3">
+                        <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs font-semibold text-footerText/80 hover:bg-white/10 transition-colors cursor-default">
+                            <i data-lucide="lock" class="w-3.5 h-3.5 text-footerGold"></i> SOC 2 Type II
+                        </div>
+                        <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs font-semibold text-footerText/80 hover:bg-white/10 transition-colors cursor-default">
+                            <i data-lucide="shield" class="w-3.5 h-3.5 text-footerGold"></i> ISO 27001
+                        </div>
+                        <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs font-semibold text-footerText/80 hover:bg-white/10 transition-colors cursor-default">
+                            <i data-lucide="globe" class="w-3.5 h-3.5 text-footerGold"></i> GDPR Compliant
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Links Columns -->
+                <div class="col-span-1">
+                    <h4 class="font-bold text-footerText text-sm mb-8 uppercase tracking-widest opacity-90">Platform</h4>
+                    <ul class="space-y-5 text-sm text-footerText/60 font-medium">
+                        <li><a href="#" class="hover:text-footerGold transition-colors inline-flex items-center gap-2 group">Features <i data-lucide="arrow-right" class="w-3 h-3 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all"></i></a></li>
+                        <li><a href="#" class="hover:text-footerGold transition-colors inline-flex items-center gap-2 group">Security Overview <i data-lucide="arrow-right" class="w-3 h-3 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all"></i></a></li>
+                        <li><a href="#" class="hover:text-footerGold transition-colors inline-flex items-center gap-2 group">API Docs <i data-lucide="arrow-right" class="w-3 h-3 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all"></i></a></li>
+                        <li><a href="#" class="hover:text-footerGold transition-colors inline-flex items-center gap-2 group">Integrations <i data-lucide="arrow-right" class="w-3 h-3 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all"></i></a></li>
+                    </ul>
+                </div>
+                
+                <div class="col-span-1">
+                    <h4 class="font-bold text-footerText text-sm mb-8 uppercase tracking-widest opacity-90">Company</h4>
+                    <ul class="space-y-5 text-sm text-footerText/60 font-medium">
+                        <li><a href="#" class="hover:text-footerGold transition-colors inline-flex items-center gap-2 group">About Us <i data-lucide="arrow-right" class="w-3 h-3 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all"></i></a></li>
+                        <li><a href="#" class="hover:text-footerGold transition-colors inline-flex items-center gap-2 group">Careers <span class="px-2 py-0.5 rounded-full bg-footerGold/20 text-footerGold text-[9px] font-bold ml-1">HIRING</span></a></li>
+                        <li><a href="#" class="hover:text-footerGold transition-colors inline-flex items-center gap-2 group">Blog <i data-lucide="arrow-right" class="w-3 h-3 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all"></i></a></li>
+                        <li><a href="#" class="hover:text-footerGold transition-colors inline-flex items-center gap-2 group">Contact <i data-lucide="arrow-right" class="w-3 h-3 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all"></i></a></li>
+                    </ul>
+                </div>
+
+                <div class="col-span-1 md:col-span-2">
+                    <h4 class="font-bold text-footerText text-sm mb-8 uppercase tracking-widest opacity-90">Contact</h4>
+                    <ul class="space-y-6 text-sm text-footerText/60 font-medium">
+                        <li>
+                            <a href="mailto:hello@claimiq.ai" class="flex items-center gap-4 hover:text-footerGold transition-colors group">
+                                <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center border border-white/10 group-hover:border-footerGold/30 transition-colors">
+                                    <i data-lucide="mail" class="w-4 h-4 text-footerGold"></i>
+                                </div>
+                                hello@claimiq.ai
+                            </a>
+                        </li>
+                        <li>
+                            <a href="tel:+15551234567" class="flex items-center gap-4 hover:text-footerGold transition-colors group">
+                                <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center border border-white/10 group-hover:border-footerGold/30 transition-colors">
+                                    <i data-lucide="phone" class="w-4 h-4 text-footerGold"></i>
+                                </div>
+                                +1 (555) 123-4567
+                            </a>
+                        </li>
+                        <li class="flex items-start gap-4">
+                            <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center border border-white/10 mt-1 shrink-0">
+                                <i data-lucide="map-pin" class="w-4 h-4 text-footerGold"></i>
+                            </div>
+                            <span class="leading-relaxed">100 Innovation Drive<br/>San Francisco, CA 94103</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-6">
+                <div class="flex items-center gap-3 text-sm text-footerText/50 font-medium">
+                    <span>© 2026 ClaimIQ AI Systems</span>
+                    <span class="w-1 h-1 rounded-full bg-footerText/30"></span>
+                    <span>Built with AI</span>
+                    <span class="w-1 h-1 rounded-full bg-footerText/30"></span>
+                    <span>Secure</span>
+                    <span class="w-1 h-1 rounded-full bg-footerText/30"></span>
+                    <span>Enterprise Ready</span>
+                </div>
+                <div class="flex gap-8 text-sm text-footerText/60 font-medium">
+                    <a href="#" class="hover:text-footerGold transition-colors">Privacy Policy</a>
+                    <a href="#" class="hover:text-footerGold transition-colors">Terms of Service</a>
+                    <a href="#" class="hover:text-footerGold transition-colors">Cookie Settings</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Initialize Icons and Animations -->
+    <script>
+        // Init Lucide Icons
+        lucide.createIcons();
+
+        // GSAP Animations
+        gsap.registerPlugin(ScrollTrigger);
+
+        // Hero Animations
+        gsap.to(".mockup-item", {
+            y: 0,
+            opacity: 1,
+            duration: 1.2,
+            stagger: 0.3,
+            ease: "power4.out",
+            delay: 0.3
+        });
+
+        gsap.to(".gsap-reveal", {
+            y: 0,
+            opacity: 1,
+            duration: 1,
+            stagger: 0.2,
+            ease: "power3.out"
+        });
+
+        // Statistics Counter Animation
+        const counters = document.querySelectorAll('.counter');
+        counters.forEach(counter => {
+            ScrollTrigger.create({
+                trigger: counter,
+                start: "top 85%",
+                once: true,
+                onEnter: () => {
+                    const target = +counter.getAttribute('data-target');
+                    gsap.to(counter, {
+                        innerHTML: target,
+                        duration: 2.5,
+                        snap: { innerHTML: 1 },
+                        ease: "power2.out"
+                    });
+                }
+            });
+        });
+
+        // Timeline Animation
+        gsap.to("#process-progress", {
+            width: "90%",
+            ease: "none",
+            scrollTrigger: {
+                trigger: "#process",
+                start: "top center",
+                end: "bottom center",
+                scrub: true
+            }
+        });
+
+        // Process step highlight on scroll
+        const steps = document.querySelectorAll('.gsap-process div.w-16');
+        steps.forEach((step, i) => {
+            if(i > 0 && i < steps.length - 1) {
+                ScrollTrigger.create({
+                    trigger: step,
+                    start: "top center",
+                    onEnter: () => {
+                        gsap.to(step, {
+                            borderColor: '#AA8758',
+                            color: '#AA8758',
+                            duration: 0.4
+                        });
+                    },
+                    onLeaveBack: () => {
+                        gsap.to(step, {
+                            borderColor: '#DDD3C6',
+                            color: '#7A746E',
+                            duration: 0.4
+                        });
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

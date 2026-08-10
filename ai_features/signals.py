@@ -21,8 +21,10 @@ def trigger_ai_predictions(sender, instance, created, update_fields, **kwargs):
     # ── 🚨 RECURSION GUARD ─────────────────────────────────────────────
     # If the save was specifically for AI fields, do NOT re-trigger
     ai_fields = {
-        'ai_claim_type', 'confidence_score', 'risk_score', 'fraud_flag', 
-        'fraud_explanation', 'recommended_amount', 'ai_predicted_amount', 
+        'ai_claim_type', 'confidence_score', 'fraud_flag', 
+        'fraud_explanation',
+        'final_ai_recommendation', 'initial_ai_prediction', 'ai_engine_version',
+        'prediction_generated_at', 'human_override_amount',
         'ai_adjustment_factor', 'ai_calculation_logic',
         'priority_score', 'priority_level', 'priority_reason', 'emergency_flag'
     }
@@ -50,6 +52,7 @@ def run_ai_predictions(claim):
         from .services.ai_claim_service import predict_claim_type
         ai_claim_type, type_confidence = predict_claim_type(claim.description)
         claim.ai_claim_type = ai_claim_type
+        claim.confidence_score = type_confidence * 100
         
         # 2. Predict fraud risk
         from .services.fraud_service import predict_fraud_risk
@@ -61,7 +64,7 @@ def run_ai_predictions(claim):
         # 3. Predict recommended amount (Updates in-memory features like logic and adjustment)
         from .services.amount_service import predict_recommended_amount
         recommended_amount = predict_recommended_amount(claim)
-        claim.recommended_amount = recommended_amount
+        # Note: AmountPredictionService already sets final_ai_recommendation internally
         
         # 4. Update Priority (Sorting urgency for admin)
         from .services.prioritization_service import update_claim_priority
@@ -71,11 +74,12 @@ def run_ai_predictions(claim):
         claim.save(update_fields=[
             'ai_claim_type', 
             'confidence_score',
-            'risk_score', 
             'fraud_flag',
             'fraud_explanation',
-            'recommended_amount',
-            'ai_predicted_amount',
+            'final_ai_recommendation',
+            'initial_ai_prediction',
+            'ai_engine_version',
+            'prediction_generated_at',
             'ai_adjustment_factor',
             'ai_calculation_logic',
             'priority_score',
@@ -88,7 +92,7 @@ def run_ai_predictions(claim):
         from reports.models import ActivityLog
         ActivityLog.objects.create(
             title=f"AI Audit Complete: {claim.claim_number}",
-            description=f"Predicted type: {claim.ai_claim_type}, Risk: {claim.risk_score}%",
+            description=f"Predicted type: {claim.ai_claim_type}, Risk Band: {getattr(claim, 'risk_band', 'N/A')}",
             log_type='claim',
             status='success',
             claim=claim

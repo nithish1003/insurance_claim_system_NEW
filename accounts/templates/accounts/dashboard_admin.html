@@ -5,430 +5,480 @@
 
 {% block extra_css %}
     <style>
+        /* 🚀 Compact & Data-Dense SaaS Dashboard Engine */
         .dashboard-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 18px;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
             margin-bottom: 32px;
         }
 
+        @media (max-width: 1400px) { .dashboard-grid { grid-template-columns: repeat(3, 1fr); } }
+        @media (max-width: 992px) { .dashboard-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 576px) { .dashboard-grid { grid-template-columns: 1fr; } }
+
         .status-card {
-            --card-accent: #64748b;
-            background:
-                radial-gradient(circle at top right, rgba(255, 255, 255, 0.08), transparent 38%),
-                linear-gradient(160deg, rgba(15, 23, 42, 0.96) 0%, rgba(15, 23, 42, 0.82) 55%, rgba(30, 41, 59, 0.96) 100%);
-            border-radius: 18px;
-            padding: 18px 18px 16px;
-            border: 1px solid rgba(148, 163, 184, 0.16);
+            --card-accent: rgba(156, 149, 143, 0.6);
+            --spotlight-x: 50%;
+            --spotlight-y: 50%;
+            background: #FFFFFF;
+            backdrop-filter: blur(10px);
+            border-radius: 14px;
+            padding: 16px 18px;
+            border: 1px solid rgba(101, 96, 79, 0.04);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             overflow: hidden;
             display: flex;
-            flex-direction: column;
-            justify-content: space-between;
+            flex-direction: row; /* ↔ Horizontal Layout */
+            align-items: center;
             gap: 14px;
-            min-height: 128px;
             text-decoration: none;
             color: inherit;
-            box-shadow: 0 14px 32px rgba(2, 6, 23, 0.26);
+            box-shadow: 0 4px 12px rgba(101, 96, 79, 0.04);
+            min-height: 80px;
+            isolation: isolate;
         }
 
         .status-card::before {
             content: "";
             position: absolute;
             inset: 0 0 auto 0;
-            height: 3px;
-            background: linear-gradient(90deg, var(--card-accent), color-mix(in srgb, var(--card-accent) 35%, transparent));
-            opacity: 0.95;
+            height: 2px;
+            background: linear-gradient(90deg, var(--card-accent), transparent);
+            opacity: 0.8;
+            z-index: 1;
         }
 
         .status-card::after {
             content: "";
             position: absolute;
-            top: -28px;
-            right: -18px;
-            width: 88px;
-            height: 88px;
-            border-radius: 50%;
-            background: color-mix(in srgb, var(--card-accent) 14%, transparent);
-            filter: blur(8px);
+            inset: 0;
+            background: radial-gradient(circle at var(--spotlight-x) var(--spotlight-y), color-mix(in srgb, var(--card-accent) 18%, transparent), transparent 42%);
+            opacity: 0;
+            transition: opacity 0.25s ease;
             pointer-events: none;
-            opacity: 0.75;
+            z-index: 0;
+        }
+
+        .status-card:hover::after {
+            opacity: 1;
         }
 
         .status-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 20px 38px rgba(2, 6, 23, 0.32);
-            border-color: color-mix(in srgb, var(--card-accent) 40%, rgba(148, 163, 184, 0.18));
-        }
-
-        .status-card > div:last-child {
-            position: relative;
-            z-index: 1;
+            transform: translateY(-3px);
+            border-color: var(--card-accent);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08), 0 0 15px color-mix(in srgb, var(--card-accent) 20%, transparent);
         }
 
         .card-icon-wrapper {
-            width: 42px;
-            height: 42px;
-            border-radius: 13px;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 6px;
-            background: rgba(15, 23, 42, 0.52);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            font-size: 1.1rem;
-            transition: transform 0.3s ease;
+            background: rgba(101, 96, 79, 0.015);
+            border: 1px solid rgba(101, 96, 79, 0.03);
+            font-size: 1rem;
+            flex-shrink: 0;
+            transition: transform 0.2s ease;
             position: relative;
-            z-index: 1;
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+            z-index: 2;
         }
 
         .status-card:hover .card-icon-wrapper {
-            transform: translateY(-1px) scale(1.03);
+            transform: scale(1.05);
+            background: rgba(101, 96, 79, 0.04);
+        }
+
+        .card-content-area {
+            flex-grow: 1;
+            overflow: hidden;
+            position: relative;
+            z-index: 2;
         }
 
         .card-title {
-            font-size: 0.72rem;
-            font-weight: 700;
-            color: #8ea2bc;
-            margin-bottom: 6px;
+            font-size: 11.5px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 1px;
             text-transform: uppercase;
-            letter-spacing: 0.09em;
+            letter-spacing: 0.04em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .card-value {
-            font-size: clamp(1.35rem, 1.1rem + 1vw, 2rem);
-            font-weight: 700;
-            color: #f8fafc;
+            font-size: 22px;
+            font-weight: 800;
+            color: #605E5B;
             line-height: 1.1;
-            letter-spacing: -0.03em;
-            margin-bottom: 0;
+            letter-spacing: -0.01em;
         }
-
-        /* Accent Colors */
-        .accent-green { --card-accent: #10b981; }
-        .accent-green .card-icon-wrapper { color: #10b981; background: rgba(16, 185, 129, 0.1); }
-        .accent-green .card-value { color: #10b981; }
-        .accent-blue { --card-accent: #3b82f6; }
-        .accent-blue .card-icon-wrapper { color: #3b82f6; background: rgba(59, 130, 246, 0.1); }
-        .accent-blue .card-value { color: #3b82f6; }
-        .accent-red { --card-accent: #ef4444; }
-        .accent-red .card-icon-wrapper { color: #ef4444; background: rgba(239, 68, 68, 0.1); }
-        .accent-red .card-value { color: #ef4444; }
-        .accent-orange { --card-accent: #f59e0b; }
-        .accent-orange .card-icon-wrapper { color: #f59e0b; background: rgba(245, 158, 11, 0.1); }
-        .accent-purple { --card-accent: #8b5cf6; }
-        .accent-purple .card-icon-wrapper { color: #8b5cf6; background: rgba(139, 92, 246, 0.1); }
 
         .card-meta {
-            font-size: 0.72rem;
-            color: #94a3b8;
-            margin-top: 6px;
-            line-height: 1.4;
+            font-size: 10.5px;
+            color: var(--text-muted);
+            margin-top: 2px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 4px;
         }
 
-        .card-meta i {
-            opacity: 0.85;
-        }
-        .card-meta-success { color: #10b981; }
-        .card-meta-warning { color: #f59e0b; }
-        .table-subtext {
-            font-size: 0.72rem;
-            color: #94a3b8;
-            line-height: 1.45;
-        }
-        .table-kicker {
-            font-size: 0.62rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            color: #94a3b8;
-        }
-        .table-avatar {
-            width: 34px;
-            height: 34px;
-            border-radius: 12px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(26, 110, 245, 0.12);
-            border: 1px solid rgba(26, 110, 245, 0.22);
-            color: #60a5fa;
-            font-size: 0.78rem;
-            font-weight: 700;
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
-        }
-        .table-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 4px 8px;
-            border-radius: 999px;
-            font-size: 0.62rem;
-            font-weight: 700;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            border: 1px solid rgba(148, 163, 184, 0.12);
-            background: rgba(255, 255, 255, 0.04);
-        }
-        .table-pill-credit {
-            color: #10b981;
-            background: rgba(16, 185, 129, 0.1);
-            border-color: rgba(16, 185, 129, 0.22);
-        }
-        .table-pill-debit {
-            color: #ef4444;
-            background: rgba(239, 68, 68, 0.1);
-            border-color: rgba(239, 68, 68, 0.22);
-        }
-        .table-tag {
-            display: inline-flex;
-            align-items: center;
-            padding: 3px 7px;
-            border-radius: 8px;
-            background: rgba(255, 255, 255, 0.05);
-            color: #cbd5e1;
-            font-size: 0.6rem;
-            font-weight: 700;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-        }
-        .badge-soft-success,
-        .badge-soft-danger,
-        .badge-soft-warning {
-            font-size: 0.62rem;
-            font-weight: 700;
-            letter-spacing: 0.08em;
-            border-radius: 999px;
-            padding: 5px 10px;
-            border: 1px solid transparent;
-            text-transform: uppercase;
-        }
-        .badge-soft-success {
-            color: #10b981;
-            background: rgba(16, 185, 129, 0.12);
-            border-color: rgba(16, 185, 129, 0.2);
-        }
-        .badge-soft-danger {
-            color: #ef4444;
-            background: rgba(239, 68, 68, 0.12);
-            border-color: rgba(239, 68, 68, 0.2);
-        }
-        .badge-soft-warning {
-            color: #f59e0b;
-            background: rgba(245, 158, 11, 0.12);
-            border-color: rgba(245, 158, 11, 0.2);
-        }
-        .table-action-btn {
-            padding: 6px 12px;
-            font-size: 0.68rem;
-            border-radius: 9px;
-        }
-        .heading-badge {
-            font-size: 0.62rem;
-            font-weight: 700;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            padding: 5px 9px;
-            border-radius: 999px;
-            background: rgba(245, 158, 11, 0.14);
-            color: #fbbf24;
-            border: 1px solid rgba(245, 158, 11, 0.18);
-        }
-        .icon-warning-accent { color: #f59e0b; }
+        .card-meta-success { color: #3E7C45; }
+        .card-meta-warning { color: #C88A2D; }
+        .card-meta-danger { color: #B04A4A; }
+
+        /* Accent Colors Engine */
+        .accent-green { --card-accent: #3E7C45; }
+        .accent-green .card-icon-wrapper { color: #3E7C45; background: rgba(62, 124, 69, 0.1); }
+        .accent-blue { --card-accent: #65604F; }
+        .accent-blue .card-icon-wrapper { color: #65604F; background: rgba(101, 96, 79, 0.1); }
+        .accent-red { --card-accent: #B04A4A; }
+        .accent-red .card-icon-wrapper { color: #B04A4A; background: rgba(176, 74, 74, 0.1); }
+        .accent-orange { --card-accent: #C88A2D; }
+        .accent-orange .card-icon-wrapper { color: #C88A2D; background: rgba(200, 138, 45, 0.1); }
+        .accent-purple { --card-accent: #65604F; }
+        .accent-purple .card-icon-wrapper { color: #65604F; background: rgba(101, 96, 79, 0.1); }
 
         .page-header {
-            margin-bottom: 32px;
-            border-left: 4px solid #1a6ef5;
-            padding-left: 20px;
+            margin-bottom: 24px;
+            border-left: 4px solid #65604F;
+            padding-left: 16px;
         }
 
-        /* Status Badges */
-        .badge {
-            font-size: 10px;
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            border: 1px solid transparent;
-        }
-        .badge.submitted, .badge.pending { background: rgba(245, 158, 11, 0.1); color: #f59e0b; border-color: rgba(245, 158, 11, 0.2); }
-        .badge.under_review { background: rgba(59, 130, 246, 0.1); color: #3b82f6; border-color: rgba(59, 130, 246, 0.2); }
-        .badge.approved, .badge.active, .badge.completed { background: rgba(16, 185, 129, 0.1); color: #10b981; border-color: rgba(16, 185, 129, 0.2); }
-        .badge.rejected, .badge.failed, .badge.expired { background: rgba(239, 68, 68, 0.1); color: #ef4444; border-color: rgba(239, 68, 68, 0.2); }
-        .badge.cancelled { background: rgba(255, 255, 255, 0.05); color: #94a3b8; border-color: rgba(255, 255, 255, 0.1); }
-
-        /* Premium Table UI */
+        /* 💎 Premium Table Architecture */
         .premium-table-card {
-            background: rgba(15, 23, 42, 0.6);
+            background: #FFFFFF;
             backdrop-filter: blur(12px);
             border-radius: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-            margin-bottom: 32px;
+            border: 1px solid rgba(101, 96, 79, 0.04);
+            margin-bottom: 24px;
             overflow: hidden;
-            transition: border-color 0.3s ease;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.05);
         }
-        .premium-table-card:hover { border-color: rgba(26, 110, 245, 0.3); }
-        
+
         .premium-table-card .card-header {
-            background: linear-gradient(to right, rgba(255, 255, 255, 0.03), transparent) !important;
-            padding: 20px 24px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+            background: rgba(101, 96, 79, 0.01) !important;
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(101, 96, 79, 0.02) !important;
         }
+
         .premium-table-card .card-header h5 {
-            margin-bottom: 0; color: #f1f5f9; font-weight: 700; font-size: 1rem;
-            display: flex; align-items: center; gap: 10px;
+            margin-bottom: 0; color: #605E5B; font-weight: 700; font-size: 0.95rem;
+            display: flex; align-items: center; gap: 8px;
         }
-        .premium-table-card .card-body { padding: 24px; }
-        .premium-table-card .table-responsive {
-            padding: 10px 12px 14px;
-        }
+
+        .premium-table-card .card-body { padding: 8px 20px 20px; }
+
         .premium-table-card .table {
-            color: #cbd5e1;
+            color: var(--text-muted);
             margin-bottom: 0;
             border-collapse: separate;
             border-spacing: 0 10px;
         }
-        .premium-table-card .table th {
+
+        .table th { 
+            font-size: 11px; 
+            font-weight: 700; 
+            color: var(--text-muted); 
+            text-transform: uppercase; 
+            letter-spacing: 0.05em;
+            padding: 4px 16px 12px;
             border-top: 0;
-            background: transparent;
-            color: #7f91ab;
+        }
+
+        .premium-table-card .table tbody td {
+            padding: 16px;
+            vertical-align: middle;
+            background: rgba(101, 96, 79, 0.01); /* 🎨 Standardized Row Background */
+            border-top: 1px solid rgba(101, 96, 79, 0.02);
+            border-bottom: 1px solid rgba(101, 96, 79, 0.02);
+            transition: all 0.2s ease;
+        }
+
+        .premium-table-card .table tbody td:first-child {
+            border-left: 1px solid rgba(101, 96, 79, 0.02);
+            border-radius: 12px 0 0 12px;
+        }
+
+        .premium-table-card .table tbody td:last-child {
+            border-right: 1px solid rgba(101, 96, 79, 0.02);
+            border-radius: 0 12px 12px 0;
+        }
+
+        .premium-table-card .table tbody tr:hover td {
+            background: rgba(101, 96, 79, 0.02); /* 🔦 Hover Highlight */
+            border-color: rgba(101, 96, 79, 0.2);
+        }
+
+        .table-pill {
+            padding: 3px 8px;
+            border-radius: 8px;
+            font-size: 10px;
             font-weight: 700;
             text-transform: uppercase;
-            font-size: 0.68rem;
-            letter-spacing: 0.1em;
-            padding: 4px 18px 8px;
-            border-bottom: 0;
-        }
-        .premium-table-card .table tbody td {
-            padding: 16px 18px;
-            vertical-align: middle;
-            background: rgba(8, 15, 30, 0.62);
-            border-top: 1px solid rgba(148, 163, 184, 0.08);
-            border-bottom: 1px solid rgba(148, 163, 184, 0.08);
-        }
-        .premium-table-card .table tbody td:first-child {
-            border-left: 1px solid rgba(148, 163, 184, 0.08);
-            border-radius: 14px 0 0 14px;
-        }
-        .premium-table-card .table tbody td:last-child {
-            border-right: 1px solid rgba(148, 163, 184, 0.08);
-            border-radius: 0 14px 14px 0;
-        }
-        .premium-table-card .table tbody tr:hover td {
-            background: rgba(15, 23, 42, 0.92);
-            border-color: rgba(59, 130, 246, 0.18);
-        }
-        .premium-table-card .table tbody tr.table-empty-row:hover td {
-            background: rgba(8, 15, 30, 0.62);
-            border-color: rgba(148, 163, 184, 0.08);
-        }
-        .premium-table-card .table tbody tr.table-empty-row td {
-            text-align: center;
-            color: #94a3b8;
-            padding: 34px 18px;
-        }
-        .premium-table-card .table tbody tr.table-empty-row td:first-child,
-        .premium-table-card .table tbody tr.table-empty-row td:last-child {
-            border-radius: 16px;
+            letter-spacing: 0.02em;
         }
 
-        .btn-premium {
-            background: rgba(26, 110, 245, 0.1); color: #3b82f6 !important;
-            border: 1px solid rgba(26, 110, 245, 0.2); padding: 7px 18px;
-            border-radius: 10px; font-size: 11px; font-weight: 700; transition: all 0.3s ease;
-            text-transform: uppercase; letter-spacing: 0.5px;
-        }
-        .btn-premium:hover { background: #1a6ef5; color: white !important; transform: scale(1.05); }
+        .badge-soft-success { background: rgba(62, 124, 69, 0.1); color: #3E7C45; }
+        .badge-soft-danger { background: rgba(176, 74, 74, 0.1); color: #B04A4A; }
+        .badge-soft-warning { background: rgba(200, 138, 45, 0.1); color: #C88A2D; }
 
-        .text-success-premium { color: #10b981; font-weight: 700; }
-        .text-info-premium { color: #3b82f6; font-weight: 700; }
-        
-        /* Monospace for IDs */
-        .text-id { font-family: 'JetBrains Mono', 'Monaco', monospace; font-size: 12px; color: #94a3b8; }
+        .table-action-btn { font-size: 11px; padding: 4px 10px; border-radius: 8px; }
 
-        .admin-applicant-panel .card-body {
-            padding: 28px 32px 32px;
+        .new-policies-table tbody tr {
+            transition: transform 0.18s ease, box-shadow 0.18s ease;
         }
-        .admin-applicant-panel .row {
-            max-width: 980px;
-            margin: 0 auto;
+
+        .new-policies-table tbody tr:hover td {
+            background: rgba(101, 96, 79, 0.08);
+            border-color: rgba(101, 96, 79, 0.24);
+        }
+
+        .new-policies-table tbody tr:hover {
+            transform: translateY(-1px);
+        }
+
+        .policy-number-highlight {
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 12px;
+            border-radius: 10px;
+            font-size: 12.5px;
+            font-weight: 800;
+            letter-spacing: 0.06em;
+            color: #65604F;
+            background: rgba(101, 96, 79, 0.12);
+            border: 1px solid rgba(101, 96, 79, 0.24);
+            box-shadow: inset 0 1px 0 rgba(101, 96, 79, 0.02);
+        }
+
+        .policy-sum-value {
+            color: #3E7C45;
+            font-weight: 800;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+
+        .policy-status-badge {
+            display: inline-flex;
+            align-items: center;
             justify-content: center;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            border: 1px solid transparent;
+            white-space: nowrap;
         }
-        .admin-applicant-panel .col-md-6 {
-            display: flex;
+
+        .policy-status-badge.status-active {
+            background: rgba(62, 124, 69, 0.12);
+            color: #3E7C45;
+            border-color: rgba(62, 124, 69, 0.25);
         }
+
+        .policy-status-badge.status-pending {
+            background: rgba(200, 138, 45, 0.12);
+            color: #C88A2D;
+            border-color: rgba(200, 138, 45, 0.25);
+        }
+
+        .policy-status-badge.status-awaiting-payment {
+            background: rgba(200, 138, 45, 0.12);
+            color: #C88A2D;
+            border-color: rgba(200, 138, 45, 0.25);
+        }
+
+        .policy-status-badge.status-rejected {
+            background: rgba(176, 74, 74, 0.12);
+            color: #B04A4A;
+            border-color: rgba(176, 74, 74, 0.25);
+        }
+
+        .policy-status-badge.status-default {
+            background: rgba(148, 163, 184, 0.12);
+            color: var(--text-muted);
+            border-color: rgba(148, 163, 184, 0.18);
+        }
+
+        .system-policies-table tbody tr {
+            transition: transform 0.18s ease, box-shadow 0.18s ease;
+        }
+
+        .system-policies-table tbody tr:hover td {
+            background: rgba(101, 96, 79, 0.08);
+            border-color: rgba(101, 96, 79, 0.24);
+        }
+
+        .system-policy-number {
+            color: #65604F;
+            font-weight: 800;
+        }
+
+        @media (max-width: 576px) {
+            .new-policies-table .policy-number-highlight {
+                max-width: 140px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+        }
+        
+        /* Compact Admin Identity Panel */
         .admin-applicant-panel .info-row {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            border-radius: 14px;
-            padding: 20px 22px;
-            text-align: center;
-            min-height: 116px;
-            width: 100%;
+            background: rgba(101, 96, 79, 0.01);
+            border: 1px solid rgba(101, 96, 79, 0.02);
+            border-radius: 12px;
+            padding: 14px 16px;
+            text-align: left;
             display: flex;
             flex-direction: column;
-            justify-content: center;
+            gap: 2px;
         }
-        .admin-applicant-panel .info-label {
-            color: #94a3b8 !important;
-            font-size: 0.78rem !important;
-            font-weight: 600;
-            letter-spacing: 0.04em;
-            margin-bottom: 8px;
+        .admin-applicant-panel .info-label { font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; }
+        .admin-applicant-panel .info-value { font-size: 14px; font-weight: 700; color: #605E5B; }
+
+        /* ✨ Pre-rendered Dashboard Enhancements */
+        .status-card { cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .active-card {
+            border-color: var(--card-accent) !important;
+            box-shadow: 0 0 0 2px var(--card-accent), 0 12px 24px rgba(0, 0, 0, 0.4) !important;
+            transform: translateY(-5px) !important;
         }
-        .admin-applicant-panel .info-value {
-            color: #f8fafc !important;
-            font-size: 1.05rem;
+        
+        .data-section {
+            display: none;
+            animation: slideInUp 0.4s ease-out;
+        }
+
+        
+        /* Integrity Section Specifics */
+        .integrity-metric-card {
+            background: linear-gradient(135deg, #FFFFFF 0%, #F4EEE2 100%);
+            border: 1px solid rgba(101, 96, 79, 0.02);
+            border-radius: 16px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .integrity-metric-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(101, 96, 79, 0.3);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.5);
+        }
+
+        .integrity-metric-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            background: radial-gradient(circle, rgba(101, 96, 79, 0.1) 0%, transparent 70%);
+            z-index: 0;
+        }
+
+        .integrity-table-premium {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 8px;
+        }
+
+        .integrity-table-premium th {
+            background: transparent;
+            color: var(--text-muted);
+            font-size: 0.75rem;
             font-weight: 700;
-            line-height: 1.5;
-            overflow-wrap: anywhere;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 12px 20px;
+            border: none;
         }
-        @media (max-width: 767.98px) {
-            .dashboard-grid {
-                grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-                gap: 14px;
-            }
-            .status-card {
-                min-height: 112px;
-                padding: 16px;
-                border-radius: 16px;
-            }
-            .card-icon-wrapper {
-                width: 38px;
-                height: 38px;
-            }
-            .premium-table-card .table-responsive {
-                padding: 8px 8px 12px;
-            }
-            .premium-table-card .table {
-                border-spacing: 0 8px;
-            }
-            .premium-table-card .table th,
-            .premium-table-card .table tbody td {
-                padding-left: 14px;
-                padding-right: 14px;
-            }
-            .admin-applicant-panel .card-body {
-                padding: 20px;
-            }
-            .admin-applicant-panel .info-row {
-                min-height: auto;
-            }
+
+        .integrity-table-premium tr {
+            transition: all 0.2s ease;
+        }
+
+        .integrity-table-premium td {
+            background: #FFFFFF;
+            padding: 16px 20px;
+            border-top: 1px solid rgba(101, 96, 79, 0.015);
+            border-bottom: 1px solid rgba(101, 96, 79, 0.015);
+            vertical-align: middle;
+        }
+
+        .integrity-table-premium td:first-child {
+            border-left: 1px solid rgba(101, 96, 79, 0.015);
+            border-top-left-radius: 12px;
+            border-bottom-left-radius: 12px;
+        }
+
+        .integrity-table-premium td:last-child {
+            border-right: 1px solid rgba(101, 96, 79, 0.015);
+            border-top-right-radius: 12px;
+            border-bottom-right-radius: 12px;
+        }
+
+        .integrity-table-premium tr:hover td {
+            background: #F4EEE2;
+            border-color: rgba(101, 96, 79, 0.2);
+        }
+
+        .variance-pill {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 700;
+        }
+
+        .variance-low { background: rgba(62, 124, 69, 0.1); color: #3E7C45; border: 1px solid rgba(62, 124, 69, 0.2); }
+        .variance-medium { background: rgba(200, 138, 45, 0.1); color: #C88A2D; border: 1px solid rgba(200, 138, 45, 0.2); }
+        .variance-high { background: rgba(176, 74, 74, 0.1); color: #B04A4A; border: 1px solid rgba(176, 74, 74, 0.2); }
+
+        .source-tag {
+            font-size: 0.65rem;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 4px;
+            background: rgba(101, 96, 79, 0.02);
+            color: var(--text-muted);
+        }
+
+        .btn-audit {
+            background: rgba(101, 96, 79, 0.1);
+            color: #65604F;
+            border: 1px solid rgba(101, 96, 79, 0.2);
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-audit:hover {
+            background: #65604F !important;
+            color: white !important;
+            box-shadow: 0 4px 12px rgba(101, 96, 79, 0.3);
         }
     </style>
 {% endblock %}
 
 {% block content %}
 
-<div class="container-fluid px-4 py-2">
+<div class="container-fluid px-4 py-2 pb-5">
 
     <div class="page-header mt-3 d-flex justify-content-between align-items-center flex-wrap gap-3">
         <div>
-            <h2 class="fw-bold mb-0">Admin Control Center</h2>
+            <h2 class="fw-bold mb-0 gradient-title">Admin Control Center</h2>
             <p class="text-muted small mb-0">Overview of system health, policy growth, and claim metrics.</p>
         </div>
         <div class="d-flex gap-2">
@@ -445,59 +495,71 @@
     <!-- KPI GRID -->
     <div class="dashboard-grid">
 
-        <!-- Card 1: Total Users -->
-        <div class="status-card accent-blue hover-scale" data-aos="fade-up" data-aos-delay="100">
+        <!-- Card 1: Identity & KYC (Requirement: Fix KYC Visibility) -->
+        <div class="status-card accent-purple" onclick="toggleSection('users', this)">
             <div class="card-icon-wrapper">
-                <i class="bi bi-people"></i>
+                <i class="bi bi-shield-lock"></i>
             </div>
-            <div>
-                <div class="card-title">Total Users</div>
+            <div class="card-content-area">
+                <div class="card-title">Identity & KYC</div>
                 <div class="card-value">{{ total_users }}</div>
+                <div class="card-meta flex-column align-items-start gap-1">
+                    <span class="{% if total_kyc_pending > 0 %}text-warning{% else %}text-muted{% endif %} small">
+                        <i class="bi bi-hourglass-split me-1"></i>{{ total_kyc_pending|default:0 }} Manual Review
+                    </span>
+                    <div class="d-flex gap-2 mt-1">
+                        <span class="text-success small" style="font-size: 9px;"><i class="bi bi-patch-check-fill me-1"></i>{{ total_kyc_verified }} Verified</span>
+                        <span class="text-danger small" style="font-size: 9px;"><i class="bi bi-x-circle-fill me-1"></i>{{ total_kyc_rejected }} Rejected</span>
+                    </div>
+                </div>
             </div>
         </div>
 
         <!-- Card 2: Total Staffs -->
-        <div class="status-card accent-purple hover-scale" data-aos="fade-up" data-aos-delay="150">
+        <div class="status-card accent-purple" onclick="toggleSection('staff', this)">
             <div class="card-icon-wrapper">
                 <i class="bi bi-person-badge"></i>
             </div>
-            <div>
-                <div class="card-title">Total Staffs</div>
+            <div class="card-content-area">
+                <div class="card-title">Total Staff</div>
                 <div class="card-value">{{ total_staffs }}</div>
+                <div class="card-meta">Active provisions</div>
             </div>
         </div>
 
         <!-- Card 3: Total Policies -->
-        <div class="status-card accent-blue hover-scale" data-aos="fade-up" data-aos-delay="200">
+        <div class="status-card accent-blue" onclick="toggleSection('policies', this)">
             <div class="card-icon-wrapper">
                 <i class="bi bi-file-earmark-check"></i>
             </div>
-            <div>
+            <div class="card-content-area">
                 <div class="card-title">Total Policies</div>
                 <div class="card-value">{{ total_policies }}</div>
+                <div class="card-meta">System-wide coverage</div>
             </div>
         </div>
 
         <!-- Card 4: Total Premium (GREEN ACCENT) -->
-        <div class="status-card accent-green hover-scale" data-aos="fade-up" data-aos-delay="250">
+        <div class="status-card accent-green" onclick="toggleSection('premium', this)">
             <div class="card-icon-wrapper">
                 <i class="bi bi-currency-rupee"></i>
             </div>
-            <div>
+            <div class="card-content-area">
                 <div class="card-title">Total Premium</div>
                 <div class="card-value">₹{{ total_premium|intcomma }}</div>
+                <div class="card-meta card-meta-success">Aggregated value</div>
             </div>
         </div>
 
         <!-- Card 5: AI Governance & Health (UPGRADED v3.2) -->
-        <div class="status-card {% if ai_metrics.health_score < 75 %}accent-orange{% else %}accent-purple{% endif %} hover-scale" data-aos="fade-up" data-aos-delay="300">
+        <div class="status-card {% if ai_metrics.health_score < 75 %}accent-orange{% else %}accent-purple{% endif %}" onclick="toggleSection('ai_governance', this)">
             <div class="card-icon-wrapper" style="position: relative;">
                 <i class="bi bi-shield-check"></i>
                 {% if ai_metrics.health_score < 75 and ai_metrics %}
                 <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle" title="SLA Violation Detected"></span>
                 {% endif %}
             </div>
-            <div>
+            <div class="card-content-area">
                 <div class="card-title">AI Governance ({{ ai_metrics.model_version|default:"v3.2" }})</div>
                 <div class="d-flex align-items-baseline gap-2">
                     <div class="card-value">{{ ai_metrics.health_score|default:88.2|floatformat:1 }}%</div>
@@ -507,7 +569,7 @@
                     </span>
                 </div>
                 <!-- Segmented Governance Metrics -->
-                <div class="mt-2 pt-1 border-top border-white border-opacity-10 d-flex justify-content-between text-muted" style="font-size: 10px; font-weight: 600; letter-spacing: 0.02em;">
+                <div class="mt-1 pt-1 border-top border-white border-opacity-10 d-flex justify-content-between text-muted" style="font-size: 9px; font-weight: 600; letter-spacing: 0;">
                     <span>Fraud Catch: <b class="text-info">{{ ai_metrics.fraud_recall|default:0.83|floatformat:2 }}</b></span>
                     <span>Disputes: <b class="text-{% if ai_metrics.disputed_count > 0 %}warning{% else %}success{% endif %}">{{ ai_metrics.disputed_count|default:0 }}</b></span>
                 </div>
@@ -515,156 +577,741 @@
         </div>
 
         <!-- Card 5: Total Claims -->
-        <div class="status-card hover-scale" data-aos="fade-up" data-aos-delay="300">
+        <div class="status-card accent-blue" onclick="toggleSection('claims', this)">
             <div class="card-icon-wrapper">
                 <i class="bi bi-shield-exclamation"></i>
             </div>
-            <div>
+            <div class="card-content-area">
                 <div class="card-title">Total Claims</div>
                 <div class="card-value">{{ total_claims }}</div>
+                <div class="card-meta">Lifetime dossiers</div>
             </div>
         </div>
 
         <!-- Card 6: Submitted Claims (ORANGE ACCENT) -->
-        <div class="status-card accent-orange hover-scale" data-aos="fade-up" data-aos-delay="350">
+        <div class="status-card accent-orange" onclick="toggleSection('submitted', this)">
             <div class="card-icon-wrapper">
                 <i class="bi bi-file-earmark-plus"></i>
             </div>
-            <div>
+            <div class="card-content-area">
                 <div class="card-title">New Submissions</div>
                 <div class="card-value">{{ submitted_claims }}</div>
+                <div class="card-meta card-meta-warning">Awaiting triage</div>
             </div>
         </div>
 
         <!-- Card 7: Review Claims (BLUE ACCENT) -->
-        <div class="status-card accent-blue hover-scale" data-aos="fade-up" data-aos-delay="400">
+        <div class="status-card accent-blue" onclick="toggleSection('review', this)">
             <div class="card-icon-wrapper">
                 <i class="bi bi-person-badge"></i>
             </div>
-            <div>
+            <div class="card-content-area">
                 <div class="card-title">Under Review</div>
                 <div class="card-value">{{ review_claims }}</div>
+                <div class="card-meta">In active analysis</div>
             </div>
         </div>
 
-        <!-- Card 8: Investigation Claims (PURPLE ACCENT) -->
-        <div class="status-card accent-purple hover-scale" data-aos="fade-up" data-aos-delay="450">
+        <!-- Card 8: Waiting Approval Claims (PURPLE ACCENT) -->
+        <div class="status-card accent-purple" onclick="toggleSection('waiting_approval', this)">
             <div class="card-icon-wrapper">
-                <i class="bi bi-search"></i>
+                <i class="bi bi-clock-history"></i>
             </div>
-            <div>
-                <div class="card-title">Investigation</div>
-                <div class="card-value">{{ investigation_claims }}</div>
+            <div class="card-content-area">
+                <div class="card-title">Waiting Approval</div>
+                <div class="card-value">{{ waiting_approval_claims }}</div>
+                <div class="card-meta">Awaiting management seal</div>
             </div>
         </div>
 
-        <!-- Card 9: Approved Claims (GREEN ACCENT) -->
-        <div class="status-card accent-green hover-scale" data-aos="fade-up" data-aos-delay="475">
+        <!-- Card 9: Approved Claims (Settlement Queue) -->
+        <a href="{% url 'claim:settlement_queue' %}" class="status-card accent-green" style="text-decoration: none;">
             <div class="card-icon-wrapper">
                 <i class="bi bi-check-circle"></i>
             </div>
-            <div>
-                <div class="card-title">Approved Claims</div>
+            <div class="card-content-area">
+                <div class="card-title">Settlement Queue</div>
                 <div class="card-value">{{ approved_claims }}</div>
+                <div class="card-meta card-meta-success">Awaiting Disbursement</div>
             </div>
-        </div>
+        </a>
 
         <!-- Card 10: Rejected Claims (RED ACCENT) -->
-        <div class="status-card accent-red hover-scale" data-aos="fade-up" data-aos-delay="500">
+        <div class="status-card accent-red" onclick="toggleSection('rejected', this)">
             <div class="card-icon-wrapper">
                 <i class="bi bi-x-circle"></i>
             </div>
-            <div>
+            <div class="card-content-area">
                 <div class="card-title">Rejected Claims</div>
                 <div class="card-value">{{ rejected_claims }}</div>
+                <div class="card-meta card-meta-danger">Failed audits</div>
             </div>
         </div>
 
         <!-- Card 9: Total Approved Amount (BLUE ACCENT) -->
-        <div class="status-card accent-blue hover-scale" data-aos="fade-up" data-aos-delay="500">
+        <div class="status-card accent-blue" onclick="toggleSection('approved_total', this)">
             <div class="card-icon-wrapper">
                 <i class="bi bi-check2-square"></i>
             </div>
-            <div>
+            <div class="card-content-area">
                 <div class="card-title">Total Approved</div>
                 <div class="card-value">₹{{ total_approved_amount|intcomma }}</div>
+                <div class="card-meta">Certified exposure</div>
             </div>
         </div>
 
         <!-- Card 9.1: Total Settled Amount (PURPLE ACCENT) -->
-        <div class="status-card accent-purple hover-scale" data-aos="fade-up" data-aos-delay="550">
+        <div class="status-card accent-purple" onclick="toggleSection('settled', this)">
             <div class="card-icon-wrapper">
                 <i class="bi bi-wallet2"></i>
             </div>
-            <div>
+            <div class="card-content-area">
                 <div class="card-title">Total Settled</div>
                 <div class="card-value">₹{{ total_settled_amount|intcomma }}</div>
+                <div class="card-meta">Realized payouts</div>
             </div>
         </div>
 
-        <!-- Card 10: Total Payments (GREEN ACCENT) -->
-        <div class="status-card accent-green hover-scale" data-aos="fade-up" data-aos-delay="600">
+        <!-- Card 10: Premium Collected (GREEN ACCENT) -->
+        <div class="status-card accent-green" onclick="toggleSection('collected', this)">
             <div class="card-icon-wrapper">
                 <i class="bi bi-credit-card"></i>
             </div>
-            <div>
-                <div class="card-title">Total Payments</div>
-                <div class="card-value">₹{{ total_payments|intcomma }}</div>
-            </div>
-        </div>
-
-        <!-- Card 11: Successful Payments (GREEN ACCENT) -->
-        <div class="status-card accent-green hover-scale" data-aos="fade-up" data-aos-delay="650">
-            <div class="card-icon-wrapper">
-                <i class="bi bi-check-circle"></i>
-            </div>
-            <div>
-                <div class="card-title">Successful Payments</div>
-                <div class="card-value">₹{{ successful_payment_value|intcomma }}</div>
+            <div class="card-content-area">
+                <div class="card-title">Collected</div>
+                <div class="card-value">₹{{ premium_collected|intcomma }}</div>
                 <div class="card-meta card-meta-success">
-                    <i class="bi bi-info-circle me-1"></i>{{ successful_payments }} transactions
+                    New policies & installments
                 </div>
             </div>
         </div>
 
-        <!-- Card 12: Failed Payments (RED ACCENT) -->
-        <div class="status-card accent-red hover-scale" data-aos="fade-up" data-aos-delay="700">
+        <!-- Card 11: Successful Premium Transactions (GREEN ACCENT) -->
+        <div class="status-card accent-green" onclick="toggleSection('success_premium', this)">
+            <div class="card-icon-wrapper">
+                <i class="bi bi-check-circle"></i>
+            </div>
+            <div class="card-content-area">
+                <div class="card-title">Success Premium</div>
+                <div class="card-value">{{ successful_premium_transactions }}</div>
+                <div class="card-meta card-meta-success">Completed credit</div>
+            </div>
+        </div>
+
+        <!-- Card 12: Failed Premium Transactions (RED ACCENT) -->
+        <div class="status-card accent-red" onclick="toggleSection('failed_premium', this)">
             <div class="card-icon-wrapper">
                 <i class="bi bi-x-circle"></i>
             </div>
-            <div>
-                <div class="card-title">Failed Payments</div>
-                <div class="card-value">{{ failed_payments }}</div>
+            <div class="card-content-area">
+                <div class="card-title">Failed Premium</div>
+                <div class="card-value">{{ failed_premium_transactions }}</div>
+                <div class="card-meta card-meta-danger">Rejected intents</div>
             </div>
         </div>
 
         <!-- Card 10: Pending Policy Applications (ORANGE ACCENT) - links to action page -->
-        <a href="{% url 'policy:admin_applications' %}" class="status-card accent-orange hover-scale" style="text-decoration:none;" data-aos="fade-up" data-aos-delay="750">
+        {% url 'policy:admin_applications' as admin_apps_url %}
+        <a href="{{ admin_apps_url }}" class="status-card accent-orange hover-scale" style="text-decoration: none;" data-aos="fade-up" data-aos-delay="750">
             <div class="card-icon-wrapper">
                 <i class="bi bi-clipboard-pulse"></i>
             </div>
-            <div>
-                <div class="card-title">Policy Applications</div>
-                <div class="card-value">{{ pending_applications }}</div>
+            <div class="card-content-area">
+                <div class="card-title">Policy Intents</div>
+                <div class="card-value">{{ pending_applications|default:0 }}</div>
                 <div class="card-meta card-meta-warning">
-                    {% if pending_applications %}
-                    <i class="bi bi-dot"></i>{{ pending_applications }} pending review
-                    {% else %}
-                    <i class="bi bi-check-circle"></i>&nbsp;All cleared
-                    {% endif %}
+                    {% if pending_applications %}Needs verification{% else %}All cleared{% endif %}
                 </div>
             </div>
         </a>
     </div>
-  </div>
+
+    <!-- EXECUTIVE PAYOUT INTEGRITY ANALYTICS -->
+    <div class="row mb-5" data-aos="fade-up" data-aos-delay="500">
+        <div class="col-12">
+            <div class="premium-table-card">
+                <div class="card-header border-0 pb-0 d-flex justify-content-between align-items-center p-4">
+                    <div>
+                        <h5 class="mb-1 fw-bold"><i class="bi bi-shield-shaded me-2 text-primary"></i><span class="gradient-title-cyan">Executive Payout Integrity Analytics</span></h5>
+                        <p class="text-muted small mb-0">Authoritative Amount Settlement & Leakage Recovery Control</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <span class="badge-soft-info py-2 px-3"><i class="bi bi-cpu me-1"></i>AI Engine v3.3 Running</span>
+                        <button class="btn-premium hover-scale py-2 px-3" style="font-size: 11px;"><i class="bi bi-download me-1"></i>RECOVERY REPORT</button>
+                    </div>
+                </div>
+                
+                <div class="card-body p-4">
+                    <!-- Integrity KPI Grid -->
+                    <div class="row g-4 mb-5">
+                        <div class="col-md-3">
+                            <div class="integrity-metric-card">
+                                <div class="text-muted small fw-bold text-uppercase mb-2">High Mismatch (>15%)</div>
+                                <div class="d-flex align-items-baseline gap-2">
+                                    <h2 class="mb-0 fw-bold text-white">{{ integrity_metrics.high_mismatch_count }}</h2>
+                                    <span class="text-danger small"><i class="bi bi-graph-up-arrow"></i> Critical</span>
+                                </div>
+                                <div class="progress mt-3" style="height: 4px; background: rgba(101, 96, 79, 0.02);">
+                                    <div class="progress-bar bg-danger" style="width: 28%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="integrity-metric-card">
+                                <div class="text-muted small fw-bold text-uppercase mb-2">Recovered Leakage</div>
+                                <div class="d-flex align-items-baseline gap-2">
+                                    <h2 class="mb-0 fw-bold text-success">₹{{ integrity_metrics.recovered_leakage|intcomma }}</h2>
+                                </div>
+                                <div class="text-white-50 x-small mt-2">Saved via OCR Verification</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="integrity-metric-card">
+                                <div class="text-muted small fw-bold text-uppercase mb-2">Critical Anomaly</div>
+                                <div class="d-flex align-items-baseline gap-2">
+                                    <h2 class="mb-0 fw-bold text-warning">{{ integrity_metrics.critical_monthly_count }}</h2>
+                                </div>
+                                <div class="text-white-50 x-small mt-2">Immediate Review Required</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="integrity-metric-card">
+                                <div class="text-muted small fw-bold text-uppercase mb-2">Avg Integrity Gap</div>
+                                <div class="d-flex align-items-baseline gap-2">
+                                    <h2 class="mb-0 fw-bold text-info">{{ integrity_metrics.avg_integrity_gap }}%</h2>
+                                </div>
+                                <div class="progress mt-3" style="height: 4px; background: rgba(101, 96, 79, 0.02);">
+                                    <div class="progress-bar bg-info" style="--progress-width: {{ integrity_metrics.avg_integrity_gap|default:0 }}%; width: var(--progress-width);"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Integrity Audit Detailed Table -->
+                    <div class="table-responsive">
+                        <table class="integrity-table-premium">
+                            <thead>
+                                <tr>
+                                    <th>Dossier ID</th>
+                                    <th>Participant</th>
+                                    <th>Declared Amount</th>
+                                    <th>AI Authoritative</th>
+                                    <th>Staff Approved</th>
+                                    <th>Integrity Gap</th>
+                                    <th class="text-end">Command</th>
+                                </tr>
+                            </thead>
+                            <tbody class="stagger-container">
+                                {% for claim in integrity_claims %}
+                                <tr>
+                                    <td>
+                                        <div class="fw-bold text-white">#{{ claim.claim_number }}</div>
+                                        <div class="text-muted x-small">{{ claim.created_at|date:"d M Y" }}</div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-3">
+                                            <div class="table-avatar" style="width: 32px; height: 32px; font-size: 10px;">{{ claim.created_by.username|slice:":1"|upper }}</div>
+                                            <div>
+                                                <div class="fw-semibold text-white small">{{ claim.created_by.get_full_name|default:claim.created_by.username }}</div>
+                                                <div class="source-tag mt-1">{{ claim.policy.policy_number }}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="text-white fw-medium">₹{{ claim.declared_claim_amount|default:claim.claimed_amount|intcomma }}</td>
+                                    <td>
+                                        <div class="text-primary fw-bold">₹{{ claim.ocr_verified_bill_total|intcomma }}</div>
+                                        <div class="x-small text-muted">Basis: <span class="text-info">{{ claim.payout_basis_source }}</span></div>
+                                    </td>
+                                    <td>
+                                        {% if claim.approved_amount %}
+                                        <div class="text-success-premium fw-bold">₹{{ claim.approved_amount|intcomma }}</div>
+                                        {% else %}
+                                        <div class="text-muted italic small">Pending Decision</div>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% with gap=claim.claim_amount_mismatch_ratio|floatformat:2 %}
+                                        <div class="d-flex flex-column gap-1">
+                                            <div class="variance-pill {% if claim.claim_amount_mismatch_ratio > 0.3 %}variance-high{% elif claim.claim_amount_mismatch_ratio > 0.1 %}variance-medium{% else %}variance-low{% endif %} d-inline-block text-center">
+                                                {{ claim.mismatch_ratio_percentage|floatformat:1 }}% Delta
+                                            </div>
+                                            <div class="x-small text-muted text-center">₹{{ claim.mismatch_amount|intcomma }} Leakage</div>
+                                        </div>
+                                        {% endwith %}
+                                    </td>
+                                    <td class="text-end">
+                                        <a href="{% url 'claim:staff_review' claim.public_id %}" class="btn-audit">
+                                            <i class="bi bi-shield-check me-1"></i>AUDIT
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center py-5">
+                                        <div class="text-muted opacity-25 mb-2"><i class="bi bi-shield-check fs-1"></i></div>
+                                        <div class="text-muted">No integrity anomalies detected in the current cycle.</div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 📁 DATA SECTIONS (PRE-RENDERED) -->
+    
+    <!-- Users Section -->
+    <div id="section-users" class="premium-table-card data-section mt-2">
+        <div class="card-header d-flex justify-content-between">
+            <h5><i class="bi bi-people-fill me-2 text-info"></i><span class="gradient-title-cyan">User Directory</span></h5>
+            <button class="btn btn-sm btn-link text-muted" onclick="this.closest('.data-section').style.display='none'"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div class="table-responsive">
+            <table class="table">
+                <thead><tr><th>ID</th><th>Username</th><th>Email</th><th>Role</th><th>KYC Status</th><th>Joined</th></tr></thead>
+                <tbody>
+                    {% for u in users %}
+                    <tr>
+                        <td>#{{ u.id }}</td>
+                        <td class="text-white fw-bold">{{ u.username }}</td>
+                        <td>{{ u.email }}</td>
+                        <td><span class="badge bg-secondary">{{ u.role|upper }}</span></td>
+                        <td>
+                            {% with kyc=u.kyc_verifications.first %}
+                                {% if u.is_verified or kyc.status == 'verified' or kyc.status == 'approved_override' %}
+                                    <span class="badge-soft-success"><i class="bi bi-patch-check-fill me-1"></i>VERIFIED</span>
+                                {% elif kyc.status == 'manual_review' or kyc.status == 'pending' %}
+                                    <span class="badge-soft-warning"><i class="bi bi-hourglass-split me-1"></i>MANUAL REVIEW</span>
+                                {% elif kyc.status == 'rejected' or kyc.status == 'rejected_override' or kyc.status == 'failed' %}
+                                    <span class="badge-soft-danger"><i class="bi bi-x-circle-fill me-1"></i>REJECTED</span>
+                                {% else %}
+                                    <span class="badge-soft-secondary">NO DATA</span>
+                                {% endif %}
+                            {% endwith %}
+                        </td>
+                        <td>{{ u.date_joined|date:"M d, Y" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5" class="text-center py-4">No users found.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Staff Section -->
+    <div id="section-staff" class="premium-table-card data-section mt-2">
+        <div class="card-header d-flex justify-content-between">
+            <h5><i class="bi bi-person-badge-fill me-2 text-purple"></i><span class="gradient-title-cyan">Staff Directory</span></h5>
+            <button class="btn btn-sm btn-link text-muted" onclick="this.closest('.data-section').style.display='none'"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div class="table-responsive">
+            <table class="table">
+                <thead><tr><th>ID</th><th>Username</th><th>Email</th><th>Role</th><th>Status</th></tr></thead>
+                <tbody>
+                    {% for s in staff_list %}
+                    <tr>
+                        <td>#{{ s.id }}</td>
+                        <td class="text-white fw-bold">{{ s.username }}</td>
+                        <td>{{ s.email }}</td>
+                        <td><span class="badge bg-primary">STAFF</span></td>
+                        <td><span class="badge-soft-success">ACTIVE</span></td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5" class="text-center py-4">No staff members found.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Policies Section: Master Inventory -->
+    <div id="section-policies" class="premium-table-card data-section mt-2">
+        <div class="card-header d-flex justify-content-between">
+            <h5><i class="bi bi-building-fill-check me-2 text-primary"></i><span class="gradient-title-cyan">System Policy Inventory</span></h5>
+            <button class="btn btn-sm btn-link text-muted" onclick="this.closest('.data-section').style.display='none'"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div class="table-responsive">
+            <table class="table system-policies-table">
+                <thead><tr><th>Policy #</th><th>Type</th><th>Insurer</th><th>Sum Insured</th><th>Status</th></tr></thead>
+                <tbody>
+                    {% for p in all_policies %}
+                    <tr>
+                        <td class="text-id system-policy-number">{{ p.policy_number }}</td>
+                        <td>{{ p.policy_type }}</td>
+                        <td>{{ p.insurer_name }}</td>
+                        <td class="text-success-premium">₹{{ p.sum_insured|intcomma }}</td>
+                        <td>
+                            <span class="policy-status-badge {% if p.status == 'active' %}status-active{% elif p.status == 'pending' %}status-pending{% else %}status-default{% endif %}">
+                                {{ p.get_status_display }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5" class="text-center py-4">No master policies found.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Claims Section -->
+    <div id="section-claims" class="premium-table-card data-section mt-2">
+        <div class="card-header d-flex justify-content-between">
+            <h5><i class="bi bi-shield-fill-exclamation me-2 text-warning"></i><span class="gradient-title-cyan">Claims Dossier</span></h5>
+            <button class="btn btn-sm btn-link text-muted" onclick="this.closest('.data-section').style.display='none'"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div class="table-responsive">
+            <table class="table">
+                <thead><tr><th>Claim #</th><th>Submitter</th><th>Date</th><th>Amount</th><th>Status</th></tr></thead>
+                <tbody>
+                    {% for c in claims %}
+                    <tr>
+                        <td class="text-id fw-bold">{{ c.claim_number }}</td>
+                        <td>{{ c.created_by.username }}</td>
+                        <td>{{ c.reported_date|date:"M d, Y" }}</td>
+                        <td class="text-white">₹{{ c.claimed_amount|intcomma }}</td>
+                        <td><span class="badge {{ c.status }}">{{ c.get_status_display }}</span></td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5" class="text-center py-4">No claims found.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 📁 ADDITIONAL DATA SECTIONS (PRE-RENDERED) -->
+
+    <!-- Premium Section -->
+    <div id="section-premium" class="premium-table-card data-section mt-2">
+        <div class="card-header d-flex justify-content-between">
+            <h5><i class="bi bi-coin me-2 text-success"></i><span class="gradient-title-cyan">Premium Schedules Overview</span></h5>
+            <button class="btn btn-sm btn-link text-muted" onclick="this.closest('.data-section').style.display='none'"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div class="table-responsive">
+            <table class="table">
+                <thead><tr><th>Policy</th><th>Base Premium</th><th>Total Gross</th><th>Frequency</th><th>Status</th></tr></thead>
+                <tbody>
+                    {% for s in premium_schedules_list %}
+                    <tr>
+                        <td class="text-white fw-bold">#{{ s.policy.policy_number }}</td>
+                        <td>₹{{ s.base_premium|intcomma }}</td>
+                        <td class="text-success-premium">₹{{ s.gross_premium|intcomma }}</td>
+                        <td><span class="badge bg-dark">{{ s.payment_frequency|upper }}</span></td>
+                        <td><span class="badge-soft-success">ACTIVE</span></td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5" class="text-center py-4">No premium data found.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Submitted Section -->
+    <div id="section-submitted" class="premium-table-card data-section mt-2">
+        <div class="card-header d-flex justify-content-between">
+            <h5><i class="bi bi-plus-circle-fill me-2 text-warning"></i><span class="gradient-title-cyan">New Submissions</span></h5>
+            <button class="btn btn-sm btn-link text-muted" onclick="this.closest('.data-section').style.display='none'"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div class="table-responsive">
+            <table class="table">
+                <thead><tr><th>Claim #</th><th>Policy</th><th>Amount</th><th>Submitted</th></tr></thead>
+                <tbody>
+                    {% for c in submitted_claims_list %}
+                    <tr>
+                        <td class="text-id fw-bold">{{ c.claim_number }}</td>
+                        <td>{{ c.policy.policy_number }}</td>
+                        <td class="text-white">₹{{ c.claimed_amount|intcomma }}</td>
+                        <td>{{ c.created_at|date:"M d, Y" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Review Section -->
+    <div id="section-review" class="premium-table-card data-section mt-2">
+        <div class="card-header d-flex justify-content-between">
+            <h5><i class="bi bi-search me-2 text-info"></i><span class="gradient-title-cyan">Under Review</span></h5>
+            <button class="btn btn-sm btn-link text-muted" onclick="this.closest('.data-section').style.display='none'"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div class="table-responsive">
+            <table class="table">
+                <thead><tr><th>Claim #</th><th>Policy</th><th>Risk Score</th><th>Update</th></tr></thead>
+                <tbody>
+                    {% for c in review_claims_list %}
+                    <tr>
+                        <td class="text-id fw-bold">{{ c.claim_number }}</td>
+                        <td>{{ c.policy.policy_number }}</td>
+                        <td>
+                            {% with payload=c.review_payload %}
+                            <span class="fw-bold {% if payload.risk_label == 'HIGH' %}text-danger{% elif payload.risk_label == 'MEDIUM' %}text-warning{% else %}text-success{% endif %}">
+                                {{ payload.risk_score|floatformat:1 }}%
+                            </span>
+                            {% endwith %}
+                        </td>
+                        <td>{{ c.updated_at|date:"M d, Y" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Waiting Approval Section -->
+    <div id="section-waiting_approval" class="premium-table-card data-section mt-2">
+        <div class="card-header d-flex justify-content-between">
+            <h5><i class="bi bi-clock-fill me-2 text-primary"></i><span class="gradient-title-cyan">Waiting Approval Queue</span></h5>
+            <button class="btn btn-sm btn-link text-muted" onclick="this.closest('.data-section').style.display='none'"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div class="table-responsive">
+            <table class="table">
+                <thead><tr><th>Claim #</th><th>Policy</th><th>Risk Score</th><th>Forwarded On</th></tr></thead>
+                <tbody>
+                    {% for c in staff_reviewed_list %}
+                    <tr>
+                        <td class="text-id fw-bold">{{ c.claim_number }}</td>
+                        <td>{{ c.policy.policy_number }}</td>
+                        <td>
+                            {% with payload=c.review_payload %}
+                            <span class="fw-bold {% if payload.risk_label == 'HIGH' %}text-danger{% elif payload.risk_label == 'MEDIUM' %}text-warning{% else %}text-success{% endif %}">
+                                {{ payload.risk_score|floatformat:1 }}%
+                            </span>
+                            {% endwith %}
+                        </td>
+                        <td>{{ c.updated_at|date:"M d, Y" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Approved Section -->
+    <div id="section-approved" class="premium-table-card data-section mt-2">
+        <div class="card-header d-flex justify-content-between">
+            <h5><i class="bi bi-check-circle-fill me-2 text-success"></i><span class="gradient-title-cyan">Approved Claims</span></h5>
+            <button class="btn btn-sm btn-link text-muted" onclick="this.closest('.data-section').style.display='none'"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div class="table-responsive">
+            <table class="table">
+                <thead><tr><th>Claim #</th><th>Policy</th><th>Approved Amt</th><th>Decision</th></tr></thead>
+                <tbody>
+                    {% for c in approved_claims_list %}
+                    <tr>
+                        <td class="text-id fw-bold">{{ c.claim_number }}</td>
+                        <td>{{ c.policy.policy_number }}</td>
+                        <td class="text-success-premium">₹{{ c.approved_amount|default:0|intcomma }}</td>
+                        <td><span class="badge bg-success">CERTIFIED</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Approved Total Section -->
+    <div id="section-approved_total" class="premium-table-card data-section mt-2">
+        <div class="card-header d-flex justify-content-between">
+            <h5><i class="bi bi-cash-stack me-2 text-primary"></i><span class="gradient-title-cyan">Certified Financial Liability</span></h5>
+            <button class="btn btn-sm btn-link text-muted" onclick="this.closest('.data-section').style.display='none'"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div class="table-responsive">
+            <table class="table">
+                <thead><tr><th>Claim #</th><th>Policy</th><th>Liability Amount</th><th>Date</th></tr></thead>
+                <tbody>
+                    {% for c in approved_claims_list %}
+                    <tr>
+                        <td class="text-id fw-bold">{{ c.claim_number }}</td>
+                        <td>{{ c.policy.policy_number }}</td>
+                        <td class="text-white fw-bold">₹{{ c.approved_amount|default:0|intcomma }}</td>
+                        <td>{{ c.updated_at|date:"M d, Y" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Rejected Section -->
+    <div id="section-rejected" class="premium-table-card data-section mt-2">
+        <div class="card-header d-flex justify-content-between">
+            <h5><i class="bi bi-x-circle-fill me-2 text-danger"></i><span class="gradient-title-cyan">Rejected Audits</span></h5>
+            <button class="btn btn-sm btn-link text-muted" onclick="this.closest('.data-section').style.display='none'"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div class="table-responsive">
+            <table class="table">
+                <thead><tr><th>Claim #</th><th>Policy</th><th>Reason</th><th>Date</th></tr></thead>
+                <tbody>
+                    {% for c in rejected_claims_list %}
+                    <tr>
+                        <td class="text-id fw-bold">{{ c.claim_number }}</td>
+                        <td>{{ c.policy.policy_number }}</td>
+                        <td class="small">{{ c.admin_remark|truncatechars:30 }}</td>
+                        <td>{{ c.updated_at|date:"M d, Y" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Settled Section -->
+    <div id="section-settled" class="premium-table-card data-section mt-2">
+        <div class="card-header d-flex justify-content-between">
+            <h5><i class="bi bi-wallet2 me-2 text-purple"></i><span class="gradient-title-cyan">Settled Payouts</span></h5>
+            <button class="btn btn-sm btn-link text-muted" onclick="this.closest('.data-section').style.display='none'"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div class="table-responsive">
+            <table class="table">
+                <thead><tr><th>Claim #</th><th>Method</th><th>Paid Amt</th><th>Date</th></tr></thead>
+                <tbody>
+                    {% for c in settled_claims_list %}
+                    <tr>
+                        <td class="text-id fw-bold">{{ c.claim_number }}</td>
+                        <td><span class="badge bg-dark">DIRECT BANK</span></td>
+                        <td class="text-white fw-bold">₹{{ c.approved_amount|intcomma }}</td>
+                        <td>{{ c.updated_at|date:"M d, Y" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Collected Section -->
+    <div id="section-collected" class="premium-table-card data-section mt-2">
+        <div class="card-header d-flex justify-content-between">
+            <h5><i class="bi bi-bank me-2 text-success"></i><span class="gradient-title-cyan">Revenue Collection Ledger</span></h5>
+            <button class="btn btn-sm btn-link text-muted" onclick="this.closest('.data-section').style.display='none'"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div class="table-responsive">
+            <table class="table">
+                <thead><tr><th>Trans ID</th><th>Type</th><th>Amount</th><th>Date</th></tr></thead>
+                <tbody>
+                    {% for p in success_payments %}
+                    <tr>
+                        <td class="text-info small">{{ p.transaction_id }}</td>
+                        <td>{{ p.get_payment_type_display }}</td>
+                        <td class="text-success-premium">₹{{ p.amount|intcomma }}</td>
+                        <td>{{ p.created_at|date:"M d, Y" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Success Premium Section -->
+    <div id="section-success_premium" class="premium-table-card data-section mt-2">
+        <div class="card-header d-flex justify-content-between">
+            <h5><i class="bi bi-check-circle-fill me-2 text-success"></i><span class="gradient-title-cyan">Completed Credits</span></h5>
+            <button class="btn btn-sm btn-link text-muted" onclick="this.closest('.data-section').style.display='none'"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div class="table-responsive">
+            <table class="table">
+                <thead><tr><th>Audit ID</th><th>Direction</th><th>Amount</th><th>Status</th></tr></thead>
+                <tbody>
+                    {% for p in success_payments %}
+                    <tr>
+                        <td class="text-muted small">#{{ p.public_id|truncatechars:8 }}</td>
+                        <td><span class="text-success">CREDIT</span></td>
+                        <td class="text-white">₹{{ p.amount|intcomma }}</td>
+                        <td><span class="badge bg-success">SUCCESS</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Failed Premium Section -->
+    <div id="section-failed_premium" class="premium-table-card data-section mt-2">
+        <div class="card-header d-flex justify-content-between">
+            <h5><i class="bi bi-bug-fill me-2 text-danger"></i><span class="gradient-title-cyan">Transaction Error Logs</span></h5>
+            <button class="btn btn-sm btn-link text-muted" onclick="this.closest('.data-section').style.display='none'"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div class="table-responsive">
+            <table class="table">
+                <thead><tr><th>Trans ID</th><th>Policy</th><th>Amount</th><th>Error Date</th></tr></thead>
+                <tbody>
+                    {% for p in failed_payments %}
+                    <tr>
+                        <td class="text-muted small">{{ p.transaction_id }}</td>
+                        <td>#{{ p.user_policy.policy.policy_number }}</td>
+                        <td class="text-danger">₹{{ p.amount|intcomma }}</td>
+                        <td>{{ p.created_at|date:"M d, Y" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- AI Governance Section -->
+    <div id="section-ai_governance" class="premium-table-card data-section mt-2">
+        <div class="card-header d-flex justify-content-between">
+            <h5><i class="bi bi-cpu-fill me-2 text-purple"></i><span class="gradient-title-cyan">AI Governance Performance Log (v3.2)</span></h5>
+            <button class="btn btn-sm btn-link text-muted" onclick="this.closest('.data-section').style.display='none'"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div class="table-responsive">
+            <table class="table">
+                <thead><tr><th>Date</th><th>Model</th><th>Health Score</th><th>Fraud Recall</th><th>Precision</th><th>Drift</th></tr></thead>
+                <tbody>
+                    {% for m in ai_metrics_history %}
+                    <tr>
+                        <td class="text-white small">{{ m.date|date:"M d, Y" }}</td>
+                        <td><span class="badge bg-dark">{{ m.model_version|default:"v3.2" }}</span></td>
+                        <td class="fw-bold {% if m.health_score < 75 %}text-danger{% else %}text-success{% endif %}">
+                            {{ m.health_score|floatformat:1 }}%
+                        </td>
+                        <td class="text-info">{{ m.fraud_recall|floatformat:2 }}</td>
+                        <td>{{ m.precision|floatformat:2 }}</td>
+                        <td>
+                            {% if m.drift_detected %}
+                            <span class="badge bg-danger">DRIFTED</span>
+                            {% else %}
+                            <span class="badge-soft-success">STABLE</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="6" class="text-center py-4">No governance metrics found.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        {% if ai_metrics.suggested_actions %}
+        <div class="p-4 border-top border-white border-opacity-10">
+            <h6 class="text-warning mb-3 small fw-bold uppercase">Active Remediation Advisories</h6>
+            <div class="row">
+                {% for action in ai_metrics.suggested_actions %}
+                <div class="col-md-6 mb-2">
+                    <div class="d-flex align-items-center gap-2 text-white-50 small">
+                        <i class="bi bi-arrow-right-circle text-warning"></i>
+                        <span>{{ action }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
 
     <!-- AI GOVERNANCE ACTION ENGINE (v3.3) -->
     {% if ai_metrics.suggested_actions %}
     <div class="row mt-1 mb-4 px-4" data-aos="fade-up" data-aos-delay="800">
         <div class="col-12">
-            <div class="status-card h-auto border-0 p-4" style="background: rgba(245, 158, 11, 0.08); border-left: 4px solid #f59e0b !important; border-radius: 18px;">
+            <div class="status-card h-auto border-0 p-4" style="background: rgba(200, 138, 45, 0.08); border-left: 4px solid #C88A2D !important; border-radius: 18px;">
                 <div class="d-flex align-items-center mb-3">
-                    <div class="card-icon-wrapper me-3" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b; width: 44px; height: 44px; border-radius: 14px;">
+                    <div class="card-icon-wrapper me-3" style="background: rgba(200, 138, 45, 0.15); color: #C88A2D; width: 44px; height: 44px; border-radius: 14px;">
                         <i class="bi bi-cpu-fill"></i>
                     </div>
                     <div>
@@ -688,7 +1335,7 @@
     <!-- APPLICANT INFORMATION SECTION -->
     <div class="premium-table-card mb-4 admin-applicant-panel">
         <div class="card-header">
-            <h5><i class="bi bi-person-badge me-2"></i>Applicant Information</h5>
+            <h5><i class="bi bi-person-badge me-2"></i><span class="gradient-title-cyan">Applicant Information</span></h5>
         </div>
         <div class="card-body">
             <div class="row g-3">
@@ -715,112 +1362,136 @@
     </div>
 
 
-    <div class="row g-4" data-aos="fade-up" data-aos-delay="200">
-        <!-- RECENT CLAIMS -->
-        <div class="col-lg-8">
-            <div class="premium-table-card hover-scale">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5><i class="bi bi-table me-2"></i>Recent Claims</h5>
-                    <a href="{% url 'claim:list' %}" class="btn-premium hover-scale">View All</a>
-                </div>
-                <div class="table-responsive">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Claim No</th>
-                                <th>Policyholder</th>
-                                <th class="text-center">Priority</th>
-                                <th>Reason</th>
-                                <th>Amount</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody class="stagger-container">
-                            {% for claim in recent_claims %}
-                            <tr {% if forloop.counter <= 3 and claim.priority_level == "HIGH" %}style="background: rgba(239, 68, 68, 0.05); border-left: 3px solid #ef4444;"{% endif %}>
-                                <td class="text-id fw-bold">
-                                    {{ claim.claim_number }}
-                                    {% if claim.emergency_flag %}<i class="bi bi-lightning-fill text-danger ms-1" title="Emergency"></i>{% endif %}
-                                </td>
-                                <td>
-                                    {% if claim.created_by %}
-                                        <div class="fw-bold text-white">{{ claim.created_by.full_name|default:claim.created_by.username }}</div>
-                                        <div class="table-subtext">ID: {{ claim.created_by.id }}</div>
-                                    {% else %}
-                                        <div class="fw-bold text-white italic">Internal / System</div>
-                                        <div class="table-subtext">Automated Record</div>
-                                    {% endif %}
-                                </td>
-                                <td class="text-center">
-                                    <span class="badge {% if claim.priority_level == "HIGH" %}bg-danger{% elif claim.priority_level == "MEDIUM" %}bg-warning text-dark{% else %}bg-secondary opacity-50{% endif %}" style="font-size: 0.62rem; min-width: 60px;">
-                                        {{ claim.priority_level|default:"LOW" }}
-                                    </span>
-                                </td>
-                                <td>
-                                    <div class="x-small text-muted text-wrap" style="max-width: 140px; line-height: 1.25;" title="{{ claim.priority_reason }}">
-                                        {{ claim.priority_reason|default:"-" }}
-                                    </div>
-                                </td>
-                                <td class="fw-bold text-white">₹{{ claim.total_settled_amount|intcomma }}</td>
-                                <td>
-                                    <span class="badge {{ claim.status }}">
-                                        {{ claim.get_status_display }}
-                                    </span>
-                                </td>
-                            </tr>
-                            {% empty %}
-                            <tr class="table-empty-row"><td colspan="6" class="text-center py-5 text-muted small">No recent claims submitted.</td></tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+    <!-- RECENT CLAIMS (Full Width) -->
+    <div class="premium-table-card hover-scale" data-aos="fade-up" data-aos-delay="200">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5><i class="bi bi-table me-2"></i><span class="gradient-title-cyan">Recent Claims</span></h5>
+            <a href="{% url 'claim:list' %}" class="btn-premium hover-scale">View All</a>
         </div>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Claim No</th>
+                        <th>Policyholder</th>
+                        <th class="text-center">Priority</th>
+                        <th>Reason</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th class="text-end">Command</th>
+                    </tr>
+                </thead>
+                <tbody class="stagger-container">
+                    {% for claim in recent_claims %}
+                    <tr {% if forloop.counter <= 3 and claim.priority_level == "HIGH" %}style="background: rgba(197, 90, 90, 0.05); border-left: 3px solid #c55a5a;"{% endif %}>
+                        <td class="text-id fw-bold">
+                            {{ claim.claim_number }}
+                            {% if claim.emergency_flag %}<i class="bi bi-lightning-fill text-danger ms-1" title="Emergency"></i>{% endif %}
+                        </td>
+                        <td>
+                            {% if claim.created_by %}
+                                <div class="fw-bold text-white">{{ claim.created_by.full_name|default:claim.created_by.username }}</div>
+                                <div class="table-subtext">ID: {{ claim.created_by.id }}</div>
+                            {% else %}
+                                <div class="fw-bold text-white italic">Internal / System</div>
+                                <div class="table-subtext">Automated Record</div>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            <span class="badge {% if claim.priority_level == "HIGH" %}bg-danger{% elif claim.priority_level == "MEDIUM" %}bg-warning text-dark{% else %}bg-secondary opacity-50{% endif %}" style="font-size: 0.62rem; min-width: 60px;">
+                                {{ claim.priority_level|default:"LOW" }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="x-small text-muted text-wrap" style="max-width: 140px; line-height: 1.25;" title="{{ claim.priority_reason }}">
+                                {{ claim.priority_reason|default:"-" }}
+                            </div>
+                        </td>
+                        <td class="fw-bold text-white">₹{{ claim.total_settled_amount|intcomma }}</td>
+                        <td>
+                            <span class="badge {{ claim.status }}">
+                                {{ claim.get_status_display }}
+                            </span>
+                        </td>
+                        <td class="text-end">
+                            <div class="d-flex justify-content-end gap-2">
+                                <a href="{% url 'claim:staff_review' claim.public_id %}" class="btn-premium hover-scale py-1 px-3" style="font-size: 10px;">Audit</a>
+                                <a href="{% url 'claim:history' claim.public_id %}" class="btn-outline-info btn-sm py-1 px-3" style="font-size: 10px; border-radius: 6px;">Log</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr class="table-empty-row"><td colspan="7" class="text-center py-5 text-muted small">No recent claims submitted.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 
-        <!-- RECENT POLICIES -->
-        <div class="col-lg-4">
-            <div class="premium-table-card hover-scale">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5><i class="bi bi-shield-check me-2"></i>New Policies</h5>
-                    <a href="{% url 'policy:admin_list' %}" class="btn-premium hover-scale">Manage</a>
-                </div>
-                <div class="table-responsive">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Policyholder</th>
-                                <th>Sum Insured</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody class="stagger-container">
-                            {% for policy in recent_policies %}
-                            <tr>
-                                <td>
-                                    <div class="fw-bold text-white small">{{ policy.user.full_name|default:policy.user.username }}</div>
-                                    <div class="text-id x-small">{{ policy.policy.policy_number }}</div>
-                                </td>
-                                <td class="text-success-premium fw-bold">₹{{ policy.policy.sum_insured|intcomma }}</td>
-                                <td>
-                                    <span class="badge {{ policy.policy.status }}">
-                                        {{ policy.policy.get_status_display }}
-                                    </span>
-                                </td>
-                            </tr>
-                            {% empty %}
-                            <tr class="table-empty-row"><td colspan="3" class="text-center py-5 text-muted small">No new policies found.</td></tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+    <!-- NEW POLICIES (Full Width Horizontal Table) -->
+    <div class="premium-table-card mt-4 hover-scale" data-aos="fade-up" data-aos-delay="250">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5><i class="bi bi-shield-check me-2"></i><span class="gradient-title-cyan">New Policies</span></h5>
+            <a href="{% url 'policy:admin_list' %}" class="btn-premium hover-scale">Manage</a>
+        </div>
+        <div class="table-responsive">
+            <table class="table new-policies-table">
+                <thead>
+                    <tr>
+                        <th>Policy Number</th>
+                        <th>Type</th>
+                        <th>Insurer</th>
+                        <th>Sum Insured</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th class="text-end">Action</th>
+                    </tr>
+                </thead>
+                <tbody class="stagger-container">
+                    {% for policy in recent_policies %}
+                    <tr>
+                        <td>
+                            <span class="policy-number-highlight">
+                                {{ policy.policy_number|default:policy.policy.policy_number }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge bg-dark bg-opacity-75" style="font-size: 0.68rem; letter-spacing: 0.5px;">
+                                {{ policy.policy_type|default:policy.policy.policy_type|default:"General"|upper }}
+                            </span>
+                        </td>
+                        <td class="text-white small">{{ policy.insurer_name|default:policy.policy.insurer_name|default:"—" }}</td>
+                        <td>
+                            <span class="policy-sum-value">₹{{ policy.sum_insured|default:policy.policy.sum_insured|intcomma }}</span>
+                        </td>
+                        <td>
+                            {% with policy_status=policy.status|default:policy.policy.status %}
+                            <span class="policy-status-badge {% if policy_status == 'active' %}status-active{% elif policy_status == 'pending' %}status-pending{% elif policy_status == 'rejected' %}status-rejected{% else %}status-default{% endif %}">
+                                {{ policy.get_status_display|default:policy.policy.get_status_display|default:policy_status }}
+                            </span>
+                            {% endwith %}
+                        </td>
+                        <td class="text-muted small">
+                            <i class="bi bi-calendar3 me-1"></i>{{ policy.created_at|default:policy.policy.created_at|date:"d M, Y" }}
+                        </td>
+                        <td class="text-end">
+                            <a href="{% url 'policy:admin_list' %}" class="btn-premium hover-scale py-1 px-3" style="font-size: 10px;">
+                                <i class="bi bi-eye me-1"></i>View
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr class="table-empty-row"><td colspan="7" class="text-center py-5 text-muted small">No new policies found.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
 
     <!-- PAYMENT HISTORY SECTION -->
     <div class="premium-table-card mt-4 hover-scale" data-aos="fade-up" data-aos-delay="300">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <h5><i class="bi bi-credit-card me-2"></i>Recent Financial Transactions</h5>
+            <h5><i class="bi bi-credit-card me-2"></i><span class="gradient-title-cyan">Recent Financial Transactions</span></h5>
             <a href="{% url 'policy:payment_list' %}" class="btn-premium hover-scale">MANAGE PAYMENTS</a>
         </div>
         <div class="table-responsive">
@@ -869,8 +1540,8 @@
                         <td><div class="table-kicker">{{ txn.method }}</div></td>
                         <td><div class="text-white small">{{ txn.date|date:"M d, Y" }}</div></td>
                         <td class="text-end">
-                            <a href="{{ txn.audit_url }}" class="btn-premium table-action-btn hover-scale">
-                                <i class="bi bi-search me-1"></i>Audit
+                            <a href="{{ txn.audit_url }}" class="btn-premium py-1 px-3 fw-bold d-inline-flex align-items-center gap-1" style="font-size: 10px; border-radius: 6px;">
+                                <i class="bi bi-shield-check" style="font-size: 11px;"></i> AUDIT
                             </a>
                         </td>
                     </tr>
@@ -885,7 +1556,7 @@
     <!-- PENDING POLICY APPLICATIONS QUICK TABLE -->
     <div class="premium-table-card mt-4 mb-5 hover-scale" data-aos="fade-up" data-aos-delay="400">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <h5><i class="bi bi-person-plus-fill me-2 icon-warning-accent"></i>Pending Policy Applications
+            <h5><i class="bi bi-person-plus-fill me-2 icon-warning-accent"></i><span class="gradient-title-cyan">Pending Policy Applications</span>
                 {% if pending_applications %}
                 <span class="heading-badge ms-2">{{ pending_applications }} NEW</span>
                 {% endif %}
@@ -928,7 +1599,7 @@
                             <i class="bi bi-calendar-event me-1"></i>{{ app.created_at|date:"d M, Y" }}
                         </td>
                         <td class="text-end pe-4">
-                            <a href="{% url 'policy:admin_review' app.id %}" class="btn-premium table-action-btn">
+                            <a href="{% url 'policy:admin_review' app.public_id %}" class="btn-premium table-action-btn">
                                 <i class="bi bi-clipboard-check me-1"></i>Review
                             </a>
                         </td>
@@ -949,3 +1620,44 @@
 </div>
 
 {% endblock %}
+
+{% block extra_js %}
+<script>
+    /**
+     * 🚀 Pure Hybrid Dashboard Engine
+     * Toggles pre-rendered template sections without API calls.
+     */
+    function toggleSection(sectionId, cardElement) {
+        // 1. Clear previous active states
+        document.querySelectorAll('.status-card').forEach(c => c.classList.remove('active-card'));
+        document.querySelectorAll('.data-section').forEach(s => s.style.display = 'none');
+
+        // 2. Activate selected view
+        const targetSection = document.getElementById('section-' + sectionId);
+        if (targetSection) {
+            targetSection.style.display = 'block';
+            cardElement.classList.add('active-card');
+            
+            // 3. Smooth scroll with offset for visibility
+            targetSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }
+
+    // 🔦 Interactive Spotlight Tracking Logic
+    document.querySelectorAll('.status-card').forEach((card) => {
+        card.addEventListener('pointermove', (event) => {
+            const rect = card.getBoundingClientRect();
+            card.style.setProperty('--spotlight-x', `${event.clientX - rect.left}px`);
+            card.style.setProperty('--spotlight-y', `${event.clientY - rect.top}px`);
+        });
+
+        card.addEventListener('pointerleave', () => {
+            card.style.setProperty('--spotlight-x', '50%');
+            card.style.setProperty('--spotlight-y', '50%');
+        });
+    });
+</script>
+{% endblock %}
+
+
+

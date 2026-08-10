@@ -4,104 +4,244 @@
 {% block title %}Manage Categories{% endblock %}
 
 {% block breadcrumb %}
-<a href="{% url 'policy:admin_list' %}" class="text-decoration-none text-white">Policies</a> / Categories
+<a href="{% url 'policy:admin_list' %}" class="text-decoration-none text-white opacity-75">Policies</a> 
+<span class="mx-2 opacity-50">/</span> Categories
 {% endblock %}
 
 {% block extra_css %}
 <style>
-    /* 🌑 Modern Dark Design System */
-    .premium-card {
-        background: rgba(17, 28, 53, 0.4);
-        backdrop-filter: blur(12px);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 16px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-        margin-bottom: 30px;
-        overflow: hidden;
+    /* 🌑 Modern Dark Design System Engine */
+    :root {
+        --primary: #65604F;
+        --primary-soft: rgba(101, 96, 79, 0.15);
+        --bg-card: rgba(17, 28, 53, 0.45);
+        --border-white: rgba(255, 255, 255, 0.08);
+        --text-muted: rgba(156, 149, 143, 0.7);
     }
 
-    .form-container {
-        padding: 24px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    .premium-card {
+        background: var(--bg-card);
+        backdrop-filter: blur(12px);
+        border: 1px solid var(--border-white);
+        border-radius: 20px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.45);
+        margin-bottom: 32px;
+        overflow: hidden;
+        transition: transform 0.3s ease, border-color 0.3s ease;
     }
+
+    .premium-card:hover { border-color: rgba(101, 96, 79, 0.25); }
+
+    .form-container { padding: 28px; background: rgba(0, 0, 0, 0.15); }
 
     .form-label {
-        color: #94a3b8;
+        color: var(--text-muted);
         font-size: 11px;
         font-weight: 700;
         text-transform: uppercase;
-        letter-spacing: 1px;
-        margin-bottom: 8px;
+        letter-spacing: 1.2px;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
     }
 
-    .form-control {
-        background: rgba(0, 0, 0, 0.2) !important;
+    .form-control, .form-select {
+        background: rgba(0, 0, 0, 0.35) !important;
         border: 1px solid rgba(255, 255, 255, 0.1) !important;
         color: white !important;
-        border-radius: 8px;
+        border-radius: 12px;
         font-size: 14px;
-        padding: 12px 15px;
+        padding: 12px 16px;
+        transition: all 0.2s ease;
     }
 
-    .form-control:focus {
-        border-color: #1a6ef5 !important;
-        box-shadow: 0 0 0 4px rgba(26, 110, 245, 0.2) !important;
+    .form-control:focus, .form-select:focus {
+        border-color: var(--primary) !important;
+        box-shadow: 0 0 0 4px rgba(101, 96, 79, 0.15) !important;
+        background: rgba(0, 0, 0, 0.45) !important;
     }
 
-    .btn-create {
-        background: #1a6ef5;
-        color: white;
-        border: none;
-        padding: 10px 24px;
-        border-radius: 10px;
-        font-weight: 600;
-        transition: all 0.3s ease;
+    .btn-premium {
+        padding: 12px 24px;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 14px;
+        letter-spacing: 0.5px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
     }
 
-    .btn-create:hover {
-        background: #3b82f6;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 15px rgba(26, 110, 245, 0.4);
+    .btn-create { background: var(--primary); border: none; color: white; }
+    .btn-create:hover:not(:disabled) { background: #3b82f6; transform: translateY(-2px); box-shadow: 0 8px 25px rgba(101, 96, 79, 0.4); }
+    .btn-create:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    /* Search & Filter Bar */
+    .filter-bar {
+        padding: 16px 24px;
+        background: rgba(0, 0, 0, 0.2);
+        border-bottom: 1px solid var(--border-white);
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
     }
 
-    /* Table Styles */
-    .premium-table {
-        width: 100%;
-        border-collapse: separate;
-        border-spacing: 0;
-    }
-
+    /* Table Improvements */
+    .premium-table { width: 100%; border-collapse: separate; border-spacing: 0; }
     .premium-table thead th {
         background: rgba(255, 255, 255, 0.03);
-        padding: 18px 24px;
-        color: #64748b;
+        padding: 20px 24px;
+        color: var(--text-muted);
         font-size: 11px;
         font-weight: 700;
         text-transform: uppercase;
-        letter-spacing: 1px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        letter-spacing: 1.5px;
+        border-bottom: 1px solid var(--border-white);
     }
 
     .premium-table tbody td {
         padding: 20px 24px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-        color: #cbd5e1;
-        font-size: 14px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        color: #e2e8f0;
+        vertical-align: middle;
+        transition: background 0.2s ease;
     }
 
-    .premium-table tbody tr:hover td {
-        background: rgba(26, 110, 245, 0.03);
-    }
+    .premium-table tbody tr:hover td { background: rgba(101, 96, 79, 0.05); }
 
     .category-badge {
         font-family: 'JetBrains Mono', monospace;
-        font-size: 11px;
-        background: rgba(26, 110, 245, 0.1);
-        color: #1a6ef5;
+        font-size: 10px;
+        background: rgba(101, 96, 79, 0.08);
+        color: #60a5fa;
+        padding: 5px 12px;
+        border-radius: 6px;
+        border: 1px solid rgba(101, 96, 79, 0.2);
+        white-space: nowrap;
+        display: inline-block;
+    }
+
+    .badge-status {
+        padding: 6px 12px;
+        border-radius: 99px;
+        font-size: 10px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .badge-status.active { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .badge-status.inactive { background: rgba(197, 90, 90, 0.15); color: #c55a5a; border: 1px solid rgba(197, 90, 90, 0.3); }
+    .badge-status:hover { transform: scale(1.05); }
+
+    .badge-ai {
+        font-size: 9px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
         padding: 4px 10px;
         border-radius: 6px;
-        border: 1px solid rgba(26, 110, 245, 0.2);
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
     }
+    .badge-ai.medical { background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); }
+    .badge-ai.vehicle { background: rgba(200, 138, 45, 0.1); color: #C88A2D; border: 1px solid rgba(200, 138, 45, 0.2); }
+    .badge-ai.life { background: rgba(101, 96, 79, 0.1); color: #a78bfa; border: 1px solid rgba(101, 96, 79, 0.2); }
+    .badge-ai.general { background: rgba(255, 255, 255, 0.05); color: rgba(156, 149, 143, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); }
+
+    .plans-count-pill {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 6px 14px;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 12px;
+        color: #f1f5f9;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        line-height: 1;
+        min-width: 60px;
+    }
+    .plans-count-pill .num { font-size: 15px; font-weight: 800; margin-bottom: 2px; }
+    .plans-count-pill .label { font-size: 8px; opacity: 0.6; text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px; }
+    .plans-count-pill:hover { 
+        background: var(--primary); 
+        border-color: var(--primary); 
+        color: white; 
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(101, 96, 79, 0.3);
+    }
+    .plans-count-pill:hover .label { opacity: 1; }
+
+    .action-btn {
+        width: 36px;
+        height: 36px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.05);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        transition: all 0.2s ease;
+        margin-left: 6px;
+    }
+
+    .btn-edit:hover { background: #3b82f6; color: white; border-color: #3b82f6; }
+    .btn-delete:hover { background: #c55a5a; color: white; border-color: #c55a5a; }
+
+    /* Tooltip styling */
+    .tippy-box { background: #FFFFFF; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.1); font-size: 12px; font-weight: 600; padding: 4px 8px; }
+
+    /* Modal override */
+    .modal-content { background: #FFFFFF; border: 1px solid var(--border-white); border-radius: 20px; color: white; }
+    .modal-header { border-bottom: 1px solid var(--border-white); padding: 24px; }
+    .modal-footer { border-top: 1px solid var(--border-white); padding: 20px; }
+
+    .empty-state { padding: 80px 40px; text-align: center; }
+    .empty-state i { font-size: 4rem; opacity: 0.15; margin-bottom: 24px; }
+    .empty-state h5 { font-weight: 700; margin-bottom: 10px; }
+
+    /* 🔍 Typeahead Search Dropdown */
+    .search-suggestions {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        background: #FFFFFF;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 12px;
+        margin-top: 8px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        max-height: 280px;
+        overflow-y: auto;
+        display: none;
+    }
+
+    .suggestion-item {
+        padding: 12px 16px;
+        cursor: pointer;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        transition: all 0.2s ease;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .suggestion-item:last-child { border-bottom: none; }
+    .suggestion-item:hover { background: rgba(101, 96, 79, 0.15); }
+
+    .suggestion-name { color: white; font-weight: 600; font-size: 13px; }
+    .suggestion-code { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #60a5fa; background: rgba(101, 96, 79, 0.1); padding: 2px 6px; border-radius: 4px; }
 </style>
 {% endblock %}
 
@@ -111,37 +251,57 @@
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
                 <h3 class="text-white fw-bold mb-1">Policy Categories</h3>
-                <p class="text-muted small mb-0">Define and manage the classification segments for policy plans.</p>
+                <p class="text-muted small mb-0">System-wide classification for automated auditing and risk profiling.</p>
             </div>
-            <a href="{% url 'policy:admin_list' %}" class="btn btn-outline-secondary btn-sm">
-                <i class="bi bi-arrow-left me-1"></i> Back to Inventory
-            </a>
+            <div class="d-flex gap-2">
+                <button class="btn btn-outline-info btn-sm rounded-pill px-3" onclick="loadCategories()">
+                    <i class="bi bi-arrow-clockwise"></i> Refresh
+                </button>
+                <a href="{% url 'policy:admin_list' %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                    <i class="bi bi-arrow-left me-1"></i> Inventory
+                </a>
+            </div>
         </div>
 
-        <!-- CREATE NEW CATEGORY -->
+        <!-- DEFINE NEW CATEGORY (COLLAPSIBLE FORM) -->
         <div class="premium-card">
-            <div class="card-header border-0 bg-transparent py-3 px-4">
-                <h6 class="text-white mb-0 mt-2"><i class="bi bi-plus-square me-2 text-primary"></i>Define New Category</h6>
+            <div class="card-header border-0 bg-transparent py-3 px-4 d-flex justify-content-between align-items-center">
+                <h6 class="text-white mb-0 fw-bold"><i class="bi bi-plus-square me-2 text-primary"></i>Define New Category</h6>
             </div>
             <div class="form-container">
-                <form method="POST">
+                <form id="createForm" onsubmit="handleCreate(event)">
                     {% csrf_token %}
-                    <div class="row g-3">
+                    <div class="row g-4">
                         <div class="col-md-3">
                             <label class="form-label">Category Name</label>
-                            <input type="text" name="name" class="form-control" placeholder="e.g. Life Insurance" required>
+                            <input type="text" id="newName" name="name" class="form-control" placeholder="e.g. Health Insurance" required>
+                            <div class="invalid-feedback text-danger small mt-1" id="nameError"></div>
                         </div>
                         <div class="col-md-2">
-                            <label class="form-label">System Code</label>
-                            <input type="text" name="code" class="form-control" placeholder="e.g. life-ins" required>
+                            <label class="form-label">
+                                System Code 
+                                <i class="bi bi-info-circle ms-1 opacity-50" 
+                                   data-tippy-content="Unique identifier used internally in backend APIs and ML classification."></i>
+                            </label>
+                            <input type="text" id="newCode" name="code" class="form-control" placeholder="e.g. health-ins" required>
+                            <div class="invalid-feedback text-danger small mt-1" id="codeError"></div>
                         </div>
-                        <div class="col-md-5">
-                            <label class="form-label">Description (Optional)</label>
-                            <input type="text" name="description" class="form-control" placeholder="Brief overview of this category...">
+                        <div class="col-md-2">
+                            <label class="form-label">AI Type</label>
+                            <select name="category_type" class="form-select">
+                                {% for val, label in category_types %}
+                                <option value="{{ val }}">{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Description</label>
+                            <input type="text" name="description" class="form-control" placeholder="Brief metadata...">
                         </div>
                         <div class="col-md-2 d-flex align-items-end">
-                            <button type="submit" class="btn-create w-100">
-                                Create
+                            <button type="submit" id="btnCreate" class="btn-premium btn-create w-100">
+                                <span class="btn-text">Create</span>
+                                <span class="spinner-border spinner-border-sm d-none" role="status"></span>
                             </button>
                         </div>
                     </div>
@@ -149,46 +309,404 @@
             </div>
         </div>
 
-        <!-- CATEGORIES LIST -->
+        <!-- SEARCH + FILTER TOOLBAR -->
         <div class="premium-card">
+            <div class="filter-bar">
+                <div class="flex-grow-1 position-relative" style="min-width: 250px;">
+                    <div class="position-relative">
+                        <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 opacity-50"></i>
+                        <input type="text" id="searchQuery" class="form-control ps-5" placeholder="Search by name or system code..." oninput="handleSearchInput()">
+                    </div>
+                    <!-- Typeahead Results -->
+                    <div id="searchSuggestions" class="search-suggestions"></div>
+                </div>
+                <div style="width: 160px;">
+                    <select id="filterStatus" class="form-select" onchange="loadCategories()">
+                        <option value="all">All Status</option>
+                        <option value="active">🟢 Active</option>
+                        <option value="inactive">🔴 Inactive</option>
+                    </select>
+                </div>
+                <div style="width: 160px;">
+                    <select id="filterPlans" class="form-select" onchange="loadCategories()">
+                        <option value="all">All Plans</option>
+                        <option value="has">Has Plans</option>
+                        <option value="no">No Plans</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- CATEGORIES TABLE -->
             <div class="table-responsive">
                 <table class="premium-table">
                     <thead>
                         <tr>
                             <th>Category Name</th>
                             <th>Code</th>
+                            <th>AI Type</th>
                             <th>Description</th>
-                            <th class="text-end">Plans Count</th>
+                            <th>Plans</th>
+                            <th>Status</th>
+                            <th class="text-end">Actions</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        {% for cat in categories %}
+                    <tbody id="categoriesBody">
+                        <!-- Loaded via AJAX -->
                         <tr>
-                            <td>
-                                <div class="fw-bold text-white">{{ cat.name }}</div>
-                            </td>
-                            <td>
-                                <span class="category-badge">{{ cat.code }}</span>
-                            </td>
-                            <td class="text-muted small">
-                                {{ cat.description|default:"No description provided." }}
-                            </td>
-                            <td class="text-end fw-bold">
-                                {{ cat.policyplan_set.count }}
+                            <td colspan="7" class="text-center py-5">
+                                <div class="spinner-border text-primary" role="status"></div>
                             </td>
                         </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="4" class="text-center py-5 text-muted">
-                                <i class="bi bi-folder2-open fs-2 d-block mb-3 opacity-25"></i>
-                                No categories defined in the system.
-                            </td>
-                        </tr>
-                        {% endfor %}
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
 </div>
+
+<!-- EDIT MODAL -->
+<div class="modal fade" id="editModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content shadow-lg">
+            <form id="editForm" onsubmit="handleUpdate(event)">
+                <input type="hidden" id="editId" name="id">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">Edit Category</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Category Name</label>
+                            <input type="text" id="editName" name="name" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">System Code</label>
+                            <input type="text" id="editCode" name="code" class="form-control" readonly disabled>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">AI Ready Field</label>
+                            <select id="editType" name="category_type" class="form-select">
+                                {% for val, label in category_types %}
+                                <option value="{{ val }}">{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Current Status</label>
+                            <select id="editStatus" name="status" class="form-select">
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Description</label>
+                            <textarea id="editDescription" name="description" class="form-control" rows="3"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary px-4 fw-bold">Update Category</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- DELETE CONFIRMATION MODAL REMOVED - Using SweetAlert2 instead -->
+
+{% endblock %}
+
+{% block extra_js %}
+<!-- Tippy.js for tooltips -->
+<script src="https://unpkg.com/@popperjs/core@2"></script>
+<script src="https://unpkg.com/tippy.js@6"></script>
+
+<script>
+    const API_URL = "{% url 'policy:api_categories' %}";
+    let deleteModal, editModal;
+    let currentDeleteId = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+        editModal = new bootstrap.Modal(document.getElementById('editModal'));
+        
+        // Initialize tooltips
+        tippy('[data-tippy-content]');
+
+        // Auto-slug Generation
+        const nameInput = document.getElementById('newName');
+        const codeInput = document.getElementById('newCode');
+        
+        nameInput.addEventListener('input', () => {
+            const val = nameInput.value;
+            // Generate slug: lowercase, replace spaces/special chars with dash
+            const slug = val.toLowerCase()
+                            .replace(/[^\w\s-]/g, '') // remove special chars
+                            .replace(/\s+/g, '-')     // replace spaces with dash
+                            .replace(/-+/g, '-')      // remove multiple dashes
+                            .substring(0, 20);        // limit length
+            codeInput.value = slug;
+        });
+
+        loadCategories();
+    });
+
+    let debounceTimer;
+    function handleSearchInput() {
+        const query = document.getElementById('searchQuery').value.trim();
+        const suggestionsBox = document.getElementById('searchSuggestions');
+        
+        if (query.length < 1) {
+            suggestionsBox.style.display = 'none';
+        }
+
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+            loadCategories();
+            showSuggestions(query);
+        }, 300);
+    }
+
+    async function showSuggestions(query) {
+        if (query.length < 1) return;
+        
+        const suggestionsBox = document.getElementById('searchSuggestions');
+        const params = new URLSearchParams({ search: query });
+        
+        try {
+            const resp = await fetch(`${API_URL}?${params}`);
+            const data = await resp.json();
+            
+            if (data.length > 0) {
+                suggestionsBox.innerHTML = data.slice(0, 5).map(cat => `
+                    <div class="suggestion-item" onclick="selectSuggestion('${cat.code}')">
+                        <div class="suggestion-name">${cat.name}</div>
+                        <div class="suggestion-code">${cat.code}</div>
+                    </div>
+                `).join('');
+                suggestionsBox.style.display = 'block';
+            } else {
+                suggestionsBox.style.display = 'none';
+            }
+        } catch (err) {
+            console.error("Suggestions failed", err);
+        }
+    }
+
+    function selectSuggestion(code) {
+        const input = document.getElementById('searchQuery');
+        input.value = code;
+        document.getElementById('searchSuggestions').style.display = 'none';
+        loadCategories();
+    }
+
+    // Close suggestions when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.position-relative')) {
+            document.getElementById('searchSuggestions').style.display = 'none';
+        }
+    });
+
+    async function loadCategories() {
+        const query = document.getElementById('searchQuery').value;
+        const status = document.getElementById('filterStatus').value;
+        const plans = document.getElementById('filterPlans').value;
+        const body = document.getElementById('categoriesBody');
+
+        const params = new URLSearchParams({ search: query, status: status, plans: plans });
+        
+        try {
+            const resp = await fetch(`${API_URL}?${params}`);
+            const data = await resp.json();
+            
+            if (data.length === 0) {
+                body.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="empty-state">
+                            <i class="bi bi-folder2-open"></i>
+                            <h5>No categories yet</h5>
+                            <p class="text-muted">Create your first policy category to get started.</p>
+                        </td>
+                    </tr>`;
+                return;
+            }
+
+            body.innerHTML = data.map(cat => {
+                let aiIcon = '<i class="bi bi-cpu"></i>';
+                if (cat.category_type === 'medical') aiIcon = '<i class="bi bi-heart-pulse"></i>';
+                if (cat.category_type === 'vehicle') aiIcon = '<i class="bi bi-truck"></i>';
+                if (cat.category_type === 'life') aiIcon = '<i class="bi bi-umbrella"></i>';
+
+                return `
+                <tr data-id="${cat.id}">
+                    <td><div class="fw-bold text-white fs-6">${cat.name}</div></td>
+                    <td><span class="category-badge">${cat.code}</span></td>
+                    <td><span class="badge-ai ${cat.category_type}">${aiIcon} ${cat.category_type}</span></td>
+                    <td class="text-muted small" style="max-width: 250px;">
+                        ${cat.description || '<span class="opacity-25">No metadata...</span>'}
+                    </td>
+                    <td>
+                        <a href="{% url 'policy:plan_list' %}?category=${cat.id}" class="plans-count-pill">
+                            <span class="num">${cat.plans_count}</span>
+                            <span class="label">Plans</span>
+                        </a>
+                    </td>
+                    <td>
+                        <span class="badge-status ${cat.status}" onclick="toggleStatus(${cat.id}, '${cat.status}')">
+                            ${cat.status === 'active' ? '🟢 Active' : '🔴 Inactive'}
+                        </span>
+                    </td>
+                    <td class="text-end">
+                        <button class="action-btn btn-edit" title="Edit" onclick="openEdit(${cat.id})">
+                            <i class="bi bi-pencil-square"></i>
+                        </button>
+                        <button class="action-btn btn-delete" title="Delete" onclick="openDelete(${cat.id}, '${cat.name}')">
+                            <i class="bi bi-trash3"></i>
+                        </button>
+                    </td>
+                </tr>
+            `}).join('');
+            
+            tippy('[title]'); // Refresh tooltips for dynamic content
+        } catch (err) {
+            console.error("Failed to load categories", err);
+            body.innerHTML = '<tr><td colspan="7" class="text-center text-danger py-4">Error loading data.</td></tr>';
+        }
+    }
+
+    async function handleCreate(e) {
+        e.preventDefault();
+        const form = e.target;
+        const btn = document.getElementById('btnCreate');
+        const spinner = btn.querySelector('.spinner-border');
+        const btnText = btn.querySelector('.btn-text');
+
+        // Validation
+        const name = form.name.value.trim();
+        const code = form.code.value.trim();
+        if (!name || !code) return;
+
+        // UI State
+        btn.disabled = true;
+        spinner.classList.remove('d-none');
+        btnText.classList.add('opacity-0');
+
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+
+        try {
+            const resp = await fetch(API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': data.csrfmiddlewaretoken
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (resp.ok) {
+                form.reset();
+                loadCategories();
+                InsureAlert.success("Category Created", "New policy category has been added to the system.");
+            } else {
+                const errs = await resp.json();
+                if (errs.code) InsureAlert.error("Error", "System Code already exists!");
+                else InsureAlert.error("Error", "Failed to create category. Check all fields.");
+            }
+        } catch (err) {
+            console.error("Create failed", err);
+        } finally {
+            btn.disabled = false;
+            spinner.classList.add('d-none');
+            btnText.classList.remove('opacity-0');
+        }
+    }
+
+    async function toggleStatus(id, currentStatus) {
+        const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+        try {
+            await fetch(`${API_URL}${id}/`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({ status: newStatus })
+            });
+            loadCategories();
+        } catch (err) {
+            console.error("Status toggle failed", err);
+        }
+    }
+
+    async function openDelete(id, name) {
+        const result = await InsureAlert.confirm("Delete Category", `Are you sure you want to delete ${name}? This action cannot be undone.`, "Delete Now");
+        if (!result.isConfirmed) return;
+
+        try {
+            const resp = await fetch(`${API_URL}${id}/`, {
+                method: 'DELETE',
+                headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+            });
+            if (resp.ok) {
+                loadCategories();
+                InsureAlert.success("Deleted", "Category has been removed.");
+            } else {
+                const data = await resp.json();
+                InsureAlert.error("Failed", data.error || "Failed to delete.");
+            }
+        } catch (err) {
+            InsureAlert.error("Error", "Delete operation failed.");
+        }
+    }
+
+    async function openEdit(id) {
+        try {
+            const resp = await fetch(`${API_URL}${id}/`);
+            const cat = await resp.json();
+            
+            document.getElementById('editId').value = cat.id;
+            document.getElementById('editName').value = cat.name;
+            document.getElementById('editCode').value = cat.code;
+            document.getElementById('editType').value = cat.category_type;
+            document.getElementById('editStatus').value = cat.status;
+            document.getElementById('editDescription').value = cat.description || '';
+            
+            editModal.show();
+        } catch (err) {
+            InsureAlert.error("Error", "Failed to fetch category details.");
+        }
+    }
+
+    async function handleUpdate(e) {
+        e.preventDefault();
+        const form = e.target;
+        const id = form.id.value;
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+
+        try {
+            const resp = await fetch(`${API_URL}${id}/`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (resp.ok) {
+                editModal.hide();
+                loadCategories();
+                InsureAlert.success("Updated", "Category details updated successfully.");
+            } else {
+                InsureAlert.error("Error", "Update failed.");
+            }
+        } catch (err) {
+            console.error("Update failed", err);
+        }
+    }
+</script>
 {% endblock %}

@@ -226,7 +226,7 @@ View All
 
 <td class="fw-semibold">
 
-<a href="{% url 'claims:claim_detail' claim.pk %}"
+<a href="{% url 'claim:detail' claim.public_id %}"
 class="text-dark text-decoration-none">
 
 {{ claim.claim_number }}
@@ -262,11 +262,12 @@ class="text-dark text-decoration-none">
 
 <td>
 
-<span class="badge
+<span class="badge 
 {% if claim.status == 'draft' %}bg-secondary
 {% elif claim.status == 'submitted' %}bg-primary
 {% elif claim.status == 'under_review' %}bg-warning text-dark
-{% elif claim.status == 'investigation' %}bg-info
+{% elif claim.status == 'staff_reviewed' %}bg-info
+{% elif claim.status == 'investigation' %}bg-danger
 {% elif claim.status == 'approved' %}bg-success
 {% elif claim.status == 'partially_approved' %}bg-success
 {% elif claim.status == 'rejected' %}bg-danger
@@ -288,7 +289,7 @@ class="text-dark text-decoration-none">
 
 <td>
 
-<a href="{% url 'claims:claim_detail' claim.pk %}"
+<a href="{% url 'claim:detail' claim.public_id %}"
 class="btn btn-outline-secondary btn-sm">
 
 <i class="bi bi-eye"></i>

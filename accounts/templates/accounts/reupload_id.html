@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}Re-upload ID Proof{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-lg border-0 bg-dark text-white">
+            <div class="card-header border-secondary py-3">
+                <h5 class="mb-0"><i class="fas fa-upload me-2 text-info"></i>Re-upload ID Proof</h5>
+            </div>
+            <div class="card-body p-4">
+                <div class="alert alert-info border-info bg-info bg-opacity-10 mb-4">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Re-uploading your ID proof will reset your verification status. Staff will review the new document.
+                </div>
+
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <div class="mb-4">
+                        <label class="form-label text-muted small fw-bold text-uppercase mb-2">New Aadhaar Document (Image or PDF)</label>
+                        {{ form.id_proof }}
+                        {% if form.id_proof.errors %}
+                            <div class="text-danger small mt-2">
+                                {{ form.id_proof.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-info fw-bold py-2">
+                            Upload & Reset Status <i class="fas fa-sync-alt ms-2"></i>
+                        </button>
+                        <a href="{% url 'policy:apply' 1 %}" class="btn btn-outline-secondary py-2">
+                            Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

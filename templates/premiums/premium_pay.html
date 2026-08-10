@@ -1,40 +1,409 @@
 {% extends "base.html" %}
 {% load humanize %}
 
-{% block title %}Pay Premium{% endblock %}
+{% block title %}Secure Checkout | ClaimIQ{% endblock %}
 
-{% block breadcrumb %}Pay Premium{% endblock %}
+{% block extra_css %}
+<style>
+    :root {
+        --accent-cyan: #0ea5e9;
+        --accent-emerald: #10b981;
+        --glass-bg: rgba(15, 23, 42, 0.7);
+        --glass-border: rgba(255, 255, 255, 0.08);
+    }
+
+    body {
+        background-color: #F4EEE2 !important;
+    }
+
+    .checkout-container {
+        max-width: 900px;
+        margin: 40px auto;
+        perspective: 1000px;
+    }
+
+    .payment-glass-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--glass-border);
+        border-radius: 28px;
+        overflow: hidden;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        display: flex;
+        flex-wrap: wrap;
+    }
+
+    .registry-panel {
+        flex: 1;
+        min-width: 320px;
+        padding: 48px;
+        border-right: 1px solid var(--glass-border);
+    }
+
+    .registry-header { margin-bottom: 32px; }
+    .registry-title {
+        font-size: 13px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        color: var(--accent-cyan);
+        margin-bottom: 8px;
+        display: block;
+    }
+    .registry-subtitle { font-size: 24px; font-weight: 700; color: #fff; }
+    .data-row { margin-bottom: 24px; }
+    .data-label {
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        color: rgba(156, 149, 143, 0.6);
+        letter-spacing: 1px;
+        margin-bottom: 4px;
+    }
+    .data-value { font-size: 16px; font-weight: 600; color: #605E5B; }
+
+    .vault-panel {
+        flex: 0.8;
+        min-width: 320px;
+        padding: 48px;
+        background: rgba(0, 0, 0, 0.15);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+    }
+
+    .amount-spotlight { position: relative; margin-bottom: 40px; }
+    .amount-label { font-size: 12px; font-weight: 600; color: rgba(156, 149, 143, 0.7); margin-bottom: 12px; }
+    .amount-value {
+        font-size: 48px;
+        font-weight: 800;
+        color: #fff;
+        text-shadow: 0 0 20px rgba(14, 165, 233, 0.3);
+    }
+    .amount-currency { font-size: 24px; vertical-align: super; margin-right: 4px; color: var(--accent-cyan); }
+
+    .btn-pay-secure {
+        width: 100%;
+        background: linear-gradient(135deg, #0ea5e9, #65604F);
+        border: none;
+        padding: 16px;
+        border-radius: 14px;
+        color: #fff;
+        font-size: 16px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 8px 15px rgba(101, 96, 79, 0.3);
+    }
+
+    .btn-pay-secure:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 25px rgba(101, 96, 79, 0.5);
+    }
+
+    .trust-footer { margin-top: auto; padding-top: 32px; display: flex; gap: 20px; justify-content: center; }
+    .trust-item { font-size: 10px; color: #475569; display: flex; align-items: center; gap: 6px; font-weight: 600; text-transform: uppercase; }
+    .trust-item i { font-size: 14px; color: var(--accent-emerald); }
+
+    .back-btn {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        padding: 10px 20px;
+        border-radius: 12px;
+        color: rgba(156, 149, 143, 0.7);
+        font-size: 11px;
+        font-weight: 800;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+    }
+
+    .back-btn:hover { color: #fff; transform: translateX(-4px); }
+
+    #paymentProcessing {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        background: rgba(2, 6, 23, 0.95);
+        backdrop-filter: blur(10px);
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+    }
+
+    .spinner-neon {
+        width: 60px; height: 60px;
+        border: 4px solid rgba(14, 165, 233, 0.1);
+        border-top-color: var(--accent-cyan);
+        border-radius: 50%;
+        animation: spin 1s infinite linear;
+        margin-bottom: 24px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="container-fluid px-4 py-3">
+<!-- Secure Processing HUD -->
+<div id="paymentProcessing">
+    <div class="spinner-neon"></div>
+    <h3 class="fw-bold mb-2 uppercase" style="letter-spacing: 2px;">Securing Transaction</h3>
+    <p class="text-muted small">Synchronizing with Razorpay Secure Gateway...</p>
+</div>
+
+<div class="container checkout-container">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h4 class="mb-0">Pay Premium</h4>
-        <a href="{% url 'premiums:detail' payment.schedule.id %}" class="btn btn-outline-secondary btn-sm">Back</a>
+        <a href="{{ back_url }}" class="back-btn">
+            <i class="bi bi-arrow-left"></i> RETURN TO BILLING
+        </a>
+        <div class="badge bg-info bg-opacity-10 text-info px-3 py-2 border border-info border-opacity-25 rounded-pill" style="font-size: 11px;">
+            <i class="bi bi-shield-lock me-2"></i>TEST MODE ACTIVE
+        </div>
     </div>
 
-    <div class="card shadow-sm">
-        <div class="card-body">
-            <div class="row g-3 mb-4">
-                <div class="col-md-4">
-                    <div class="text-muted">Policy</div>
-                    <div class="fw-semibold">{{ payment.schedule.policy.policy_number }}</div>
+    <div class="payment-glass-card">
+        <div class="registry-panel">
+            <div class="registry-header">
+                <span class="registry-title">Razorpay Checkout</span>
+                <h1 class="registry-subtitle">Premium Payment</h1>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-6">
+                    <div class="data-row">
+                        <div class="data-label">Installment</div>
+                        <div class="data-value">#{{ payment.installment_number }}</div>
+                    </div>
                 </div>
-                <div class="col-md-4">
-                    <div class="text-muted">Installment</div>
-                    <div class="fw-semibold">#{{ payment.installment_number }}</div>
+                <div class="col-6">
+                    <div class="data-row">
+                        <div class="data-label">Due Date</div>
+                        <div class="data-value">{{ payment.due_date|date:"d M, Y" }}</div>
+                    </div>
                 </div>
-                <div class="col-md-4">
-                    <div class="text-muted">Amount</div>
-                    <div class="fw-semibold">₹{{ payment.amount|intcomma }}</div>
+                <div class="col-12">
+                    <div class="data-row">
+                        <div class="data-label">Policy Number</div>
+                        <div class="data-value text-info font-monospace">{{ payment.schedule.policy.policy_number }}</div>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="data-row">
+                        <div class="data-label">User Reference</div>
+                        <div class="data-value">{{ request.user.username }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="vault-panel">
+            <div class="amount-spotlight">
+                <div class="amount-label">TOTAL (TEST MODE)</div>
+                <div class="amount-value">
+                    <span class="amount-currency">₹</span>{{ payment.amount|intcomma }}
                 </div>
             </div>
 
-            <form method="post">
-                {% csrf_token %}
-                <p class="text-muted mb-3">Transaction reference will be generated automatically.</p>
-                <button type="submit" class="btn btn-primary">Confirm Payment</button>
-            </form>
+            <button type="button" id="payNowBtn" class="btn btn-pay-secure mb-3" onclick="startRazorpayFlow()">
+                <i class="bi bi-lock-fill"></i> PAY SECURELY
+            </button>
+            <p class="text-muted" style="font-size: 10px; line-height: 1.5;">
+                Experience the secure ClaimIQ fintech flow.<br> Powered by Razorpay (Sandbox Environment).
+            </p>
+
+            <div class="trust-footer">
+                <div class="trust-item"><i class="bi bi-shield-check"></i> 256-BIT SSL</div>
+                <div class="trust-item"><i class="bi bi-lightning-charge"></i> INSTANT</div>
+                <!-- 🛡️ DEBUG BYPASS: Highly visible for testing -->
+                <div class="mt-5 pt-4 border-top border-secondary border-opacity-20 text-center">
+                    <div class="alert alert-warning py-2 mb-3" style="font-size: 11px; background: rgba(200, 138, 45, 0.05); border-color: rgba(200, 138, 45, 0.2); color: #C88A2D;">
+                        <i class="bi bi-info-circle me-1"></i> Gateway blocked? Use the bypass below to test.
+                    </div>
+                    <button type="button" id="bypass-btn" class="btn btn-warning w-100 fw-bold shadow-sm" style="background: #C88A2D; border: none; color: #000; padding: 12px;">
+                        <i class="bi bi-shield-lock-fill me-2"></i> SIMULATE SUCCESSFUL PAYMENT
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 </div>
+
+<!-- RAZORPAY SDK -->
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+<script>
+    async function startRazorpayFlow(retryCount = 0) {
+        const hud = document.getElementById('paymentProcessing');
+        const payBtn = document.getElementById('payNowBtn');
+        
+        try {
+            hud.style.display = 'flex';
+            
+            // 1. Create Order via Backend
+            const response = await fetch("{% url 'premiums:razorpay_create' payment.public_id %}", {
+                method: 'POST',
+                headers: { 
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Accept': 'application/json'
+                }
+            });
+            
+            console.log(`[Payment] Order API Status: ${response.status} ${response.statusText}`);
+
+            const contentType = response.headers.get('content-type');
+            if (response.status === 401 || (contentType && contentType.includes('text/html') && response.url.includes('login'))) {
+                InsureAlert.warning("Session Expired", "Please login again to continue your payment.");
+                setTimeout(() => window.location.href = "{% url 'accounts:login' %}?next=" + encodeURIComponent(window.location.pathname), 2000);
+                return;
+            }
+
+            if (!contentType || !contentType.includes('application/json')) {
+                const rawText = await response.text();
+                console.error("[Payment] Received non-JSON response:", rawText);
+                throw new Error("SERVER_CONFIG_ERROR");
+            }
+
+            const orderData = await response.json();
+            console.log("[Payment] Order Data:", orderData);
+            
+            if (!response.ok || orderData.error) {
+                if (response.status >= 500 && retryCount < 1) {
+                    console.warn(`[Payment] Transient failure. Retrying... (Attempt ${retryCount + 1})`);
+                    await new Promise(resolve => setTimeout(resolve, 1500));
+                    return startRazorpayFlow(retryCount + 1);
+                }
+                throw new Error(orderData.error || 'Failed to initialize gateway.');
+            }
+
+            // 2. Configure Razorpay Options
+            const options = {
+                "key": orderData.key_id,
+                "amount": orderData.amount,
+                "currency": "INR",
+                "name": "ClaimIQ Insurance",
+                "description": `Premium Payment - ${orderData.policy_number}`,
+                "image": "https://img.icons8.com/neon/96/shield.png",
+                "order_id": orderData.order_id,
+                "handler": function (response) {
+                    verifyPayment(response);
+                },
+                "prefill": {
+                    "name": "{{ request.user.full_name_display }}",
+                    "email": orderData.user_email,
+                    "contact": orderData.user_phone || ""
+                },
+                "theme": { "color": "#0ea5e9" },
+                "modal": {
+                    "ondismiss": function() {
+                        hud.style.display = 'none';
+                        InsureAlert.info("Payment Cancelled", "The secure payment session was dismissed.");
+                    }
+                }
+            };
+
+            const rzp = new Razorpay(options);
+            hud.style.display = 'none';
+            rzp.open();
+
+        } catch (err) {
+            hud.style.display = 'none';
+            console.error("[Payment] Flow Error:", err);
+            
+            const errorMap = {
+                "SERVER_CONFIG_ERROR": "Critical: Server misconfiguration. Check browser logs for details.",
+                "GATEWAY_KEY_MISSING": "Configuration Error: Razorpay Key ID is missing."
+            };
+
+            const userMessage = errorMap[err.message] || err.message || "Failed to initialize Razorpay.";
+            InsureAlert.error("Gateway Error", userMessage);
+        }
+    }
+
+    async function verifyPayment(rzpResponse) {
+        const hud = document.getElementById('paymentProcessing');
+        hud.style.display = 'flex';
+        
+        try {
+            const formData = new URLSearchParams();
+            formData.append('razorpay_payment_id', rzpResponse.razorpay_payment_id);
+            formData.append('razorpay_order_id', rzpResponse.razorpay_order_id);
+            formData.append('razorpay_signature', rzpResponse.razorpay_signature);
+
+            const response = await fetch("{% url 'premiums:razorpay_verify' payment.public_id %}", {
+                method: 'POST',
+                headers: { 
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Accept': 'application/json'
+                },
+                body: formData
+            });
+
+            const contentType = response.headers.get('content-type');
+            if (response.status === 401 || (contentType && contentType.includes('text/html') && response.url.includes('login'))) {
+                const data = contentType && contentType.includes('application/json') ? await response.json() : null;
+                const msg = data && data.error ? data.error : "Session expired. Redirecting to login...";
+                InsureAlert.warning("Session Expired", msg);
+                setTimeout(() => window.location.href = "{% url 'accounts:login' %}?next=" + encodeURIComponent(window.location.pathname), 2000);
+                return;
+            }
+
+            if (!contentType || !contentType.includes('application/json')) {
+                const rawText = await response.text();
+                console.error("Non-JSON Verification Response:", rawText);
+                throw new Error("NON_JSON_RESPONSE");
+            }
+
+            const result = await response.json();
+
+            if (result.success) {
+                InsureAlert.success("Payment Received", "Redirecting to your dashboard...");
+                setTimeout(() => {
+                    window.location.href = "{{ back_url }}";
+                }, 1500);
+            } else {
+                throw new Error(result.error);
+            }
+        } catch (err) {
+            hud.style.display = 'none';
+            if (err.message === 'NON_JSON_RESPONSE') {
+                InsureAlert.error("Gateway Error", "Payment service temporarily unavailable. Please try again.");
+            } else {
+                InsureAlert.error("Verification Failed", err.message);
+            }
+        }
+    }
+
+    // 🛡️ Debug Bypass Logic
+    const bypassBtn = document.getElementById('bypass-btn');
+    if (bypassBtn) {
+        bypassBtn.addEventListener('click', async function() {
+            const result = await InsureAlert.confirm(
+                "Debug Simulation", 
+                "Simulate successful payment for this installment?", 
+                "SIMULATE NOW"
+            );
+            
+            if(result.isConfirmed) {
+                const dummyResponse = {
+                    razorpay_payment_id: 'pay_DEBUG_' + Math.random().toString(36).substr(2, 9),
+                    razorpay_order_id: 'order_DEBUG_' + Math.random().toString(36).substr(2, 9),
+                    razorpay_signature: 'sig_DEBUG_BYPASS'
+                };
+                verifyPayment(dummyResponse);
+            }
+        });
+    }
+</script>
 {% endblock %}

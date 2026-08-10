@@ -10,22 +10,23 @@
 
 {% block extra_css %}
 <style>
-    .tracking-wider { letter-spacing: 0.05em; }
-    
+    .tracking-wider {
+        letter-spacing: 0.05em;
+    }
+
     /* Premium Table System (Standalone) */
     .premium-card {
-        --section-accent: #f59e0b;
-        background:
-            radial-gradient(circle at top right, rgba(255, 255, 255, 0.08), transparent 38%),
-            linear-gradient(160deg, rgba(15, 23, 42, 0.96) 0%, rgba(15, 23, 42, 0.82) 55%, rgba(30, 41, 59, 0.96) 100%);
+        --section-accent: #65604F;
+        background: #FFFFFF;
         backdrop-filter: blur(12px);
-        border: 1px solid rgba(148, 163, 184, 0.16);
+        border: 1px solid rgba(255, 255, 255, 0.08);
         border-radius: 18px;
         box-shadow: 0 14px 32px rgba(2, 6, 23, 0.24);
         margin-bottom: 30px;
         overflow: hidden;
         position: relative;
     }
+
     .premium-card::before {
         content: "";
         position: absolute;
@@ -34,6 +35,7 @@
         background: linear-gradient(90deg, var(--section-accent), rgba(255, 255, 255, 0));
         opacity: 0.95;
     }
+
     .premium-card-header {
         padding: 20px 24px;
         background: linear-gradient(to right, rgba(255, 255, 255, 0.03), transparent);
@@ -42,13 +44,29 @@
         justify-content: space-between;
         align-items: center;
     }
-    .premium-card-header h5 { margin-bottom: 0; color: #f1f5f9; font-weight: 700; font-size: 1rem; letter-spacing: 0.02em; }
-    
-    .premium-table-container { overflow-x: auto; padding: 10px 12px 14px; }
-    .premium-table { width: 100%; border-collapse: separate; border-spacing: 0 10px; }
+
+    .premium-card-header h5 {
+        margin-bottom: 0;
+        color: #605E5B;
+        font-weight: 700;
+        font-size: 1rem;
+        letter-spacing: 0.02em;
+    }
+
+    .premium-table-container {
+        overflow-x: auto;
+        padding: 10px 12px 14px;
+    }
+
+    .premium-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 10px;
+    }
+
     .premium-table thead th {
         background: transparent;
-        color: #7f91ab;
+        color: rgba(156, 149, 143, 0.6);
         font-weight: 700;
         font-size: 0.68rem;
         text-transform: uppercase;
@@ -56,48 +74,123 @@
         padding: 4px 18px 8px;
         border-bottom: 0;
     }
+
     .premium-table tbody td {
         padding: 16px 18px;
         vertical-align: middle;
         color: #cbd5e1;
         font-size: 13px;
-        background: rgba(8, 15, 30, 0.62);
-        border-top: 1px solid rgba(148, 163, 184, 0.08);
-        border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+        background: #FFFFFF;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     }
+
     .premium-table tbody td:first-child {
-        border-left: 1px solid rgba(148, 163, 184, 0.08);
+        border-left: 1px solid rgba(255, 255, 255, 0.05);
         border-radius: 14px 0 0 14px;
     }
+
     .premium-table tbody td:last-child {
-        border-right: 1px solid rgba(148, 163, 184, 0.08);
+        border-right: 1px solid rgba(255, 255, 255, 0.05);
         border-radius: 0 14px 14px 0;
     }
-    .premium-table tbody tr:hover td { background: rgba(15, 23, 42, 0.92); border-color: rgba(59, 130, 246, 0.18); }
-    .premium-table tbody tr.table-empty-row:hover td { background: rgba(8, 15, 30, 0.62); border-color: rgba(148, 163, 184, 0.08); }
+
+    .premium-table tbody tr:hover td {
+        background: #F4EEE2;
+        border-color: rgba(101, 96, 79, 0.18);
+    }
+
+    .premium-table tbody tr.table-empty-row:hover td {
+        background: rgba(8, 15, 30, 0.62);
+        border-color: rgba(148, 163, 184, 0.08);
+    }
 
     /* Badges */
     .badge {
-        font-size: 9px; padding: 4px 10px; border-radius: 20px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+        font-size: 9px;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
-    .badge.submitted, .badge.pending { background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.2); }
-    .badge.under_review { background: rgba(59, 130, 246, 0.1); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.2); }
-    .badge.approved, .badge.active, .badge.completed, .badge.settled { background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); }
-    .badge.rejected, .badge.failed, .badge.expired { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
+
+    .badge.submitted,
+    .badge.pending {
+        background: rgba(200, 138, 45, 0.1);
+        color: #C88A2D;
+        border: 1px solid rgba(200, 138, 45, 0.2);
+    }
+
+    .badge.under_review {
+        background: rgba(59, 130, 246, 0.1);
+        color: #3b82f6;
+        border: 1px solid rgba(59, 130, 246, 0.2);
+    }
+
+    .badge.approved,
+    .badge.active,
+    .badge.completed,
+    .badge.settled {
+        background: rgba(62, 124, 69, 0.1);
+        color: #3E7C45;
+        border: 1px solid rgba(62, 124, 69, 0.2);
+    }
+
+    .badge.rejected,
+    .badge.failed,
+    .badge.expired {
+        background: rgba(176, 74, 74, 0.1);
+        color: #B04A4A;
+        border: 1px solid rgba(176, 74, 74, 0.2);
+    }
+
+    .badge.staff_reviewed {
+        background: rgba(101, 96, 79, 0.1);
+        color: #65604F;
+        border: 1px solid rgba(101, 96, 79, 0.2);
+    }
+
+    .badge.investigation {
+        background: rgba(244, 63, 94, 0.1);
+        color: #f43f5e;
+        border: 1px solid rgba(244, 63, 94, 0.2);
+    }
 
     .btn-premium-sm {
-        width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center;
-        border-radius: 10px; background: rgba(59, 130, 246, 0.1); color: #60a5fa !important;
-        transition: all 0.25s ease; border: 1px solid rgba(59, 130, 246, 0.22);
+        width: 36px;
+        height: 36px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        background: rgba(101, 96, 79, 0.1);
+        color: #65604F !important;
+        transition: all 0.25s ease;
+        border: 1px solid rgba(101, 96, 79, 0.22);
     }
-    .btn-premium-sm:hover { transform: translateY(-1px); background: #1a6ef5; color: white !important; box-shadow: 0 10px 20px rgba(26, 110, 245, 0.18); }
+
+    .btn-premium-sm:hover {
+        transform: translateY(-1px);
+        background: #65604F;
+        color: white !important;
+        box-shadow: 0 10px 20px rgba(101, 96, 79, 0.18);
+    }
 
     /* Form styling overrides */
-    .form-control, .form-select {
-        background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.1); color: white;
+    .form-control,
+    .form-select {
+        background: #FFFFFF;
+        border-color: rgba(255, 255, 255, 0.08);
+        color: #605E5B;
     }
-    .form-control:focus, .form-select:focus { 
-        background: rgba(255, 255, 255, 0.08); border-color: #1a6ef5; color: white; box-shadow: none; 
+
+    .form-control:focus,
+    .form-select:focus {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: #3E7C45;
+        color: white;
+        box-shadow: none;
     }
 </style>
 {% endblock %}
@@ -105,27 +198,28 @@
 {% block content %}
 <div class="container-fluid px-4 py-3">
 
-<!-- PAGE HEADER -->
-<div class="d-flex justify-content-between align-items-center mb-4" data-aos="fade-down">
+    <!-- PAGE HEADER -->
+    <div class="d-flex justify-content-between align-items-center mb-4" data-aos="fade-down">
 
-<div>
-<h4 class="mb-0 fw-bold text-white">Claims Management</h4>
-<span class="text-muted small">
-Manage and track your active insurance claims
-</span>
-</div>
+        <div>
+            <h4 class="mb-0 fw-bold"><span class="gradient-title">Claims Management</span></h4>
+            <span class="text-muted small">
+                Manage and track your active insurance claims
+            </span>
+        </div>
 
-{% if request.user.is_superuser or request.user.role == "admin" %}
-<a href="{% url 'accounts:admin_dashboard' %}" class="btn btn-outline-primary btn-sm hover-scale">
-{% elif request.user.role == "staff" %}
-<a href="{% url 'accounts:staff_dashboard' %}" class="btn btn-outline-primary btn-sm hover-scale">
-{% else %}
-<a href="{% url 'accounts:policyholder_dashboard' %}" class="btn btn-outline-primary btn-sm hover-scale">
-{% endif %}
-<i class="bi bi-arrow-left me-1"></i> Dashboard
-</a>
+        {% if request.user.is_superuser or request.user.role == "admin" %}
+        <a href="{% url 'accounts:admin_dashboard' %}" class="btn btn-outline-primary btn-sm hover-scale">
+            {% elif request.user.role == "staff" %}
+            <a href="{% url 'accounts:staff_dashboard' %}" class="btn btn-outline-primary btn-sm hover-scale">
+                {% else %}
+                <a href="{% url 'accounts:policyholder_dashboard' %}"
+                    class="btn btn-outline-primary btn-sm hover-scale">
+                    {% endif %}
+                    <i class="bi bi-arrow-left me-1"></i> Dashboard
+                </a>
 
-</div>
+    </div>
 
     <!-- SUMMARY CARDS -->
     {% if summary %}
@@ -137,39 +231,45 @@ Manage and track your active insurance claims
             </div>
         </div>
         <div class="col-4 col-md">
-            <div class="premium-card p-2 text-center mb-0 hover-scale" style="border-bottom: 2px solid #3b82f6;">
+            <div class="premium-card p-2 text-center mb-0 hover-scale" style="border-bottom: 2px solid #65604F;">
                 <div class="fs-5 fw-bold text-info">{{ summary.submitted|default:0 }}</div>
                 <div class="x-small text-muted text-uppercase tracking-wider">Subm.</div>
             </div>
         </div>
         <div class="col-4 col-md">
-            <div class="premium-card p-2 text-center mb-0 hover-scale" style="border-bottom: 2px solid #f59e0b;">
+            <div class="premium-card p-2 text-center mb-0 hover-scale" style="border-bottom: 2px solid #C88A2D;">
                 <div class="fs-5 fw-bold text-warning">{{ summary.under_review|default:0 }}</div>
                 <div class="x-small text-muted text-uppercase tracking-wider">Review</div>
             </div>
         </div>
         <div class="col-4 col-md">
-            <div class="premium-card p-2 text-center mb-0 hover-scale" style="border-bottom: 2px solid #6366f1;">
-                <div class="fs-5 fw-bold" style="color: #6366f1;">{{ summary.investigation|default:0 }}</div>
+            <div class="premium-card p-2 text-center mb-0 hover-scale" style="border-bottom: 2px solid #65604F;">
+                <div class="fs-5 fw-bold" style="color: #65604F;">{{ summary.waiting_approval|default:0 }}</div>
+                <div class="x-small text-muted text-uppercase tracking-wider">Waiting Appr.</div>
+            </div>
+        </div>
+        <div class="col-4 col-md">
+            <div class="premium-card p-2 text-center mb-0 hover-scale" style="border-bottom: 2px solid #f43f5e;">
+                <div class="fs-5 fw-bold" style="color: #f43f5e;">{{ summary.investigation|default:0 }}</div>
                 <div class="x-small text-muted text-uppercase tracking-wider">Investig.</div>
             </div>
         </div>
         <div class="col-4 col-md">
-            <div class="premium-card p-2 text-center mb-0 hover-scale" style="border-bottom: 2px solid #10b981;">
+            <div class="premium-card p-2 text-center mb-0 hover-scale" style="border-bottom: 2px solid #3E7C45;">
                 <div class="fs-5 fw-bold text-success">{{ summary.approved|default:0 }}</div>
                 <div class="x-small text-muted text-uppercase tracking-wider">Approved</div>
             </div>
         </div>
         <div class="col-4 col-md">
-            <div class="premium-card p-2 text-center mb-0 hover-scale" style="border-bottom: 2px solid #ef4444;">
+            <div class="premium-card p-2 text-center mb-0 hover-scale" style="border-bottom: 2px solid #B04A4A;">
                 <div class="fs-5 fw-bold text-danger">{{ summary.rejected|default:0 }}</div>
                 <div class="x-small text-muted text-uppercase tracking-wider">Rejected</div>
             </div>
         </div>
         <div class="col-4 col-md">
-            <div class="premium-card p-2 text-center mb-0 hover-scale" style="border-bottom: 2px solid #8b5cf6;">
+            <div class="premium-card p-2 text-center mb-0 hover-scale" style="border-bottom: 2px solid #65604F;">
                 <div class="fs-5 fw-bold text-white">{{ summary.settled|default:0 }}</div>
-                <div class="x-small text-muted text-uppercase tracking-wider" style="color: #8b5cf6;">Settled</div>
+                <div class="x-small text-muted text-uppercase tracking-wider" style="color: #65604F;">Settled</div>
             </div>
         </div>
     </div>
@@ -179,7 +279,8 @@ Manage and track your active insurance claims
     {% if filter_form %}
     <div class="premium-card mb-4" data-aos="fade-up" data-aos-delay="200">
         <div class="premium-card-header">
-            <h5 class="small text-muted text-uppercase mb-0"><i class="bi bi-filter me-2 text-primary"></i>Filter Dossiers</h5>
+            <h5 class="small text-muted text-uppercase mb-0"><i class="bi bi-filter me-2 text-primary"></i>Filter
+                Dossiers</h5>
         </div>
         <div class="p-3">
             <form method="get" class="row g-3 align-items-end">
@@ -207,7 +308,8 @@ Manage and track your active insurance claims
                     <button class="btn btn-primary btn-sm w-100 py-2 hover-scale">Filter</button>
                 </div>
                 <div class="col-md-1">
-                    <a href="{% url 'claim:list' %}" class="btn btn-outline-secondary btn-sm w-100 py-2 hover-scale">Reset</a>
+                    <a href="{% url 'claim:list' %}"
+                        class="btn btn-outline-secondary btn-sm w-100 py-2 hover-scale">Reset</a>
                 </div>
             </form>
         </div>
@@ -217,7 +319,7 @@ Manage and track your active insurance claims
     <!-- CLAIM TABLE -->
     <div class="premium-card" data-aos="fade-up" data-aos-delay="300">
         <div class="premium-card-header">
-            <h5><i class="bi bi-shield-exclamation me-2 text-warning"></i>Active Claims Ledger</h5>
+            <h5><i class="bi bi-shield-exclamation me-2 text-warning"></i><span class="gradient-title-cyan">Active Claims Ledger</span></h5>
             <span class="text-muted small tracking-wider text-uppercase">{{ claims.count }} TOTAL RECORDS</span>
         </div>
 
@@ -230,6 +332,7 @@ Manage and track your active insurance claims
                         <th>Incident Date</th>
                         <th>Claimed Amount</th>
                         {% if request.user.role == 'admin' or request.user.is_superuser or request.user.role == 'staff' %}
+                        <th>AI Risk</th>
                         <th>AI Recommendation</th>
                         {% endif %}
                         <th>Status</th>
@@ -242,7 +345,7 @@ Manage and track your active insurance claims
                     <tr>
                         <td class="ps-4">
                             <div class="fw-bold text-white">{{ claim.claim_number }}</div>
-                            <div class="x-small text-muted opacity-50">#{{ claim.pk }}</div>
+                            <div class="x-small text-muted opacity-50">{{ claim.public_id }}</div>
                         </td>
                         <td>
                             <div class="fw-bold text-info small">{{ claim.policy.policy_number }}</div>
@@ -250,25 +353,25 @@ Manage and track your active insurance claims
                         </td>
                         <td class="small">{{ claim.incident_date|date:"d M Y" }}</td>
                         <td class="fw-bold text-white">₹{{ claim.claimed_amount|default:0|intcomma }}</td>
-                        
+
                         {% if request.user.role == 'admin' or request.user.is_superuser or request.user.role == 'staff' %}
+                        {% with payload=claim.review_payload %}
                         <td>
-                            {% if claim.ai_predicted_amount %}
-                                <div class="fw-bold" style="color: #60a5fa;">
-                                    ₹{{ claim.ai_predicted_amount|floatformat:0|intcomma }}
-                                    <i class="bi bi-robot ms-1 small"></i>
-                                </div>
-                                {% if claim.claimed_amount and claim.ai_predicted_amount %}
-                                    {% with diff=claim.claimed_amount|subtract:claim.ai_predicted_amount|abs %}
-                                        {% if diff|floatformat:0 > 5000 %}
-                                            <span class="x-small text-warning"><i class="bi bi-exclamation-triangle me-1"></i>High Variance</span>
-                                        {% endif %}
-                                    {% endwith %}
-                                {% endif %}
-                            {% else %}
-                                <span class="text-muted italic small opacity-50">Calculating...</span>
-                            {% endif %}
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="badge {% if payload.risk_label == 'HIGH' %}bg-danger{% elif payload.risk_label == 'MEDIUM' %}bg-warning text-dark{% else %}bg-success{% endif %}">
+                                    {{ payload.risk_label }}
+                                </span>
+                                <span class="fw-bold small text-slate-300">{{ payload.risk_score|floatformat:1 }}%</span>
+                            </div>
                         </td>
+                        <td>
+                            <div class="fw-bold" style="color: #3E7C45;">
+                                ₹{{ payload.final_amount|floatformat:2|intcomma }}
+                                <i class="bi bi-robot ms-1 small"></i>
+                            </div>
+                            <div class="x-small text-muted opacity-50 text-uppercase" style="font-size: 8px;">{{ payload.payout_label }}</div>
+                        </td>
+                        {% endwith %}
                         {% endif %}
 
                         <td>
@@ -279,7 +382,9 @@ Manage and track your active insurance claims
                         <td>
                             {% if claim.assigned_to %}
                             <div class="d-flex align-items-center gap-2">
-                                <div class="bg-primary rounded-circle text-center" style="width: 24px; height: 24px; font-size: 10px; line-height: 24px; color: white;">{{ claim.assigned_to.username|slice:":1"|upper }}</div>
+                                <div class="bg-primary rounded-circle text-center"
+                                    style="width: 24px; height: 24px; font-size: 10px; line-height: 24px; color: white;">
+                                    {{ claim.assigned_to.username|slice:":1"|upper }}</div>
                                 <span class="small">{{ claim.assigned_to.username }}</span>
                             </div>
                             {% else %}
@@ -288,9 +393,22 @@ Manage and track your active insurance claims
                         </td>
                         <td class="pe-4 text-end">
                             <div class="d-flex justify-content-end gap-2">
-                                <a href="{% url 'claim:detail' claim.pk %}" class="btn-premium-sm hover-scale" title="View Dossier">
+                                {% if request.user.role == 'admin' or request.user.is_superuser %}
+                                <a href="{% url 'claim:review' claim.public_id %}" class="btn-premium-sm hover-scale"
+                                    title="Open Review Console">
                                     <i class="bi bi-eye"></i>
                                 </a>
+                                {% elif request.user.role == 'staff' %}
+                                <a href="{% url 'claim:staff_review' claim.public_id %}" class="btn-premium-sm hover-scale"
+                                    title="Open Staff Review">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                {% else %}
+                                <a href="{% url 'claim:detail' claim.public_id %}" class="btn-premium-sm hover-scale"
+                                    title="View Dossier">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                {% endif %}
                             </div>
                         </td>
                     </tr>
@@ -302,23 +420,23 @@ Manage and track your active insurance claims
                             </div>
                             <div class="text-white fw-bold mb-1">
                                 {% if is_filtered %}
-                                    No claims match current filters
+                                No claims match current filters
                                 {% elif not has_claims_at_all %}
-                                    No claims submitted yet
+                                No claims submitted yet
                                 {% else %}
-                                    No active claims to display
+                                No active claims to display
                                 {% endif %}
                             </div>
                             <div class="text-muted small mb-4">
                                 {% if is_filtered %}
-                                    Try adjusting your search criteria to find specific dossiers.
+                                Try adjusting your search criteria to find specific dossiers.
                                 {% elif not has_claims_at_all %}
-                                    You haven't filed any insurance claims yet. Your coverage is currently fully intact.
+                                You haven't filed any insurance claims yet. Your coverage is currently fully intact.
                                 {% else %}
-                                    All your claims have been processed or resolved.
+                                All your claims have been processed or resolved.
                                 {% endif %}
                             </div>
-                            
+
                             {% if not has_claims_at_all and request.user.role == "policyholder" %}
                             <a href="{% url 'claim:create' %}" class="btn btn-primary btn-sm px-4 hover-scale">
                                 <i class="bi bi-plus-circle me-1"></i> Submit New Claim

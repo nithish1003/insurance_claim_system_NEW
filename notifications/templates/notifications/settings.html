@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+
+{% block title %}Notification Preferences | ClaimIQ{% endblock %}
+
+{% block breadcrumb %}Account Settings / Notifications{% endblock %}
+
+{% block extra_css %}
+<style>
+    .settings-hero {
+        background: linear-gradient(135deg, rgba(101, 96, 79, 0.05) 0%, transparent 100%);
+        padding: 40px; border-radius: 20px; margin-bottom: 30px;
+        border: 1px solid rgba(101, 96, 79, 0.1);
+    }
+    .glass-card {
+        background: rgba(17, 28, 53, 0.4); backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px;
+        padding: 32px;
+    }
+    .pref-row {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 20px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    }
+    .pref-row:last-child { border-bottom: none; }
+    
+    .pref-info h6 { margin: 0; font-weight: 700; color: #fff; }
+    .pref-info p { margin: 4px 0 0; font-size: 13px; color: rgba(156, 149, 143, 0.7); }
+
+    /* Custom Switch Styling */
+    .form-check-input {
+        width: 3.5em; height: 1.75em; cursor: pointer;
+        background-color: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .form-check-input:checked {
+        background-color: #00DCE5; border-color: #00DCE5;
+        box-shadow: 0 0 15px rgba(101, 96, 79, 0.4);
+    }
+    
+    .save-btn {
+        background: linear-gradient(135deg, #00DCE5 0%, #00959B 100%);
+        border: none; color: #0b0e14; font-weight: 800; padding: 14px 40px;
+        border-radius: 12px; text-transform: uppercase; letter-spacing: 1px;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .save-btn:hover {
+        transform: translateY(-3px); box-shadow: 0 8px 25px rgba(101, 96, 79, 0.4);
+        color: #000;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="settings-hero">
+            <h2 class="fw-bold text-white mb-2">Notification Intelligence</h2>
+            <p class="text-muted mb-0">Control how ClaimIQ communicates with you. We recommend keeping critical alerts enabled for claim security.</p>
+        </div>
+
+        <form method="POST">
+            {% csrf_token %}
+            <div class="glass-card mb-4">
+                <h5 class="text-white fw-bold mb-4"><i class="bi bi-broadcast me-2 text-info"></i>Delivery Channels</h5>
+                
+                <div class="pref-row">
+                    <div class="pref-info">
+                        <h6>Email Notifications</h6>
+                        <p>Receive branded HTML updates for claim status and payments.</p>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" name="email_enabled" {% if prefs.email_enabled %}checked{% endif %}>
+                    </div>
+                </div>
+
+                <div class="pref-row">
+                    <div class="pref-info">
+                        <h6>SMS Text Alerts</h6>
+                        <p>High-urgency mobile alerts for fraud detection and approvals.</p>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" name="sms_enabled" {% if prefs.sms_enabled %}checked{% endif %}>
+                    </div>
+                </div>
+
+                <div class="pref-row">
+                    <div class="pref-info">
+                        <h6>In-App Real-time Push</h6>
+                        <p>Zero-latency pulses delivered directly to your Dashboard HUD.</p>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" name="realtime_enabled" {% if prefs.realtime_enabled %}checked{% endif %}>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-card mb-4">
+                <h5 class="text-white fw-bold mb-4"><i class="bi bi-shield-check me-2 text-success"></i>Event Categories</h5>
+                
+                <div class="pref-row">
+                    <div class="pref-info">
+                        <h6>Claim Lifecycle Updates</h6>
+                        <p>Alerts for submission, approval, rejection, and settlement.</p>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" name="claim_updates" {% if prefs.claim_updates %}checked{% endif %}>
+                    </div>
+                </div>
+
+                <div class="pref-row">
+                    <div class="pref-info">
+                        <h6>Identity & KYC Alerts</h6>
+                        <p>Verification status updates and document expiry warnings.</p>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" name="kyc_alerts" {% if prefs.kyc_alerts %}checked{% endif %}>
+                    </div>
+                </div>
+
+                <div class="pref-row">
+                    <div class="pref-info">
+                        <h6>Premium Payment Reminders</h6>
+                        <p>Automated notices for upcoming, due, and overdue installments.</p>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" name="payment_reminders" {% if prefs.payment_reminders %}checked{% endif %}>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-end">
+                <button type="submit" class="save-btn">Synchronize Preferences</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

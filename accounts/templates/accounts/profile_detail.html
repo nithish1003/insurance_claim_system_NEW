@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}Profile Detail{% endblock %}
+
+{% block breadcrumb %}Profile Detail{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="text-white fw-bold mb-1">Profile Snapshot</h3>
+            <p class="text-muted mb-0">Secure profile view using the public UUID identifier.</p>
+        </div>
+        <a href="{% url 'accounts:profile' %}" class="btn btn-outline-secondary btn-sm">Back</a>
+    </div>
+
+    <div class="card bg-dark border-secondary">
+        <div class="card-body">
+            <dl class="row mb-0">
+                <dt class="col-sm-3 text-muted">Profile UUID</dt>
+                <dd class="col-sm-9 text-white">{{ target_profile.public_id }}</dd>
+
+                <dt class="col-sm-3 text-muted">Username</dt>
+                <dd class="col-sm-9 text-white">{{ target_user.username }}</dd>
+
+                <dt class="col-sm-3 text-muted">Full Name</dt>
+                <dd class="col-sm-9 text-white">{{ target_profile.full_name|default:target_user.full_name_display }}</dd>
+
+                <dt class="col-sm-3 text-muted">Email</dt>
+                <dd class="col-sm-9 text-white">{{ target_user.email|default:"-" }}</dd>
+
+                <dt class="col-sm-3 text-muted">Phone</dt>
+                <dd class="col-sm-9 text-white">{{ target_user.phone|default:"-" }}</dd>
+
+                <dt class="col-sm-3 text-muted">Aadhaar</dt>
+                <dd class="col-sm-9 text-white">{{ target_profile.masked_aadhaar|default:target_user.aadhaar_masked }}</dd>
+
+                <dt class="col-sm-3 text-muted">Verification</dt>
+                <dd class="col-sm-9 text-white">{{ target_profile.get_verification_status_display|default:"Pending" }}</dd>
+            </dl>
+        </div>
+    </div>
+</div>
+{% endblock %}

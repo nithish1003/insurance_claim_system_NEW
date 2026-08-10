@@ -1,0 +1,252 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Enterprise AI Fraud Intelligence Center{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4" style="background: #FFFFFF; min-height: 100vh; color: #605E5B;">
+    <!-- Header with Live Stats -->
+    <div class="row mb-4 align-items-center">
+        <div class="col-md-6">
+            <h2 class="fw-bold mb-0 text-gradient" style="background: linear-gradient(90deg, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                <i class="fas fa-microchip me-2"></i>Enterprise Decision Intelligence
+            </h2>
+            <p class="text-muted mb-0">Phase 8: Multi-Dimensional Risk Architecture & Network Analytics</p>
+        </div>
+        <div class="col-md-6 text-end">
+            <span class="badge bg-danger pulse-red me-2">
+                <i class="fas fa-circle me-1" style="font-size: 8px;"></i> LIVE FRAUD MONITORING
+            </span>
+            <button class="btn btn-outline-info btn-sm">
+                <i class="fas fa-sync-alt me-1"></i> Refresh Node Data
+            </button>
+        </div>
+    </div>
+
+    <!-- Tier 1: Advanced KPI Analytics -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="kpi-card glass">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <p class="text-muted small mb-1">AI ACCURACY</p>
+                        <h3 class="mb-0 fw-bold" id="ai-accuracy-val">--%</h3>
+                    </div>
+                    <div class="icon-box bg-primary-soft">
+                        <i class="fas fa-bullseye text-primary"></i>
+                    </div>
+                </div>
+                <div class="progress mt-3" style="height: 4px; background: rgba(56, 189, 248, 0.1);">
+                    <div id="ai-accuracy-progress" class="progress-bar bg-primary" style="width: 0%"></div>
+                </div>
+                <p class="small text-success mt-2 mb-0"><i class="fas fa-arrow-up me-1"></i> +2.4% vs Bench</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="kpi-card glass">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <p class="text-muted small mb-1">NETWORK HITS</p>
+                        <h3 class="mb-0 fw-bold" id="network-hits-val">--</h3>
+                    </div>
+                    <div class="icon-box bg-warning-soft">
+                        <i class="fas fa-project-diagram text-warning"></i>
+                    </div>
+                </div>
+                <p class="small text-muted mt-3 mb-0">Suspicious claimant clusters detected</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="kpi-card glass border-danger-soft">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <p class="text-muted small mb-1">LEAKAGE PREVENTED</p>
+                        <h3 class="mb-0 fw-bold">₹1.2M</h3>
+                    </div>
+                    <div class="icon-box bg-danger-soft">
+                        <i class="fas fa-shield-virus text-danger"></i>
+                    </div>
+                </div>
+                <p class="small text-danger mt-3 mb-0"><i class="fas fa-exclamation-triangle me-1"></i> High risk in Medical Rent</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="kpi-card glass">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <p class="text-muted small mb-1">TRIAGE VELOCITY</p>
+                        <h3 class="mb-0 fw-bold" id="triage-val">--</h3>
+                    </div>
+                    <div class="icon-box bg-info-soft">
+                        <i class="fas fa-bolt text-info"></i>
+                    </div>
+                </div>
+                <p class="small text-info mt-3 mb-0">Avg settlement: 2.4 days</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tier 2: Decision Quadrants & Governance -->
+    <div class="row g-4">
+        <!-- Multi-Risk Radar -->
+        <div class="col-lg-5">
+            <div class="chart-card glass p-4 h-100">
+                <div class="d-flex justify-content-between mb-4">
+                    <h5 class="fw-bold mb-0">Multi-Dimensional Risk Profile</h5>
+                    <div class="dropdown">
+                        <i class="fas fa-ellipsis-h text-muted" role="button"></i>
+                    </div>
+                </div>
+                <div style="height: 350px;">
+                    <canvas id="riskRadarChart"></canvas>
+                </div>
+                <div class="mt-4 p-3 bg-dark-soft rounded">
+                    <p class="small text-muted mb-1"><i class="fas fa-info-circle me-1"></i> Governance Note</p>
+                    <p class="small mb-0">System identified high <b>Documentation Risk</b> across Life claims. Escalating validation priority.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Network Intelligence Center -->
+        <div class="col-lg-7">
+            <div class="chart-card glass p-4 h-100">
+                <div class="d-flex justify-content-between mb-4">
+                    <div>
+                        <h5 class="fw-bold mb-0">Fraud Network Intelligence</h5>
+                        <p class="text-muted small">Mapping cross-claim Aadhaar & Bank Account clusters</p>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-sm btn-dark active">Clusters</button>
+                        <button class="btn btn-sm btn-dark">Heatmap</button>
+                    </div>
+                </div>
+                
+                <!-- Simulated Network Graph Wrapper -->
+                <div class="network-viz-container" style="position: relative; height: 350px; background: rgba(0,0,0,0.2); border-radius: 12px; overflow: hidden;">
+                    <div id="network-loading" class="position-absolute top-50 start-50 translate-middle">
+                        <div class="spinner-border text-info" role="status"></div>
+                    </div>
+                    <!-- Nodes will be simulated with animated divs for WOW effect -->
+                    <div class="network-node active" style="top: 30%; left: 40%;"></div>
+                    <div class="network-node" style="top: 50%; left: 60%;"></div>
+                    <div class="network-node danger" style="top: 20%; left: 70%;"></div>
+                    <div class="network-node" style="top: 70%; left: 30%;"></div>
+                    <div class="network-link" style="width: 200px; transform: rotate(20deg); top: 35%; left: 42%;"></div>
+                    <canvas id="networkChart" style="z-index: 5;"></canvas>
+                </div>
+
+                <!-- Live Audit Feed -->
+                <div class="mt-4">
+                    <h6 class="small fw-bold text-muted text-uppercase mb-3">Live Intelligence Logs</h6>
+                    <div class="audit-feed" id="audit-feed-list">
+                        <!-- Items dynamically added -->
+                        <div class="audit-item d-flex align-items-center mb-2 p-2 rounded hover-dim">
+                            <span class="status-dot warning me-3"></span>
+                            <div class="flex-grow-1">
+                                <p class="small mb-0 fw-bold">Duplicate Bill Hash Detected</p>
+                                <p class="x-small text-muted mb-0">Claim CLM-902 linked to CLM-122 via invoice sha256</p>
+                            </div>
+                            <span class="x-small text-muted">2m ago</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .text-gradient { background-clip: text; -webkit-background-clip: text; }
+    .glass {
+        background: rgba(30, 41, 59, 0.7);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 16px;
+        transition: transform 0.3s ease;
+    }
+    .kpi-card { padding: 1.5rem; }
+    .bg-dark-soft { background: rgba(15, 23, 42, 0.5); }
+    .bg-primary-soft { background: rgba(56, 189, 248, 0.1); width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+    .bg-warning-soft { background: rgba(200, 138, 45, 0.1); width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+    .bg-danger-soft { background: rgba(248, 113, 113, 0.1); width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+    .bg-info-soft { background: rgba(34, 211, 238, 0.1); width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+    
+    .pulse-red { animation: pulse 2s infinite; }
+    @keyframes pulse { 
+        0% { opacity: 1; }
+        50% { opacity: 0.5; }
+        100% { opacity: 1; }
+    }
+
+    .network-node {
+        position: absolute; width: 12px; height: 12px; background: #38bdf8; border-radius: 50%;
+        box-shadow: 0 0 10px #38bdf8; animation: node-float 4s infinite ease-in-out;
+    }
+    .network-node.danger { background: #f87171; box-shadow: 0 0 15px #f87171; }
+    .network-link { position: absolute; height: 1px; background: rgba(56, 189, 248, 0.2); }
+    
+    @keyframes node-float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .status-dot.warning { background: #C88A2D; box-shadow: 0 0 5px #C88A2D; }
+    .x-small { font-size: 0.75rem; }
+    .hover-dim:hover { background: rgba(255,255,255,0.03); cursor: pointer; }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Fetch Enterprise KPIs
+        fetch('{% url "analytics:enterprise_kpi" %}')
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('ai-accuracy-val').innerText = data.decision_accuracy + '%';
+                document.getElementById('ai-accuracy-progress').style.width = data.decision_accuracy + '%';
+                document.getElementById('network-hits-val').innerText = data.repeat_claimant_count;
+                document.getElementById('triage-val').innerText = data.avg_triage_minutes + ' min';
+                
+                initRadar(data.multi_risk);
+                setTimeout(() => document.getElementById('network-loading').style.display = 'none', 1000);
+            });
+
+        function initRadar(stats) {
+            const ctx = document.getElementById('riskRadarChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Fraud Risk', 'Cost Leakage', 'Doc Integrity', 'Uncertainty', 'Anomalies'],
+                    datasets: [{
+                        label: 'Current System Profile',
+                        data: [
+                            stats.fraud * 100, 
+                            stats.leakage * 100, 
+                            stats.doc * 100, 
+                            stats.uncertainty * 100, 
+                            15
+                        ],
+                        backgroundColor: 'rgba(56, 189, 248, 0.2)',
+                        borderColor: '#38bdf8',
+                        pointBackgroundColor: '#38bdf8',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    scales: {
+                        r: {
+                            angleLines: { color: 'rgba(255,255,255,0.1)' },
+                            grid: { color: 'rgba(255,255,255,0.1)' },
+                            pointLabels: { color: 'rgba(156, 149, 143, 0.7)' },
+                            ticks: { display: false, backdropColor: 'transparent' }
+                        }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

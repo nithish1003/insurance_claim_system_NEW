@@ -4,40 +4,65 @@
 {% block title %}Claim Assessment — {{ claim.claim_number }}{% endblock %}
 
 {% block content %}
+<!-- AUDIT_ENGINE_V1_FIX -->
+{% if request.user.role == 'staff' or request.user.role == 'admin' or request.user.is_superuser %}
+<script>
+    // 🛡️ SECURITY & GOVERNANCE GATE
+    // This is the legacy V2 Assessment view. All Staff/Admin traffic must be routed 
+    // to the V3 Staff Review (Audit Dashboard) to maintain single source of truth.
+    window.location.href = "{% url 'claim:staff_review' claim.public_id %}";
+</script>
+<div style="background: #FFFFFF; color: white; height: 100vh; display: flex; align-items: center; justify-content: center; font-family: sans-serif;">
+    <div style="text-align: center;">
+        <h3 style="color: #3b82f6;">Redirecting to V3 Audit Dashboard...</h3>
+        <p style="color: rgba(156, 149, 143, 0.7);">Loading hardened forensic interface for claim {{ claim.claim_number }}</p>
+    </div>
+</div>
+{% endif %}
+
+<div class="row justify-content-center mt-4">
+    <div class="col-md-10">
+        
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Claim Assessment — {{ claim.claim_number }}{% endblock %}
+
+{% block content %}
 <div class="row justify-content-center mt-4">
     <div class="col-md-10">
         
         <div class="mb-3">
-            <a href="{% url 'claim:review' claim.id %}" class="btn btn-sm btn-outline-secondary">
+            <a href="{% url 'claim:staff_review' claim.public_id %}" class="btn btn-sm btn-outline-secondary">
                 <i class="bi bi-arrow-left"></i> Back to Review
             </a>
         </div>
 
-        <div class="card shadow-sm">
-            <div class="card-header bg-dark text-white">
-                <h5 class="mb-0">Assess Claim: {{ claim.claim_number }}</h5>
+        <div class="premium-card">
+            <div class="premium-card-header">
+                <h5 class="mb-0"><i class="bi bi-clipboard-check me-2 text-primary"></i>Assess Claim: {{ claim.claim_number }}</h5>
             </div>
             
             <div class="card-body">
                 
                 <!-- Claim Summary -->
-                <div class="alert alert-secondary mb-4">
-                    <div class="row">
+                <div class="p-4 rounded-4 mb-4" style="background: #FFFFFF; border: 1px solid rgba(255, 255, 255, 0.08);">
+                    <div class="row g-3">
                         <div class="col-md-3">
-                            <strong>Claimed Amount:</strong><br>
-                            <span class="h5 text-primary">₹{{ claim.claimed_amount|intcomma }}</span>
+                            <div class="label-muted mb-1">Claimed Amount</div>
+                            <div class="h5 fw-bold text-primary">₹{{ claim.claimed_amount|intcomma }}</div>
                         </div>
                         <div class="col-md-3">
-                            <strong>Sum Insured:</strong><br>
-                            <span class="h5 text-info">₹{{ sum_insured|intcomma }}</span>
+                            <div class="label-muted mb-1">Sum Insured</div>
+                            <div class="h5 fw-bold text-info">₹{{ sum_insured|intcomma }}</div>
                         </div>
                         <div class="col-md-3">
-                            <strong>Deductible:</strong><br>
-                            <span class="h5 text-warning">₹{{ claim.deductible_amount|intcomma }}</span>
+                            <div class="label-muted mb-1">Deductible</div>
+                            <div class="h5 fw-bold text-warning">₹{{ claim.deductible_amount|intcomma }}</div>
                         </div>
                         <div class="col-md-3">
-                            <strong>Net Claimable:</strong><br>
-                            <span class="h5 text-success">₹{{ net_claimable|intcomma }}</span>
+                            <div class="label-muted mb-1">Net Claimable</div>
+                            <div class="h5 fw-bold text-success-premium">₹{{ net_claimable|intcomma }}</div>
                         </div>
                     </div>
                 </div>
@@ -126,18 +151,18 @@
                     </div>
                     
                     <!-- Auto Calculation Info -->
-                    <div class="alert alert-info mb-4">
-                        <h6><i class="bi bi-calculator"></i> Auto Calculation</h6>
-                        <p class="mb-1"><strong>Formula:</strong> (Bill Amount × Coverage % ÷ 100) - Deductible</p>
-                        <p class="mb-0 text-muted">The Recommended Amount field is automatically calculated and readonly. Enter Bill Amount, Coverage %, and Deductible to see the calculation.</p>
+                    <div class="p-4 rounded-4 mb-4" style="background: #F4EEE2; border: 1px solid rgba(101, 96, 79, 0.2);">
+                        <h6 class="text-primary"><i class="bi bi-calculator me-2"></i>Auto Calculation</h6>
+                        <p class="mb-1 text-light"><strong>Formula:</strong> (Bill Amount × Coverage % ÷ 100) - Deductible</p>
+                        <p class="mb-0 text-muted small">The Recommended Amount field is automatically calculated and readonly. Enter Bill Amount, Coverage %, and Deductible to see the calculation.</p>
                     </div>
                     
                     <div class="d-flex justify-content-between">
-                        <a href="{% url 'claim:review' claim.id %}" class="btn btn-secondary">
+                        <a href="{% url 'claim:staff_review' claim.public_id %}" class="btn btn-secondary">
                             <i class="bi bi-arrow-left"></i> Cancel
                         </a>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-save"></i> Save Assessment
+                        <button type="submit" class="btn btn-primary px-4">
+                            <i class="bi bi-save me-1"></i> Save Assessment
                         </button>
                     </div>
                     
@@ -150,22 +175,41 @@
 </div>
 
 <style>
-.alert-info {
-    border-left: 4px solid #0dcaf0;
-}
+    .label-muted {
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: rgba(156, 149, 143, 0.7);
+    }
 
-.form-control[readonly] {
-    background-color: #f8f9fa;
-    cursor: not-allowed;
-    opacity: 0.7;
-}
+    .premium-card {
+        background: #FFFFFF;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 24px;
+        overflow: hidden;
+    }
 
-.card-header {
-    border-top-left-radius: 0.375rem;
-    border-top-right-radius: 0.375rem;
-}
+    .premium-card-header {
+        padding: 24px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        background: linear-gradient(90deg, rgba(255, 255, 255, 0.03), transparent);
+    }
+
+    .premium-card-header h5 {
+        color: #605E5B;
+        font-weight: 700;
+    }
+
+    .premium-card-body {
+        padding: 24px;
+    }
+
+    .form-control[readonly] {
+        background-color: rgba(255, 255, 255, 0.03);
+        cursor: not-allowed;
+        opacity: 0.7;
+        color: rgba(156, 149, 143, 0.7);
+    }
 </style>
 {% endblock %}
-
-
-

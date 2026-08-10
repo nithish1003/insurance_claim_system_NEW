@@ -42,25 +42,29 @@ class Command(BaseCommand):
             
             try:
                 result = subprocess.run([
-                    sys.executable, script
-                ], capture_output=True, text=True, check=True)
+                    sys.executable, '-X', 'utf8', script
+                ], capture_output=True, text=True, encoding='utf-8', check=True)
                 
                 self.stdout.write(
-                    self.style.SUCCESS(f'✓ {script} completed successfully')
+                    self.style.SUCCESS(f'[SUCCESS] {script} completed successfully')
                 )
                 if result.stdout:
-                    self.stdout.write(result.stdout)
+                    # Strip any non-ASCII characters (like emojis) to prevent Windows console crashes
+                    clean_stdout = result.stdout.encode('ascii', errors='ignore').decode('ascii')
+                    self.stdout.write(clean_stdout)
                 success_count += 1
                 
             except subprocess.CalledProcessError as e:
                 self.stdout.write(
-                    self.style.ERROR(f'✗ {script} failed with error:')
+                    self.style.ERROR(f'[ERROR] {script} failed with error:')
                 )
-                self.stdout.write(e.stderr)
+                if e.stderr:
+                    clean_stderr = e.stderr.encode('ascii', errors='ignore').decode('ascii')
+                    self.stdout.write(clean_stderr)
                 
             except Exception as e:
                 self.stdout.write(
-                    self.style.ERROR(f'✗ {script} failed with exception: {e}')
+                    self.style.ERROR(f'[ERROR] {script} failed with exception: {e}')
                 )
         
         if success_count == len(scripts):

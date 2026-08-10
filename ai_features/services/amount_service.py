@@ -47,7 +47,22 @@ class AmountPredictionService:
             }
             
             if all(os.path.exists(p) for p in paths.values()):
-                self._model = joblib.load(paths['model'])
+                # Standardized Loading Pattern
+                loaded_obj = joblib.load(paths['model'])
+                if isinstance(loaded_obj, dict):
+                    self._model = (
+                        loaded_obj.get('model') or 
+                        loaded_obj.get('regressor') or 
+                        loaded_obj.get('classifier')
+                    )
+                else:
+                    self._model = loaded_obj
+                
+                print("AMOUNT MODEL TYPE:", type(self._model))
+                if self._model and not hasattr(self._model, "predict"):
+                    logger.error("❌ Loaded object is not a valid regressor")
+                    self._model = None
+
                 self._explainer = joblib.load(paths['explainer'])
                 self._hospital_encoder = joblib.load(paths['encoder'])
                 self._feature_names = joblib.load(paths['features'])
@@ -84,7 +99,7 @@ class AmountPredictionService:
                     
                     # ── 4. CONFIDENCE CALCULATION ──────────────────
                     confidence = self._calculate_prediction_confidence(features_df)
-                    claim.confidence_score = confidence * 100
+                    # Removed claim.confidence_score assignment to prevent overwriting classification confidence
                     
                     recommended_amount = recommended_raw
                     ml_success = True
@@ -108,8 +123,13 @@ class AmountPredictionService:
             if final_payout < recommended_amount:
                 explanation_parts.append(f"Capped to Net Claimable (₹{net_claimable:,.2f}) per policy terms.")
             
-            # ── 6. COMMIT AUDIT LOG (In-memory attributes only) ────
-            claim.ai_predicted_amount = Decimal(str(round(final_payout, 2)))
+            # ── 6. COMMIT TO VERSIONED PAYOUT FIELDS ────────────────────
+            final_value = Decimal(str(round(final_payout, 2)))
+            claim.final_ai_recommendation = final_value
+            claim.ai_engine_version = "v2.0-amount-service"
+            if not claim.initial_ai_prediction:
+                claim.initial_ai_prediction = final_value
+            
             claim.ai_adjustment_factor = final_payout / amount if amount > 0 else 1.0
             claim.ai_calculation_logic = " | ".join(explanation_parts)
             

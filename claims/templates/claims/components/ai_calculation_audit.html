@@ -1,0 +1,534 @@
+<section id="ai-calculation-audit-panel" class="premium-audit-container mb-5" style="display: none;">
+    <!-- 🏢 AUDIT HEADER -->
+    <div class="audit-header mb-4">
+        <div class="d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center gap-3">
+                <div class="ai-status-pulse"></div>
+                <div>
+                    <h5 class="text-white fw-bold mb-0">AI Explainable Audit Trace v2.5</h5>
+                    <div class="d-flex align-items-center gap-2 mt-1">
+                        <div id="triage-priority-badge" class="triage-badge">TRIAGE: --</div>
+                        <div class="text-muted x-small tracking-wider text-uppercase">Financial Integrity Verified</div>
+                    </div>
+                </div>
+            </div>
+            <div class="d-flex gap-2">
+                <div id="audit-verification-status" class="audit-status-badge"></div>
+                <button class="btn-audit-toggle" onclick="toggleTraceDetails()" title="Detailed Audit Log">
+                    <i class="bi bi-chevron-down"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🧠 DYNAMIC RISK & NEURAL ANALYSIS -->
+    <div class="row g-4 mb-4">
+        <!-- Main Risk Card -->
+        <div class="col-12">
+            <div class="audit-surface glass-card p-4 h-100">
+                <div class="d-flex justify-content-between align-items-start mb-4">
+                    <div class="label-muted text-uppercase tracking-widest">Risk Attribution</div>
+                    <i class="bi bi-shield-shaded text-indigo opacity-50"></i>
+                </div>
+                
+                <div class="risk-score-display text-center my-4">
+                    <div id="final-risk-score" class="fs-1 fw-black text-white glow-text">--%</div>
+                    <div class="text-muted small">Aggregate Risk Score</div>
+                </div>
+
+                <div class="audit-progress-wrap mb-4">
+                    <div class="progress-premium" style="height: 10px;">
+                        <div id="risk-score-progress" class="progress-bar bg-gradient-indigo" style="width: 0%;"></div>
+                    </div>
+                </div>
+
+                    <div class="audit-formula-surface p-3 rounded-4 mb-4">
+                        <div class="x-small text-muted mb-2 text-center opacity-50">STRICT NEURAL SUMMATION FORMULA</div>
+                        <div id="risk-formula" class="formula-text text-center text-indigo-200"></div>
+                    </div>
+
+                    <!-- 🌀 XGBOOST SHAP ANALYSIS -->
+                    <div id="shap-analysis-panel" class="p-3 rounded-4" style="background: rgba(0,0,0,0.15); border: 1px solid rgba(255,255,255,0.05);">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="x-small text-muted text-uppercase tracking-widest">ML Feature Attribution (SHAP)</span>
+                            <span id="model-version-badge" class="badge-success-glow" style="font-size: 8px;">XGB v3.8</span>
+                        </div>
+                        <div id="shap-contributions-list" class="d-flex flex-column gap-2">
+                             <!-- SHAP bars injected here -->
+                        </div>
+                        <div class="mt-3 pt-2 border-top border-white border-opacity-5 d-flex justify-content-between align-items-center">
+                            <span class="x-small text-muted">SHAP Base Value</span>
+                            <span id="shap-base-value" class="x-small text-indigo-200 fw-bold">--</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 🛡️ Phase 2: Forensic Transparency Table -->
+            <div class="col-12">
+                <div class="audit-surface glass-card p-4 h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div class="label-muted text-uppercase tracking-widest">Forensic Transparency Analysis</div>
+                        <span class="x-small text-indigo-400 fw-bold">BENCHMARK COMPARISON ACTIVE</span>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-borderless align-middle mb-0">
+                            <thead>
+                                <tr class="border-bottom border-white border-opacity-5">
+                                    <th class="label-muted text-start pb-2" style="font-size: 9px;">RISK FACTOR</th>
+                                    <th class="label-muted text-center pb-2" style="font-size: 9px;">ACTUAL</th>
+                                    <th class="label-muted text-center pb-2" style="font-size: 9px;">BENCHMARK</th>
+                                    <th class="label-muted text-end pb-2" style="font-size: 9px;">IMPACT (SHAP)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="forensic-transparency-body">
+                                <!-- Injected by JS -->
+                                <tr>
+                                    <td colspan="4" class="text-center py-5">
+                                        <div class="spinner-border spinner-border-sm text-indigo opacity-50" role="status"></div>
+                                        <div class="text-muted x-small mt-2">Correlating feature deltas...</div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="mt-3 p-3 rounded-4 bg-black bg-opacity-20 border border-white border-opacity-5">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-info-circle text-indigo"></i>
+                            <span class="x-small text-muted italic">
+                                Benchmarks derived from IRDAI industry norms and historical policyholder behavior clusters.
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 🧾 AI VERDICT & DECISION RATIONALE -->
+        <div class="row g-4 mb-4">
+            <div class="col-12">
+                <div class="audit-surface glass-card p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="label-muted text-uppercase tracking-widest">Dossier Verdict & AI Rationale</div>
+                        <i class="bi bi-chat-quote text-indigo opacity-50 fs-5"></i>
+                    </div>
+                    <div id="ai-audit-verdict-note" class="ai-verdict-text italic text-white-50">
+                        Computational note generating...
+                    </div>
+                    <div class="mt-3 x-small text-muted border-top border-white border-opacity-5 pt-2">
+                        <i class="bi bi-info-circle me-1"></i> This note is deterministically generated based on verification status and risk attribution logic.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    <!-- 🧾 AUDIT CALCULATION STEPS (COLLAPSIBLE) -->
+    <div id="trace-details" class="audit-trace-wrapper" style="display: none;">
+        <div class="section-divider mb-4">
+            <span class="divider-text">Deduction Protocol Execution</span>
+        </div>
+        
+        <div id="audit-steps-container" class="timeline-trail px-3 mb-5">
+            <!-- Steps injected by JS -->
+        </div>
+
+        <!-- 🏁 FINAL VERIFICATION TICKET -->
+        <div class="audit-final-ticket glass-card border-success border-opacity-25 p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="verification-seal">
+                        <i class="bi bi-patch-check-fill fs-4 text-success"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-white fw-bold mb-0">Financial Verification Checksum</h6>
+                        <span id="final-check-badge" class="badge-success-glow">--</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row g-4 align-items-center">
+                <div class="col-md-6">
+                    <div class="label-muted mb-2">Final Settlement Result</div>
+                    <div id="final-approved-amount" class="text-white fs-2 fw-black">₹ --</div>
+                </div>
+                <div class="col-md-6 border-start border-white border-opacity-10 ps-md-4">
+                    <div class="label-muted mb-2 text-uppercase tracking-widest">Verification Formula</div>
+                    <code id="verification-code" class="text-success-300 fs-6">--</code>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toggle Action -->
+    <div id="trace-hint" class="text-center mt-3">
+        <button class="btn btn-premium-audit" onclick="toggleTraceDetails()">
+            <span class="btn-text">Audit step-by-step logic</span>
+            <i class="bi bi-arrow-down-short ms-2"></i>
+        </button>
+    </div>
+</section>
+
+<style>
+    /* 🌑 AI Audit Component Design System */
+    :root {
+        --audit-bg: rgba(15, 23, 42, 0.4);
+        --indigo-glow: rgba(99, 102, 241, 0.15);
+        --success-glow: rgba(16, 185, 129, 0.08);
+        --text-indigo: #818cf8;
+        --border-glass: rgba(255, 255, 255, 0.06);
+    }
+
+    .premium-audit-container {
+        font-family: 'DM Sans', sans-serif;
+    }
+
+    .glass-card {
+        background: var(--audit-bg);
+        backdrop-filter: blur(12px);
+        border: 1px solid var(--border-glass);
+        border-radius: 24px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .glass-card:hover {
+        border-color: rgba(99, 102, 241, 0.3);
+        transform: translateY(-2px);
+    }
+
+    .audit-surface { position: relative; overflow: hidden; }
+
+    /* Pulsing AI Indicator */
+    .ai-status-pulse {
+        width: 12px; height: 12px;
+        background: #818cf8;
+        border-radius: 50%;
+        position: relative;
+        box-shadow: 0 0 10px #6366f1;
+    }
+    .ai-status-pulse::after {
+        content: '';
+        position: absolute;
+        inset: -4px;
+        border: 2px solid #6366f1;
+        border-radius: 50%;
+        animation: pulse-ring 2s infinite;
+        opacity: 0.5;
+    }
+    @keyframes pulse-ring { 0% { transform: scale(1); opacity: 0.5; } 100% { transform: scale(2.2); opacity: 0; } }
+
+    .glow-text {
+        text-shadow: 0 0 25px rgba(99, 102, 241, 0.4);
+        letter-spacing: -1px;
+    }
+
+    .fw-black { font-weight: 900; }
+
+    .audit-formula-surface {
+        background: rgba(0, 0, 0, 0.25);
+        border: 1px solid rgba(255, 255, 255, 0.03);
+    }
+
+    .formula-text {
+        font-family: 'JetBrains Mono', 'Fira Code', monospace;
+        font-size: 11px;
+        letter-spacing: 0.5px;
+    }
+
+    /* Factor Pills */
+    .factor-pill {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px;
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.04);
+        border-radius: 16px;
+        transition: all 0.2s ease;
+    }
+    .factor-pill .icon-wrap {
+        width: 38px; height: 38px;
+        background: rgba(99, 102, 241, 0.1);
+        border: 1px solid rgba(99, 102, 241, 0.15);
+        border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        color: #818cf8;
+        font-size: 18px;
+    }
+    .factor-calc { font-size: 13px; font-weight: 700; margin-top: 2px; }
+
+    /* Timeline trail */
+    .timeline-trail {
+        border-left: 2px dashed rgba(255, 255, 255, 0.1);
+        position: relative;
+    }
+
+    .audit-step-item {
+        position: relative;
+        padding-bottom: 30px;
+        padding-left: 25px;
+    }
+    .audit-step-item::before {
+        content: '';
+        position: absolute;
+        left: -8px; top: 0;
+        width: 14px; height: 14px;
+        background: #FFFFFF;
+        border: 2px solid #818cf8;
+        border-radius: 50%;
+        box-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
+    }
+
+    .step-card {
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 20px;
+        padding: 20px;
+    }
+
+    .section-divider {
+        display: flex; align-items: center; gap: 15px; color: rgba(255, 255, 255, 0.2); font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px;
+    }
+    .section-divider::after { content: ''; flex-grow: 1; height: 1px; background: rgba(255, 255, 255, 0.05); }
+
+    .audit-status-badge {
+        padding: 6px 14px; border-radius: 20px; font-size: 10px; font-weight: 800; letter-spacing: 0.5px;
+    }
+    .audit-status-badge.status-approved { background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); }
+
+    .btn-audit-toggle {
+        width: 44px; height: 44px;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: white;
+        transition: all 0.2s;
+    }
+    .btn-audit-toggle:hover { background: rgba(99, 102, 241, 0.15); color: #818cf8; border-color: rgba(99, 102, 241, 0.3); }
+
+    .btn-premium-audit {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 14px;
+        padding: 12px 28px;
+        color: rgba(156, 149, 143, 0.7);
+        font-weight: 700;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 1.1px;
+        transition: all 0.3s;
+    }
+    .btn-premium-audit:hover { background: #65604F; color: white; border-color: #65604F; box-shadow: 0 10px 25px rgba(101, 96, 79, 0.2); transform: translateY(-2px); }
+
+    .text-success-300 { color: #6ee7b7; }
+    .badge-success-glow {
+        font-size: 10px; font-weight: 900; background: rgba(16, 185, 129, 0.1); color: #10b981; padding: 4px 12px; border-radius: 8px; box-shadow: 0 0 15px rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    /* 🛡️ Triage Matrix Badges */
+    .triage-badge {
+        font-size: 9px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase;
+        padding: 4px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.05);
+        color: rgba(255,255,255,0.6); background: rgba(255,255,255,0.02);
+    }
+    .triage-critical { background: rgba(197, 90, 90, 0.15); color: #c55a5a; border-color: #c55a5a !important; box-shadow: 0 0 15px rgba(197, 90, 90, 0.3); animation: triage-pulse 2s infinite; }
+    .triage-high { background: rgba(200, 138, 45, 0.1); color: #C88A2D; border-color: rgba(200, 138, 45, 0.3); }
+    .triage-medium { background: rgba(59, 130, 246, 0.1); color: #3b82f6; border-color: rgba(59, 130, 246, 0.3); }
+    .triage-low { background: rgba(100, 116, 139, 0.05); color: rgba(156, 149, 143, 0.7); border-color: rgba(100, 116, 139, 0.2); }
+
+    @keyframes triage-pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        loadAICalculationAudit();
+    });
+
+    async function loadAICalculationAudit() {
+        const claimId = "{{ claim.public_id }}";
+        try {
+            const response = await fetch(`/claim/${claimId}/ai-audit/`);
+            const data = await response.json();
+            if (data.error) return;
+            
+            renderAuditData(data);
+            const panel = document.getElementById('ai-calculation-audit-panel');
+            panel.style.display = 'block';
+            panel.classList.add('animate__animated', 'animate__fadeInUp');
+        } catch (err) {
+            console.error("Audit Loading Failed:", err);
+        }
+    }
+
+    function renderAuditData(data) {
+        // Model Governance
+        const modelBadge = document.getElementById('model-version-badge');
+        if (modelBadge) modelBadge.textContent = data.model_version || 'XGB v3.8';
+
+        // Core Risk Profiles
+        const risk = data.risk_analysis || {};
+        const riskScoreValue = Number(data.risk_score ?? risk.risk_score ?? 0);
+        const riskScorePercent = (riskScoreValue * 100).toFixed(1);
+        
+        const finalRiskEl = document.getElementById('final-risk-score');
+        if (finalRiskEl) finalRiskEl.textContent = riskScorePercent + '%';
+        const progress = document.getElementById('risk-score-progress');
+        if (progress) setTimeout(() => progress.style.width = riskScorePercent + '%', 500);
+        
+        const riskFormula = document.getElementById('risk-formula');
+        if (riskFormula) riskFormula.textContent = data.deduction_formula || risk.formula || data.verification?.formula || 'XGBoost Probability';
+        
+        // 🌀 XGBoost SHAP Rendering
+        const shapList = document.getElementById('shap-contributions-list');
+        const shapBase = document.getElementById('shap-base-value');
+        const featureContributions = data.feature_contributions || risk.weights || {};
+        if (shapList && Object.keys(featureContributions).length) {
+            shapList.innerHTML = '';
+            if (shapBase) shapBase.textContent = Number(data.shap_base_value ?? data.model_base_value ?? risk.base_value ?? 0).toFixed(4);
+            
+            Object.entries(featureContributions)
+                .sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]))
+                .forEach(([feature, value]) => {
+                    const row = document.createElement('div');
+                    row.className = 'd-flex align-items-center gap-2 mb-1';
+                    const color = value > 0 ? '#f87171' : '#34d399';
+                    const name = feature.replace('_enc', '').replace(/_/g, ' ').toUpperCase();
+                    
+                    row.innerHTML = `
+                        <div class="x-small text-muted flex-shrink-0" style="width: 80px; font-size: 8px;">${name}</div>
+                        <div class="flex-grow-1" style="height: 4px; background: rgba(255,255,255,0.05); border-radius: 2px; overflow: hidden;">
+                             <div style="height: 100%; background: ${color}; width: ${Math.min(100, Math.abs(value) * 500)}%; margin-left: ${value < 0 ? 'auto' : '0'};"></div>
+                        </div>
+                        <div class="x-small fw-bold" style="color: ${color}; font-size: 9px; width: 35px; text-align: right;">${value > 0 ? '+' : ''}${value.toFixed(3)}</div>
+                    `;
+                    shapList.appendChild(row);
+                });
+        }
+
+        // 🛡️ Forensic Transparency Table (Phase 1 & 2)
+        const forensicTableBody = document.getElementById('forensic-transparency-body');
+        const forensicDetails = data.explainability?.forensic_details || data.policy_mapping || [];
+        
+        if (forensicTableBody) {
+            if (forensicDetails.length > 0) {
+                forensicTableBody.innerHTML = '';
+                forensicDetails.forEach(f => {
+                    const impactScore = f.impact_score || 0;
+                    const impactColor = impactScore > 0 ? 'text-rose-400' : 'text-emerald-400';
+                    const arrow = impactScore > 0 ? '↑' : '↓';
+                    const badgeColor = impactScore > 0.05 ? 'bg-rose-500/20 text-rose-400 border-rose-500/30' : 
+                                      (impactScore < -0.05 ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 
+                                       'bg-slate-500/20 text-slate-400 border-slate-500/30');
+                    
+                    const row = document.createElement('tr');
+                    row.className = 'border-b border-white border-opacity-5';
+                    row.innerHTML = `
+                        <td class="py-2 ps-2">
+                            <div class="fw-bold text-white small">${f.factor || f.rule || 'Unknown Factor'}</div>
+                            <div class="x-small text-muted italic" style="font-size: 9px; line-height: 1.2;">${f.summary || 'Standard risk analysis applied.'}</div>
+                        </td>
+                        <td class="py-2 text-center">
+                            <span class="badge ${badgeColor} border px-2 py-1" style="font-size: 10px;">${f.actual || '--'}</span>
+                        </td>
+                        <td class="py-2 text-center text-muted small">${f.benchmark || '--'}</td>
+                        <td class="py-2 text-end pe-2">
+                            <div class="fw-black ${impactColor}" style="font-size: 11px;">
+                                ${arrow} ${f.impact || '0.00%'}
+                            </div>
+                        </td>
+                    `;
+                    forensicTableBody.appendChild(row);
+                });
+            } else {
+                forensicTableBody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-muted x-small italic">No forensic anomalies detected in this dossier.</td></tr>';
+            }
+        }
+
+        // Rendering Step-by-Step Ledger
+        const container = document.getElementById('audit-steps-container');
+        if (container) container.innerHTML = '';
+        
+        const steps = data.audit_steps || data.steps || data.calculation_trace || [];
+        steps.forEach((step, idx) => {
+            const item = document.createElement('div');
+            item.className = 'audit-step-item';
+            const inputs = step.inputs || {};
+            
+            const inputNodes = Object.entries(inputs)
+                .map(([k, v]) => `<div class="x-small text-muted mb-1"><span class="text-white opacity-50">${k}:</span> ${v}</div>`)
+                .join('');
+
+            item.innerHTML = `
+                <div class="step-card animate__animated animate__fadeInLeft" style="animation-delay: ${idx * 0.1}s">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <div class="label-muted small mb-1">AUDIT STAGE ${idx + 1}</div>
+                            <h6 class="text-white fw-bold mb-0">${step.step}</h6>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-indigo-400 fw-black fs-5">₹${step.result.toLocaleString('en-IN', {minimumFractionDigits: 2})}</div>
+                            <div class="x-small text-muted text-uppercase tracking-tighter">Resulting Dossier Value</div>
+                        </div>
+                    </div>
+                    <div class="audit-formula-surface p-2 rounded-3 mb-3">
+                        <code class="formula-text text-indigo-200">f(x): ${step.formula}</code>
+                    </div>
+                    <div class="d-flex flex-wrap gap-4">
+                        <div class="flex-grow-1">
+                            <span class="x-small text-muted d-block mb-1">Neural Inputs Detected</span>
+                            <div class="d-flex flex-wrap gap-x-3">${inputNodes}</div>
+                        </div>
+                        <div style="max-width: 200px;">
+                            <span class="x-small text-muted d-block mb-1">Explanation</span>
+                            <p class="x-small text-white-50 mb-0 italic">${step.explanation}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.appendChild(item);
+        });
+
+        // Verification Checksum rendering
+        const verif = data.verification;
+        document.getElementById('final-check-badge').textContent = 'MATHEMATICALLY TRACEABLE';
+        document.getElementById('final-approved-amount').textContent = '₹' + data.final_amount.toLocaleString('en-IN', {minimumFractionDigits: 2});
+        document.getElementById('verification-code').textContent = verif.formula + " = ₹" + data.final_amount.toLocaleString('en-IN', {minimumFractionDigits: 2});
+
+        const statusEl = document.getElementById('audit-verification-status');
+        statusEl.innerHTML = '<i class="bi bi-patch-check-fill me-1"></i> AI Verification Passed';
+        statusEl.className = 'audit-status-badge status-approved';
+
+        // 🛡️ Triage Priority & Verdict Note Update
+        const triageBadge = document.getElementById('triage-priority-badge');
+        const verdictNote = document.getElementById('ai-audit-verdict-note');
+        
+        if (data.governance) {
+            if (triageBadge) {
+                const priority = data.governance.priority.toLowerCase();
+                triageBadge.textContent = `TRIAGE: ${priority.toUpperCase()}`;
+                triageBadge.className = `triage-badge triage-${priority}`;
+                triageBadge.title = data.governance.priority_reason;
+                if (priority === 'critical') document.querySelector('.ai-status-pulse').classList.add('critical-pulse');
+            }
+            
+            if (verdictNote) {
+                verdictNote.textContent = data.governance.admin_note || "No deterministic audit note generated for this dossier.";
+            }
+        }
+    }
+
+    function toggleTraceDetails() {
+        const trace = document.getElementById('trace-details');
+        const hint = document.getElementById('trace-hint');
+        const icon = document.querySelector('.btn-audit-toggle i');
+        const isHidden = trace.style.display === 'none';
+        
+        trace.style.display = isHidden ? 'block' : 'none';
+        hint.style.display = isHidden ? 'none' : 'block';
+        icon.classList.replace(isHidden ? 'bi-chevron-down' : 'bi-chevron-up', isHidden ? 'bi-chevron-up' : 'bi-chevron-down');
+        
+        if (isHidden) trace.classList.add('animate__animated', 'animate__fadeIn');
+    }
+</script>

@@ -33,7 +33,7 @@
     .premium-table { width: 100%; border-collapse: separate; border-spacing: 0; }
     .premium-table thead th {
         background: rgba(0, 0, 0, 0.3);
-        color: #94a3b8;
+        color: rgba(156, 149, 143, 0.7);
         font-weight: 700;
         font-size: 11px;
         text-transform: uppercase;
@@ -48,7 +48,7 @@
         color: #cbd5e1;
         font-size: 13px;
     }
-    .premium-table tbody tr:hover td { background: rgba(26, 110, 245, 0.04); }
+    .premium-table tbody tr:hover td { background: rgba(101, 96, 79, 0.04); }
     .premium-table tbody tr:last-child td { border-bottom: none; }
 
     /* Badges */
@@ -56,22 +56,25 @@
         font-size: 9px; padding: 4px 10px; border-radius: 20px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
     }
     .badge.active { background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); }
-    .badge.pending { background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.2); }
-    .badge.expired { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
+    .badge.pending { background: rgba(200, 138, 45, 0.1); color: #C88A2D; border: 1px solid rgba(200, 138, 45, 0.2); }
+    .badge.expired { background: rgba(197, 90, 90, 0.1); color: #c55a5a; border: 1px solid rgba(197, 90, 90, 0.2); }
+    .badge.awaiting-payment { background: rgba(200, 138, 45, 0.1); color: #C88A2D; border: 1px solid rgba(200, 138, 45, 0.2); }
+    .badge.rejected { background: rgba(197, 90, 90, 0.1); color: #c55a5a; border: 1px solid rgba(197, 90, 90, 0.2); }
+    .badge.default { background: rgba(148, 163, 184, 0.12); color: #cbd5e1; border: 1px solid rgba(203, 213, 225, 0.18); }
 
     .btn-premium-sm {
         width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center;
         border-radius: 8px; background: rgba(255, 255, 255, 0.05); color: #94bcff !important;
         transition: all 0.2s ease-in-out; border: 1px solid rgba(255, 255, 255, 0.1);
     }
-    .btn-premium-sm:hover { transform: translateY(-2px); border-color: #1a6ef5; background: rgba(26, 110, 245, 0.1); color: white !important; }
+    .btn-premium-sm:hover { transform: translateY(-2px); border-color: #65604F; background: rgba(101, 96, 79, 0.1); color: white !important; }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4" data-aos="fade-down">
     <div>
-        <h3 class="mb-1 text-white fw-bold">Policy Administration</h3>
+        <h3 class="mb-1 fw-bold"><span class="gradient-title">Policy Administration</span></h3>
         <p class="text-muted mb-0">Full oversight and lifecycle management for all system contracts.</p>
     </div>
     <div class="d-flex gap-2">
@@ -116,33 +119,24 @@
                     <td><span class="badge bg-secondary opacity-75">{{ policy.policy_type|default:"General" }}</span></td>
                     <td><span class="text-muted px-2 py-1 rounded small" style="background: rgba(255,255,255,0.03);">{{ policy.insurer_name|default:"-" }}</span></td>
                     <td class="fw-bold">₹{{ policy.sum_insured|default:0|floatformat:0|intcomma }}</td>
-                    <td class="text-info">
-                        {% with schedule=policy.premium_schedules.first %}
-                        {% if schedule %}
-                        ₹{{ schedule.gross_premium|default:0|floatformat:2|intcomma }}
-                        {% else %}
-                        <span class="text-muted small italic">N/A</span>
-                        {% endif %}
-                        {% endwith %}
+                    <td class="text-info fw-bold">
+                        {{ policy.admin_premium_percent|default:0 }}% 
+                        <span class="x-small text-muted d-block" style="font-size: 10px;">(₹{{ policy.calculate_final_premium|floatformat:2|intcomma }})</span>
                     </td>
                     <td class="small text-muted">{{ policy.end_date|date:"M d, Y" }}</td>
                     <td>
-                        <span class="badge {{ policy.status }}">{{ policy.get_status_display }}</span>
+                        <span class="badge {% if policy.status == 'active' %}active{% elif policy.status == 'pending' %}pending{% elif policy.status == 'expired' %}expired{% else %}default{% endif %}">
+                            {{ policy.get_status_display }}
+                        </span>
                     </td>
                     <td class="pe-4 text-end">
                         <div class="d-flex justify-content-end gap-2">
-                            <a href="{% url 'policy:detail' policy.id %}" class="btn-premium-sm hover-scale" title="View Details">
+                            <a href="{% url 'policy:detail' policy.public_id %}" class="btn-premium-sm hover-scale" title="View Details">
                                 <i class="bi bi-eye"></i>
                             </a>
-                            {% if policy.status == 'pending' %}
-                            <a href="{% url 'policy:admin_review' policy.id %}" class="btn-premium-sm hover-scale" style="background: #f59e0b;" title="Review Application">
-                                <i class="bi bi-clipboard-check"></i>
-                            </a>
-                            {% else %}
-                            <a href="{% url 'policy:edit' policy.id %}" class="btn-premium-sm hover-scale" style="background: rgba(255,255,255,0.1); color: white !important;" title="Edit Policy">
+                            <a href="{% url 'policy:edit' policy.public_id %}" class="btn-premium-sm hover-scale" style="background: rgba(255,255,255,0.1); color: white !important;" title="Edit Policy">
                                 <i class="bi bi-pencil"></i>
                             </a>
-                            {% endif %}
                         </div>
                     </td>
                 </tr>

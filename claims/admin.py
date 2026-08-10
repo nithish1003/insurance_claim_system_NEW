@@ -1,6 +1,7 @@
 from django.contrib import admin
 from .models import (
     Claim,
+    ClaimAIHistory,
     Claimant,
     ClaimDocument,
     ClaimAssessment,
@@ -43,6 +44,7 @@ class ClaimAuditInline(admin.TabularInline):
 class ClaimAdmin(admin.ModelAdmin):
 
     list_display = (
+        "public_id",
         "claim_number",
         "policy",
         "claim_type",
@@ -70,6 +72,7 @@ class ClaimAdmin(admin.ModelAdmin):
     )
 
     search_fields = (
+        "public_id",
         "claim_number",
         "policy__policy_number",
     )
@@ -77,6 +80,7 @@ class ClaimAdmin(admin.ModelAdmin):
     ordering = ("-created_at",)
 
     readonly_fields = (
+        "public_id",
         "created_at",
         "updated_at",
     )
@@ -97,6 +101,7 @@ class ClaimAdmin(admin.ModelAdmin):
 class ClaimDocumentAdmin(admin.ModelAdmin):
 
     list_display = (
+        "public_id",
         "claim",
         "document_type",
         "uploaded_by",
@@ -109,6 +114,7 @@ class ClaimDocumentAdmin(admin.ModelAdmin):
     )
 
     search_fields = (
+        "public_id",
         "claim__claim_number",
     )
 
@@ -121,6 +127,7 @@ class ClaimDocumentAdmin(admin.ModelAdmin):
 class ClaimAssessmentAdmin(admin.ModelAdmin):
 
     list_display = (
+        "public_id",
         "claim",
         "verdict",
         "recommended_amount",
@@ -133,6 +140,11 @@ class ClaimAssessmentAdmin(admin.ModelAdmin):
         "assessed_on",
     )
 
+    search_fields = (
+        "public_id",
+        "claim__claim_number",
+    )
+
 
 # -----------------------------
 # Claim Settlement Admin
@@ -142,6 +154,7 @@ class ClaimAssessmentAdmin(admin.ModelAdmin):
 class ClaimSettlementAdmin(admin.ModelAdmin):
 
     list_display = (
+        "public_id",
         "claim",
         "settled_amount",
         "payment_mode",
@@ -152,6 +165,45 @@ class ClaimSettlementAdmin(admin.ModelAdmin):
     list_filter = (
         "payment_mode",
         "settlement_date",
+    )
+
+    search_fields = (
+        "public_id",
+        "claim__claim_number",
+        "transaction_reference",
+    )
+
+
+@admin.register(ClaimAIHistory)
+class ClaimAIHistoryAdmin(admin.ModelAdmin):
+    list_display = (
+        "public_id",
+        "claim",
+        "version",
+        "ai_decision",
+        "human_decision",
+        "is_disputed",
+        "created_at",
+    )
+    list_filter = ("version", "ai_decision", "human_decision", "is_disputed", "created_at")
+    search_fields = ("public_id", "claim__claim_number")
+    readonly_fields = (
+        "public_id",
+        "claim",
+        "version",
+        "ai_claim_type",
+        "ai_recommendation",
+        "ai_risk_score",
+        "ai_decision",
+        "ai_confidence",
+        "shap_values",
+        "shadow_decision",
+        "shadow_predicted_amount",
+        "feature_vector",
+        "human_decision",
+        "human_amount",
+        "is_disputed",
+        "created_at",
     )
 
 

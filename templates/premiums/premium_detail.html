@@ -45,7 +45,7 @@
         text-transform: uppercase;
         letter-spacing: 0.05em;
         font-size: 0.75rem;
-        color: #94a3b8;
+        color: rgba(156, 149, 143, 0.7);
         border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     }
     .premium-table tbody tr {
@@ -62,11 +62,11 @@
     
     /* Status Badges */
     .badge.paid { background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
-    .badge.pending { background: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
-    .badge.overdue { background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+    .badge.pending { background: rgba(200, 138, 45, 0.2); color: #C88A2D; border: 1px solid rgba(200, 138, 45, 0.3); }
+    .badge.overdue { background: rgba(197, 90, 90, 0.2); color: #c55a5a; border: 1px solid rgba(197, 90, 90, 0.3); }
     
     .btn-premium-sm {
-        background: #1a6ef5;
+        background: #65604F;
         color: white;
         border: none;
         padding: 6px 16px;
@@ -78,7 +78,7 @@
     .btn-premium-sm:hover {
         background: #3b82f6;
         transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(26, 110, 245, 0.3);
+        box-shadow: 0 4px 12px rgba(101, 96, 79, 0.3);
     }
 </style>
 {% endblock %}
@@ -161,7 +161,7 @@
                     <td class="pe-4 text-end">
                         <div class="d-flex justify-content-end gap-2">
                         {% if payment.status != 'paid' %}
-                        <form method="post" action="{% url 'premiums:pay' payment.id %}">
+                        <form method="post" action="{% url 'premiums:pay' payment.public_id %}">
                             {% csrf_token %}
                             {% if request.user.is_superuser or request.user.role == "admin" or request.user.role == "staff" %}
                             <button type="submit" class="btn-premium-sm" style="background: #10b981;">

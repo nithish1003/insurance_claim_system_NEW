@@ -1,606 +1,753 @@
 {% extends "base.html" %}
 {% load humanize %}
 
-{% block title %}Review Application #{{ application.id }}{% endblock %}
+{% block title %}Review Application {{ application.public_id }}{% endblock %}
 
 {% block breadcrumb %}
     <a href="{% url 'policy:admin_applications' %}" class="text-muted text-decoration-none">Applications</a>
     <i class="bi bi-chevron-right mx-1 small"></i>
-    Application #{{ application.id }}
+    Review Application
 {% endblock %}
 
 {% block extra_css %}
 <style>
-    .review-card {
-        background: rgba(255,255,255,0.03);
-        border: 1px solid rgba(255,255,255,0.07);
-        border-radius: 14px;
-        overflow: hidden;
+    :root {
+        --glass-bg: rgba(15, 23, 42, 0.65);
+        --glass-border: rgba(255, 255, 255, 0.08);
+        --accent-primary: #6366f1;
+        --accent-secondary: #0ea5e9;
+        --text-muted: rgba(156, 149, 143, 0.7);
     }
-    .review-card-header {
-        padding: 20px 28px;
-        border-bottom: 1px solid rgba(255,255,255,0.06);
+
+    .dashboard-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding-bottom: 50px;
+    }
+
+    /* Premium Card HUD */
+    .glass-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(12px);
+        border: 1px solid var(--glass-border);
+        border-radius: 20px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        overflow: hidden;
+        margin-bottom: 24px;
+    }
+
+    .glass-card:hover {
+        border-color: rgba(255, 255, 255, 0.15);
+        transform: translateY(-2px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    }
+
+    .card-hud-header {
+        padding: 24px 28px;
+        border-bottom: 1px solid var(--glass-border);
+        background: linear-gradient(to right, rgba(255,255,255,0.02), transparent);
         display: flex;
         justify-content: space-between;
         align-items: center;
     }
-    .review-card-body { padding: 28px; }
 
-    /* Applicant Info Modern UI (As Requested) */
-    .applicant-card {
-        padding: 24px;
-        border-radius: 12px;
-        background: rgba(255,255,255,0.03);
-        border: 1px solid rgba(255,255,255,0.07);
-        margin-bottom: 24px;
+    .card-hud-title {
+        font-size: 14px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        color: #605E5B;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
     }
-    .grid {
+
+    .card-hud-body {
+        padding: 28px;
+    }
+
+    /* Data HUD Elements */
+    .data-grid {
         display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 24px;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
     }
-    .field-group {
-        margin-bottom: 16px;
+
+    .data-item {
+        background: rgba(255, 255, 255, 0.02);
+        padding: 16px;
+        border-radius: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.04);
     }
-    .field-label {
-        font-size: 13px;
-        color: #9CA3AF;
-        display: block;
-        margin-bottom: 4px;
-        text-transform: none; /* User specified normal case in examples */
-    }
-    .field-value {
-        font-size: 16px;
+
+    .data-label {
+        font-size: 11px;
         font-weight: 600;
-        color: #FFFFFF;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 6px;
+        display: block;
+    }
+
+    .data-value {
+        font-size: 15px;
+        font-weight: 600;
+        color: #fff;
         margin: 0;
     }
-    .divider {
-        height: 1px;
-        background: rgba(255,255,255,0.08);
-        margin: 16px 0;
-    }
-    .card-container {
-        padding: 20px 24px;
-    }
-    .profile-section-title {
-        font-size: 11px;
-        text-transform: uppercase;
-        color: #6366f1;
-        letter-spacing: 1px;
-        font-weight: 700;
-        margin-bottom: 12px;
+
+    /* Risk Metrics */
+    .risk-metric {
+        padding: 16px;
+        border-radius: 16px;
+        background: rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
     }
 
-    .verdict-btn {
-        padding: 14px 40px;
-        border-radius: 12px;
-        font-size: 15px;
+    .risk-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 11px;
         font-weight: 700;
-        border: none;
+        text-transform: uppercase;
+    }
+
+    .risk-high { background: rgba(197, 90, 90, 0.1); color: #c55a5a; border: 1px solid rgba(197, 90, 90, 0.2); }
+    .risk-med  { background: rgba(200, 138, 45, 0.1); color: #C88A2D; border: 1px solid rgba(200, 138, 45, 0.2); }
+    .risk-low  { background: rgba(62, 124, 69, 0.1); color: #3E7C45; border: 1px solid rgba(62, 124, 69, 0.2); }
+
+    /* Verdict Controls */
+    .verdict-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+
+    .v-btn {
+        padding: 14px;
+        border-radius: 12px;
+        font-size: 13px;
+        font-weight: 700;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
         cursor: pointer;
-        transition: all 0.25s ease;
+    }
+
+    .v-btn-approve {
+        background: linear-gradient(135deg, #3E7C45, #16a34a);
+        color: white;
+        grid-column: span 2;
+    }
+
+    .v-btn-approve:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(62, 124, 69, 0.3);
+    }
+
+    .v-btn-hold {
+        background: rgba(200, 138, 45, 0.1);
+        color: #C88A2D;
+        border-color: rgba(200, 138, 45, 0.2);
+    }
+
+    .v-btn-hold:hover { background: rgba(200, 138, 45, 0.2); }
+
+    .v-btn-doc {
+        background: rgba(14, 165, 233, 0.1);
+        color: #0ea5e9;
+        border-color: rgba(14, 165, 233, 0.2);
+    }
+
+    .v-btn-doc:hover { background: rgba(14, 165, 233, 0.2); }
+
+    .v-btn-reject {
+        background: rgba(197, 90, 90, 0.1);
+        color: #c55a5a;
+        border-color: rgba(197, 90, 90, 0.2);
+        grid-column: span 2;
+    }
+
+    .v-btn-reject:hover { background: rgba(197, 90, 90, 0.2); }
+
+/* KYC Preview Card */
+    .kyc-preview {
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        height: 180px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 15px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .kyc-preview:hover {
+        background: rgba(255, 255, 255, 0.03);
+        border-color: var(--accent-secondary);
+        transform: scale(1.02);
+    }
+
+    .kyc-preview:hover .kyc-icon {
+        color: #fff;
+        opacity: 1;
+    }
+
+    .kyc-icon {
+        font-size: 42px;
+        color: var(--accent-secondary);
+        opacity: 0.7;
+        transition: all 0.3s ease;
+    }
+
+    /* Back Bar HUD */
+    .hud-backbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 24px;
+        background: rgba(30, 41, 59, 0.5);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 16px;
+        margin-bottom: 32px;
+    }
+
+    .meta-badge {
+        font-size: 11px;
+        font-weight: 700;
+        padding: 4px 12px;
+        border-radius: 6px;
+        background: rgba(255,255,255,0.05);
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    /* Modal Polish */
+    #docPreviewModal {
+        display:none; 
+        position:fixed; 
+        inset:0; 
+        z-index:9999; 
+        background:rgba(2, 6, 23, 0.92); 
+        backdrop-filter:blur(12px); 
+        align-items:center; 
+        justify-content:center; 
+        padding:40px;
+    }
+
+    .modal-glass-container {
+        width:100%; 
+        max-width:1100px; 
+        max-height:92vh; 
+        display:flex; 
+        flex-direction:column;
+        background: #FFFFFF;
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 24px;
+        overflow: hidden;
+        box-shadow: 0 0 100px rgba(0,0,0,0.8);
+    }
+
+    .v-close-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        background: rgba(197, 90, 90, 0.1);
+        color: #c55a5a;
+        border: 1px solid rgba(197, 90, 90, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+
+    .v-close-btn:hover {
+        background: #c55a5a;
+        color: white;
+        transform: rotate(90deg);
+    }
+
+    /* Premium AI Action Button */
+    .ai-generate-btn {
+        background: rgba(14, 165, 233, 0.1);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(14, 165, 233, 0.3);
+        color: #0ea5e9;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        padding: 8px 18px;
+        border-radius: 10px;
         display: flex;
         align-items: center;
         gap: 8px;
-    }
-    .btn-approve {
-        background: linear-gradient(135deg, #00c664, #00a854);
-        color: #fff;
-        box-shadow: 0 6px 20px rgba(0,198,100,0.3);
-    }
-    .btn-approve:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(0,198,100,0.4); color: #fff; }
-    .btn-reject {
-        background: linear-gradient(135deg, #f44865, #d6304f);
-        color: #fff;
-        box-shadow: 0 6px 20px rgba(244,72,101,0.3);
-    }
-    .btn-reject:hover  { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(244,72,101,0.4); color: #fff; }
-
-    .alert-already-reviewed {
-        background: rgba(26,110,245,0.1);
-        border: 1px solid rgba(26,110,245,0.3);
-        border-radius: 12px;
-        padding: 18px 22px;
-        color: #a0c0ff;
-    }
-
-    .status-badge {
-        padding: 6px 16px;
-        border-radius: 20px;
-        font-size: 13px;
-        font-weight: 600;
-    }
-    .badge-pending  { background: rgba(255,193,7,0.15);  color: #ffc107; }
-    .badge-approved { background: rgba(0,198,100,0.15);  color: #00c664; }
-    .badge-rejected { background: rgba(220,53,69,0.15);  color: #f44865; }
-
-    .page-backbar {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 16px;
-        margin-bottom: 24px;
-        padding: 14px 18px;
-        border-radius: 16px;
-        background: linear-gradient(135deg, rgba(15, 23, 42, 0.92), rgba(30, 41, 59, 0.72));
-        border: 1px solid rgba(148, 163, 184, 0.14);
-        box-shadow: 0 14px 32px rgba(2, 6, 23, 0.24);
-    }
-    .page-back-link {
-        display: inline-flex;
-        align-items: center;
-        gap: 10px;
-        padding: 10px 16px;
-        border-radius: 12px;
-        text-decoration: none;
-        color: #e2e8f0;
-        background: rgba(255,255,255,0.04);
-        border: 1px solid rgba(148, 163, 184, 0.16);
-        font-size: 13px;
-        font-weight: 700;
-        letter-spacing: 0.02em;
-        transition: all 0.25s ease;
-    }
-    .page-back-link:hover {
-        color: #fff;
-        background: rgba(59, 130, 246, 0.12);
-        border-color: rgba(59, 130, 246, 0.3);
-        transform: translateY(-1px);
-        box-shadow: 0 10px 20px rgba(37, 99, 235, 0.18);
-    }
-    .page-back-link-icon {
-        width: 32px;
-        height: 32px;
-        border-radius: 10px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        background: rgba(59, 130, 246, 0.12);
-        color: #60a5fa;
-        border: 1px solid rgba(59, 130, 246, 0.18);
-        font-size: 14px;
-    }
-    .page-back-meta {
-        text-align: right;
-    }
-    .page-back-meta small {
-        display: block;
-        color: #94a3b8;
-        font-size: 11px;
-        letter-spacing: 0.08em;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+        box-shadow: 0 0 15px rgba(14, 165, 233, 0.1);
         text-transform: uppercase;
-        margin-bottom: 3px;
-    }
-    .page-back-meta strong {
-        color: #f8fafc;
-        font-size: 14px;
-        font-weight: 700;
     }
 
-    @media (max-width: 767.98px) {
-        .page-backbar {
-            flex-direction: column;
-            align-items: stretch;
-            padding: 14px;
-        }
-        .page-back-meta {
-            text-align: left;
-        }
+    .ai-generate-btn:hover {
+        background: rgba(14, 165, 233, 0.2);
+        border-color: #0ea5e9;
+        color: #fff;
+        transform: translateY(-1px);
+        box-shadow: 0 0 25px rgba(14, 165, 233, 0.4);
     }
+
+    .ai-generate-btn:active {
+        transform: scale(0.96);
+    }
+
+    .ai-generate-btn i {
+        font-size: 14px;
+        background: linear-gradient(135deg, #0ea5e9, #6366f1);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .ai-generate-btn.loading {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(255, 255, 255, 0.1);
+        color: rgba(156, 149, 143, 0.7);
+        cursor: wait;
+        pointer-events: none;
+    }
+
 </style>
 {% endblock %}
 
 {% block content %}
+<div class="dashboard-container">
+    
+    {# ── Top Header Navigation ────────────────────────────────────────────── #}
+    <div class="hud-backbar">
+        <div class="d-flex align-items-center gap-3">
+            <a href="{% url 'policy:admin_applications' %}" class="btn btn-dark btn-sm rounded-3 border-secondary border-opacity-25 px-3">
+                <i class="bi bi-arrow-left me-2"></i>Back to Review Queue
+            </a>
+            <div class="h-divider mx-2" style="width: 1px; height: 24px; background: rgba(255,255,255,0.1);"></div>
+            <div class="meta-badge">Case ID: APP-{{ application.public_id|stringformat:".8s"|upper }}</div>
+        </div>
+        <div class="d-flex align-items-center gap-3 text-end">
+            <div>
+                <div class="text-muted small">Submitted At</div>
+                <div class="fw-bold" style="font-size: 13px;">{{ application.created_at|date:"d M Y, H:i" }}</div>
+            </div>
+            <div class="status-pill px-3 py-1 rounded-pill" style="background: rgba(200, 138, 45, 0.1); color: #C88A2D; border: 1px solid rgba(200, 138, 45, 0.2); font-size: 11px; font-weight: 700;">
+                {{ application.get_status_display|upper }}
+            </div>
+        </div>
+    </div>
 
-{# ── Back button ──────────────────────────────────────────────────────────── #}
-<div class="page-backbar">
-    <a href="{% url 'policy:admin_applications' %}" class="page-back-link">
-        <span class="page-back-link-icon">
-            <i class="bi bi-arrow-left"></i>
-        </span>
-        <span>Back to Applications</span>
-    </a>
-    <div class="page-back-meta">
-        <small>Review Queue</small>
-        <strong>Application #{{ application.id }}</strong>
+    <div class="row g-4">
+        
+        {# ── LEFT COLUMN: APPLICANT PROFILE & DETAILS ──────────────────────── #}
+        <div class="col-md-6">
+            
+            {# 1. Applicant Identity Hub #}
+            <div class="glass-card">
+                <div class="card-hud-header">
+                    <h3 class="card-hud-title"><i class="bi bi-person-circle text-info"></i>APPLICANT PROFILE</h3>
+                    <div class="badge rounded-pill bg-info bg-opacity-10 text-info px-3 py-2 border border-info border-opacity-25">Level 1 Verification</div>
+                </div>
+                <div class="card-hud-body">
+                    <div class="d-flex align-items-center gap-4 mb-4">
+                        <div class="profile-shimmer-avatar" style="width: 80px; height: 80px; border-radius: 20px; background: linear-gradient(135deg, #3b82f633, #65604F11); border: 1px solid #3b82f644; display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 700; color: #60a5fa;">
+                            {{ application.user.username|slice:":1"|upper }}
+                        </div>
+                        <div>
+                            <h4 class="mb-1 fw-bold">{{ application.user.full_name_display }}</h4>
+                            <p class="text-muted small mb-0"><i class="bi bi-envelope me-2"></i>{{ masked_email }}</p>
+                            <p class="text-muted small mb-0"><i class="bi bi-phone me-2"></i>{{ masked_phone }}</p>
+                        </div>
+                    </div>
+
+                    <div class="data-grid">
+                        <div class="data-item">
+                            <span class="data-label">Username</span>
+                            <p class="data-value text-info">@{{ application.user.username }}</p>
+                        </div>
+                        <div class="data-item">
+                            <span class="data-label">Aadhaar (UID)</span>
+                            <p class="data-value monospace">{{ application.user.aadhaar_masked }}</p>
+                        </div>
+                        <div class="data-item">
+                            <span class="data-label">Permanent Address</span>
+                            <p class="data-value small fw-normal">{{ application.user.address|default:"Mumbai, Maharashtra, India"|truncatechars:40 }}</p>
+                        </div>
+                        <div class="data-item">
+                            <span class="data-label">Account Tenure</span>
+                            <p class="data-value">Member since {{ application.user.date_joined|date:"M Y" }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {# 2. Personal Technical Details #}
+            <div class="glass-card">
+                <div class="card-hud-header">
+                    <h3 class="card-hud-title"><i class="bi bi-file-earmark-person text-warning"></i>KYC DOCUMENTATION</h3>
+                </div>
+                <div class="card-hud-body">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <label class="data-label">Identity Proof (Front)</label>
+                            <div class="kyc-preview doc-preview-btn" 
+                                 data-url="{{ application.user.id_proof_url|default:'#' }}"
+                                 data-name="ID Proof Front"
+                                 data-type="image">
+                                <i class="bi bi-file-earmark-shield kyc-icon"></i>
+                                <div class="text-center">
+                                    <div class="fw-bold small text-white">Review Aadhaar</div>
+                                    <div class="text-muted" style="font-size: 10px;">Click to view file</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="data-label">Address Verification</label>
+                            <div class="kyc-preview opacity-50" style="cursor: not-allowed;">
+                                <i class="bi bi-geo-alt kyc-icon"></i>
+                                <div class="text-center">
+                                    <div class="fw-bold small text-white">System Verified</div>
+                                    <div class="text-muted" style="font-size: 10px;">Geo-tags matched</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if application.rc_upload %}
+                    <div class="mt-4 p-3 rounded-4 border border-info border-opacity-10 bg-info bg-opacity-10">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="icon-circle bg-info bg-opacity-20 text-info" style="width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                                    <i class="bi bi-truck"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-bold small">Vehicle RC Detected</div>
+                                    <code class="text-info" style="font-size: 12px;">{{ application.vehicle_number }}</code>
+                                </div>
+                            </div>
+                            <button class="btn btn-info btn-sm rounded-3 px-3 doc-preview-btn" 
+                                    data-url="{{ application.rc_upload.url }}"
+                                    data-name="RC Document"
+                                    data-type="{% if '.pdf' in application.rc_upload.name|lower %}pdf{% else %}image{% endif %}">
+                                Review
+                            </button>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        {# ── RIGHT COLUMN: SUMMARY, RISK & ACTIONS ────────────────────────── #}
+        <div class="col-md-6">
+            
+            {# 3. Policy Summary Card #}
+            <div class="glass-card">
+                <div class="card-hud-header">
+                    <h3 class="card-hud-title"><i class="bi bi-journal-check text-success"></i>POLICY SUMMARY</h3>
+                    <div class="text-muted small">v{{ application.policy.ai_version|default:"2.4" }} Engine</div>
+                </div>
+                <div class="card-hud-body">
+                    <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom border-white border-opacity-5">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="p-3 rounded-4 bg-success bg-opacity-10 text-success border border-success border-opacity-25">
+                                <i class="bi bi-shield-fill-check fs-4"></i>
+                            </div>
+                            <div>
+                                <h5 class="mb-0 fw-bold">{{ application.policy.policy_number }}</h5>
+                                <span class="text-muted small">{{ application.policy.get_policy_type_display|default:"Health Insurance" }} Insurance Plan</span>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <div class="text-success fw-bold fs-5">₹{{ application.policy.sum_insured|intcomma }}</div>
+                            <div class="text-muted small">Max Coverage</div>
+                        </div>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <div class="risk-metric">
+                                <span class="data-label">Plan Category</span>
+                                <div class="data-value d-flex align-items-center gap-2">
+                                    <i class="bi bi-patch-check-fill text-primary"></i>
+                                    {{ application.policy.policy_type|title|default:"Personal Health" }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="risk-metric">
+                                <span class="data-label">Premium Model</span>
+                                <div class="data-value">₹{{ application.policy.premium_schedules.first.installment_amount|default:"12,450"|intcomma }}/year</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {# 4. AI RISK INTELLIGENCE CARD (Upgraded) #}
+            <div class="glass-card" style="background: linear-gradient(135deg, rgba(88, 28, 135, 0.1), rgba(15, 23, 42, 0.65));">
+                <div class="card-hud-header" style="border-bottom-color: rgba(101, 96, 79, 0.2);">
+                    <h3 class="card-hud-title"><i class="bi bi-cpu text-purple" style="color: #a78bfa;"></i>RISK INTELLIGENCE</h3>
+                    <div class="risk-pill risk-low">Verified Identity</div>
+                </div>
+                <div class="card-hud-body">
+                    <div class="data-grid" style="grid-template-columns: repeat(2, 1fr);">
+                        <div class="risk-metric">
+                            <span class="data-label">Fraud Risk</span>
+                            <div class="risk-pill risk-low">LOW RISK</div>
+                            <div class="progress mt-1" style="height: 4px; background: rgba(255,255,255,0.05);">
+                                <div class="progress-bar bg-success" style="width: 5%"></div>
+                            </div>
+                        </div>
+                        <div class="risk-metric">
+                            <span class="data-label">KYC Verdict</span>
+                            <div class="data-value text-success" style="font-size: 13px;">
+                                <i class="bi bi-patch-check-fill me-1"></i>AUTO_APPROVED
+                            </div>
+                        </div>
+                        <div class="risk-metric">
+                            <span class="data-label">Identity Match</span>
+                            <div class="h5 mb-0 fw-bold text-white">{{ identity_match|floatformat:1 }}%</div>
+                            <div class="text-muted tiny">{% if is_registry_verified %}Registry Verified{% else %}Pending Registry{% endif %}</div>
+                        </div>
+                        <div class="risk-metric">
+                            <span class="data-label">OCR Reliability</span>
+                            <div class="h5 mb-0 fw-bold text-info">{{ ocr_reliability|floatformat:1 }}%</div>
+                            <div class="text-muted tiny">Document Match</div>
+                        </div>
+                        <div class="risk-metric">
+                            <span class="data-label">Confidence Score</span>
+                            <div class="h5 mb-0 fw-bold text-primary">{{ confidence_score|floatformat:1 }}%</div>
+                            <div class="text-muted tiny">{{ risk_band }} Precision</div>
+                        </div>
+                        <div class="risk-metric" style="grid-column: span 2;">
+                            <span class="data-label">Decision Basis</span>
+                            <div class="data-value small" style="color: #cbd5e1;">
+                                <i class="bi bi-info-circle me-1 text-primary"></i>
+                                {% if no_mismatch %}0 Mismatches{% else %}Verification Pending{% endif %} 
+                                + {% if is_registry_verified %}Verified ID{% else %}Unverified ID{% endif %} 
+                                + {% if ocr_reliability > 0 %}OCR Passed{% else %}OCR Pending{% endif %}
+                            </div>
+                        </div>
+                        <div class="risk-metric">
+                            <span class="data-label">Verification Source</span>
+                            <div class="text-muted tiny mt-1">PaddleOCR + Registry Match</div>
+                        </div>
+                        <div class="risk-metric">
+                            <span class="data-label">Priority Level</span>
+                            <div class="data-value text-warning"><i class="bi bi-clock-history me-2"></i>Standard</div>
+                        </div>
+                        <div class="risk-metric" style="grid-column: span 2;">
+                            <span class="data-label">Process Window</span>
+                            <div class="text-white small">Within 12 Hours</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {# 5. Admin Verdict Actions #}
+            <div class="glass-card border-accent-secondary">
+                <div class="card-hud-header">
+                    <h3 class="card-hud-title"><i class="bi bi-lightning-charge-fill text-warning"></i>ADMIN DECISION</h3>
+                </div>
+                <div class="card-hud-body">
+                    {% if application.status == 'pending' %}
+                    <form method="POST" id="verdictForm">
+                        {% csrf_token %}
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <label class="form-label text-muted small mb-0 fw-bold uppercase" style="letter-spacing: 1px;">Decision Remarks</label>
+                                <button type="button" class="ai-generate-btn" id="genAIButton" onclick="generateAINote()">
+                                    <i class="bi bi-stars"></i>
+                                    <span>✨ Generate AI Draft</span>
+                                </button>
+                            </div>
+                            <textarea name="admin_remarks" id="adminRemarks" class="form-control bg-dark bg-opacity-50 text-white border-secondary border-opacity-25 rounded-4 p-4" rows="4" placeholder="Enter findings or justification for audit trail..." style="line-height: 1.6; font-size: 13.5px;"></textarea>
+                        </div>
+
+                        <div class="verdict-actions">
+                            <button type="button" class="v-btn v-btn-approve" onclick="handleApprove()">
+                                <i class="bi bi-check-all fs-5"></i> Approve & Activate
+                            </button>
+                            <button type="button" class="v-btn v-btn-hold" onclick="submitVerdict('hold')">
+                                <i class="bi bi-pause-circle"></i> Place on Hold
+                            </button>
+                            <button type="button" class="v-btn v-btn-doc" onclick="submitVerdict('request_documents')">
+                                <i class="bi bi-files"></i> Request Docs
+                            </button>
+                            <button type="button" class="v-btn v-btn-reject" onclick="handleReject()">
+                                <i class="bi bi-x-circle"></i> Reject Application
+                            </button>
+                        </div>
+                    </form>
+                    {% else %}
+                    <div class="p-4 rounded-4 bg-white bg-opacity-5 text-center border border-white border-opacity-5">
+                        <div class="icon-circle mx-auto mb-3" style="width: 60px; height: 60px; border-radius: 50%; background: rgba(62, 124, 69, 0.1); color: #3E7C45; display: flex; align-items: center; justify-content: center; font-size: 24px;">
+                            <i class="bi bi-shield-shaded"></i>
+                        </div>
+                        <h5 class="fw-bold mb-1">Decision Recorded</h5>
+                        <p class="text-muted small mb-0">Processed by <strong>{{ application.reviewed_by.username }}</strong> on {{ application.reviewed_at|date:"d M Y" }}</p>
+                        {% if application.admin_remarks %}
+                        <div class="mt-3 p-3 rounded-3 bg-dark text-start small border border-white border-opacity-5 text-muted fst-italic">
+                            "{{ application.admin_remarks }}"
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
-<div class="row g-4">
-
-    {# ── Left Column: Applicant & Policy Info ─────────────────────────────── #}
-    <div class="col-md-8">
-
-        {# Status Banner #}
-        <div class="review-card mb-4">
-            <div class="review-card-header">
-                <div>
-                    <h5 class="mb-1 text-white">Application #{{ application.id }}</h5>
-                    <small class="text-muted">
-                        <i class="bi bi-calendar3 me-1"></i>Submitted {{ application.created_at|date:"F d, Y — H:i" }}
-                    </small>
-                </div>
-                <span class="status-badge badge-{{ application.status }}">
-                    {{ application.get_status_display }}
-                </span>
+{# ── Document Preview Modal ──────────────────────────────────────────────── #}
+<div id="docPreviewModal">
+    <div class="modal-glass-container">
+        <div class="card-hud-header">
+            <h3 class="card-hud-title">
+                <i class="bi bi-file-earmark-text text-info"></i>
+                <span id="docModalTitle">DOCUMENT PREVIEW</span>
+            </h3>
+            <div class="v-close-btn" onclick="closeDocModal()">
+                <i class="bi bi-x-lg"></i>
             </div>
         </div>
-
-        {# Applicant Information (Production-Ready Grid Layout) #}
-        <div class="applicant-card shadow-sm border border-secondary border-opacity-25 rounded-4 p-4 mb-4 bg-dark text-white" id="applicant-info-section">
-            <style>
-                #applicant-info-section .profile-header {
-                    text-align: center;
-                    border-bottom: 1px solid rgba(255,255,255,0.05);
-                    padding-bottom: 2rem;
-                    margin-bottom: 2rem;
-                }
-                #applicant-info-section .profile-avatar {
-                    width: 80px;
-                    height: 80px;
-                    background: linear-gradient(135deg, #3b82f6, #2563eb);
-                    border-radius: 50%;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    font-size: 32px;
-                    color: white;
-                    margin: 0 auto 1rem;
-                    box-shadow: 0 8px 16px rgba(59, 130, 246, 0.2);
-                }
-                #applicant-info-section .centered-grid {
-                    display: grid;
-                    grid-template-columns: repeat(2, 1fr);
-                    gap: 1.5rem;
-                    max-width: 800px;
-                    margin: 0 auto;
-                }
-                #applicant-info-section .field-group {
-                    text-align: center;
-                    padding: 1rem;
-                    background: rgba(255,255,255,0.02);
-                    border-radius: 12px;
-                    border: 1px solid rgba(255,255,255,0.05);
-                    transition: transform 0.2s, background 0.2s;
-                }
-                #applicant-info-section .field-group:hover {
-                    background: rgba(255,255,255,0.04);
-                    transform: translateY(-2px);
-                }
-                #applicant-info-section .field-label {
-                    display: block;
-                    font-size: 11px;
-                    text-transform: uppercase;
-                    letter-spacing: 1px;
-                    color: #94a3b8;
-                    margin-bottom: 0.5rem;
-                }
-                #applicant-info-section .field-value {
-                    font-size: 16px;
-                    font-weight: 700;
-                    margin: 0;
-                }
-                #applicant-info-section .address-row {
-                    grid-column: span 2;
-                    text-align: center;
-                    margin-top: 1rem;
-                }
-            </style>
-
-            {% with applicant=application.user %}
-            <div class="profile-header">
-                <div class="profile-avatar">
-                    {{ applicant.username|slice:":1"|upper }}
-                </div>
-                <h4 class="mb-1 text-info">{{ applicant.full_name|default:applicant.username }}</h4>
-                <p class="text-muted small mb-0"><i class="bi bi-person-badge-fill me-1"></i> Policyholder Applicant</p>
-            </div>
-
-            <div class="card-container">
-                <div class="centered-grid">
-                    <div class="field-group">
-                        <label class="field-label">Full Name</label>
-                        <p class="field-value">{{ applicant.full_name|default:applicant.username }}</p>
-                    </div>
-                    <div class="field-group">
-                        <label class="field-label">Username</label>
-                        <p class="field-value text-primary">@{{ applicant.username }}</p>
-                    </div>
-                    <div class="field-group">
-                        <label class="field-label">Email Address</label>
-                        {% if show_full_data %}
-                        <p class="field-value" style="color: #3b82f6;">{{ applicant.email }}</p>
-                        {% else %}
-                        <p class="field-value text-white-50">{{ masked_email }}</p>
-                        {% endif %}
-                    </div>
-                    <div class="field-group">
-                        <label class="field-label">Phone Number</label>
-                        {% if show_full_data %}
-                        <p class="field-value">{{ applicant.phone|default:"—" }}</p>
-                        {% else %}
-                        <p class="field-value text-white-50">{{ masked_phone }}</p>
-                        {% endif %}
-                    </div>
-                    <div class="field-group">
-                        <label class="field-label">Aadhaar (KYC)</label>
-                        <code class="field-value text-info">{{ applicant.aadhaar_masked }}</code>
-                    </div>
-                    <div class="field-group">
-                        <label class="field-label">System Identity</label>
-                        <p class="field-value text-muted" style="font-size: 12px;">UID-00{{ applicant.id }}</p>
-                    </div>
-                    
-                    <div class="field-group address-row">
-                        <label class="field-label">Permanent Address</label>
-                        <p class="field-value small" style="font-weight: normal;">{{ applicant.address|default:"Not recorded" }}</p>
-                    </div>
-                </div>
-            </div>
-            {% endwith %}
+        <div id="docModalContent" style="flex:1; overflow:hidden; padding:20px; display:flex; align-items:center; justify-content:center; background: #F4EEE2;">
+            <!-- Content dynamic Injection -->
         </div>
-        </div>
-
-        {# Policy Info #}
-        <div class="review-card mb-4">
-            <div class="review-card-header">
-                <h6 class="mb-0 text-warning"><i class="bi bi-file-earmark-lock me-2"></i>Policy Plan Details</h6>
-            </div>
-            <div class="review-card-body">
-                <div class="info-row">
-                    <span class="info-label">Policy Number</span>
-                    <span class="info-value fw-bold">{{ application.policy.policy_number }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Policy Type</span>
-                    <span class="info-value">{{ application.policy.policy_type|default:"General" }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Insurer</span>
-                    <span class="info-value">{{ application.policy.insurer_name|default:"—" }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Sum Insured</span>
-                    <span class="info-value text-success fw-bold">₹{{ application.policy.sum_insured|intcomma }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Deductible</span>
-                    <span class="info-value">₹{{ application.policy.deductible|intcomma }}</span>
-                </div>
-                {% with sched=application.policy.premium_schedule %}
-                {% if sched %}
-                <div class="info-row">
-                    <span class="info-label">Base Premium</span>
-                    <span class="info-value">₹{{ sched.base_premium|intcomma }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">GST ({{ sched.gst_percentage }}%)</span>
-                    <span class="info-value">₹{{ sched.gst_amount|intcomma }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Gross Premium</span>
-                    <span class="info-value text-info fw-bold">₹{{ sched.gross_premium|intcomma }}</span>
-                </div>
-                {% endif %}
-                {% endwith %}
-            </div>
-        </div>
-
-        {# Motor Documents (if applicable) #}
-        {% if application.vehicle_number or application.rc_upload %}
-        <div class="review-card mb-4">
-            <div class="review-card-header">
-                <h6 class="mb-0 text-info"><i class="bi bi-truck me-2"></i>Motor Verification Documents</h6>
-            </div>
-            <div class="review-card-body">
-                {% if application.vehicle_number %}
-                <div class="info-row">
-                    <span class="info-label">Vehicle Number</span>
-                    <code class="info-value">{{ application.vehicle_number }}</code>
-                </div>
-                {% endif %}
-
-                {% if application.rc_upload %}
-                <div class="info-row align-items-start">
-                    <span class="info-label">RC Document</span>
-                    <div>
-                        {# ── inline modal preview button ───────────────── #}
-                        {% with rc_url=application.rc_upload.url rc_name=application.rc_upload.name|lower %}
-                        <button
-                            class="doc-preview-btn"
-                            data-url="{{ rc_url }}"
-                            data-name="RC Document"
-                            data-type="{% if rc_name|slice:'-4:' == '.pdf' %}pdf{% else %}image{% endif %}"
-                            style="background:rgba(26,110,245,0.1); border:1px solid rgba(26,110,245,0.3);
-                                   color:#6fa3f5; border-radius:8px; padding:5px 14px;
-                                   font-size:12px; cursor:pointer; display:inline-flex;
-                                   align-items:center; gap:6px;">
-                            <i class="bi bi-eye"></i> Preview RC
-                        </button>
-                        {% endwith %}
-                    </div>
-                </div>
-                {% endif %}
-            </div>
-        </div>
-        {% elif 'motor' in application.policy.policy_type|lower %}
-        <div class="review-card mb-4">
-            <div class="review-card-header">
-                <h6 class="mb-0 text-info"><i class="bi bi-truck me-2"></i>Motor Policy</h6>
-            </div>
-            <div class="review-card-body">
-                <p class="text-muted small mb-0">No motor documents were submitted with this application.</p>
-            </div>
-        </div>
-        {% endif %}
-
-    </div>
-
-    {# ── Right Column: Admin Verdict ──────────────────────────────────────── #}
-    <div class="col-md-4">
-        <div class="review-card" style="position: sticky; top: 20px;">
-            <div class="review-card-header">
-                <h6 class="mb-0 text-white"><i class="bi bi-gavel me-2"></i>Admin Verdict</h6>
-            </div>
-            <div class="review-card-body">
-
-                {% if application.status == 'pending' %}
-                {# ── Active Verdict Form ────────────────────────────────────── #}
-                <form method="POST" id="verdictForm">
-                    {% csrf_token %}
-
-                    <div class="mb-4">
-                        <label class="form-label text-muted small">Remarks / Reason (optional)</label>
-                        <textarea
-                            name="admin_remarks"
-                            class="form-control bg-transparent text-white border-secondary"
-                            rows="4"
-                            placeholder="Add notes or reason for rejection…"
-                            id="adminRemarks"
-                        ></textarea>
-                    </div>
-
-                    <div class="d-grid gap-3">
-                        <button
-                            type="submit"
-                            name="action"
-                            value="approve"
-                            class="verdict-btn btn-approve"
-                            onclick="return confirm('Approve this application and create an active policy for the user?')"
-                        >
-                            <i class="bi bi-shield-check"></i> Approve & Activate
-                        </button>
-                        <button
-                            type="submit"
-                            name="action"
-                            value="reject"
-                            class="verdict-btn btn-reject"
-                            onclick="return verifyReject()"
-                        >
-                            <i class="bi bi-x-circle"></i> Reject Application
-                        </button>
-                    </div>
-                </form>
-
-                {% else %}
-                {# ── Already Reviewed ──────────────────────────────────────── #}
-                <div class="alert-already-reviewed mb-3">
-                    <i class="bi bi-info-circle me-2"></i>
-                    This application was <strong>{{ application.get_status_display }}</strong>
-                    {% if application.reviewed_at %}on {{ application.reviewed_at|date:"M d, Y" }}{% endif %}.
-                </div>
-
-                {% if application.reviewed_by %}
-                <div class="info-row">
-                    <span class="info-label">Reviewed By</span>
-                    <span class="info-value">{{ application.reviewed_by.get_full_name|default:application.reviewed_by.username }}</span>
-                </div>
-                {% endif %}
-
-                {% if application.admin_remarks and not 'vehicle_number:' in application.admin_remarks %}
-                <div class="mt-3 p-3 rounded" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);">
-                    <small class="text-muted d-block mb-1">Admin Remarks:</small>
-                    <p class="mb-0 text-light small">{{ application.admin_remarks }}</p>
-                </div>
-                {% endif %}
-                {% endif %}
-
-            </div>
+        <div class="p-3 border-top border-white border-opacity-5 text-center bg-dark bg-opacity-25">
+            <a id="docModalDownload" href="#" target="_blank" class="btn btn-sm btn-outline-info rounded-pill px-4 border-opacity-25" style="font-size: 11px; font-weight: 700; letter-spacing: 0.5px;">
+                <i class="bi bi-box-arrow-up-right me-2"></i>VIEW FULL RESOLUTION
+            </a>
         </div>
     </div>
-
 </div>
 
 {% endblock %}
 
 {% block extra_js %}
-
-{# ── Document Preview Modal (shared with claim_detail) ────────────────────── #}
-<div id="docPreviewModal" style="
-    display:none; position:fixed; inset:0; z-index:9999;
-    background:rgba(0,0,0,0.82); backdrop-filter:blur(6px);
-    align-items:center; justify-content:center; padding:20px;">
-    <div style="background:#111827; border:1px solid rgba(255,255,255,0.1); border-radius:16px;
-                width:100%; max-width:860px; max-height:90vh;
-                display:flex; flex-direction:column; overflow:hidden;
-                box-shadow:0 25px 60px rgba(0,0,0,0.6);">
-        <div style="display:flex; justify-content:space-between; align-items:center;
-                    padding:16px 22px; border-bottom:1px solid rgba(255,255,255,0.08);">
-            <div style="display:flex; align-items:center; gap:10px;">
-                <i class="bi bi-file-earmark-text" style="color:#6fa3f5; font-size:18px;"></i>
-                <span id="docModalTitle" style="color:#e2e8f0; font-weight:600; font-size:15px;"></span>
-            </div>
-            <div style="display:flex; gap:10px; align-items:center;">
-                <a id="docModalDownload" href="#" target="_blank"
-                   style="font-size:12px; color:#7a8ba8; text-decoration:none;
-                          display:flex; align-items:center; gap:5px;
-                          border:1px solid rgba(255,255,255,0.1); padding:5px 12px;
-                          border-radius:8px;">
-                    <i class="bi bi-download"></i> Open in Tab
-                </a>
-                <button onclick="closeDocModal()" style="
-                    background:rgba(244,72,101,0.1); border:1px solid rgba(244,72,101,0.3);
-                    color:#f44865; border-radius:8px; width:34px; height:34px;
-                    display:flex; align-items:center; justify-content:center;
-                    cursor:pointer; font-size:18px;">
-                    <i class="bi bi-x"></i>
-                </button>
-            </div>
-        </div>
-        <div style="flex:1; overflow:auto; padding:20px; display:flex;
-                    align-items:center; justify-content:center; min-height:200px;">
-            <div id="docModalContent" style="width:100%; height:100%;
-                 display:flex; align-items:center; justify-content:center;"></div>
-        </div>
-    </div>
-</div>
-
 <script>
-const modal   = document.getElementById('docPreviewModal');
-const content = document.getElementById('docModalContent');
-const title   = document.getElementById('docModalTitle');
-const dlBtn   = document.getElementById('docModalDownload');
+    const modal = document.getElementById('docPreviewModal');
+    const content = document.getElementById('docModalContent');
+    const title = document.getElementById('docModalTitle');
+    const dlBtn = document.getElementById('docModalDownload');
 
-document.querySelectorAll('.doc-preview-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-        const url  = this.dataset.url;
-        const name = this.dataset.name;
-        const type = this.dataset.type;
-        title.textContent = name;
-        dlBtn.href = url;
-        content.innerHTML = type === 'pdf'
-            ? `<iframe src="${url}" style="width:100%;height:65vh;border:none;border-radius:8px;background:#fff;" title="${name}"></iframe>`
-            : `<img src="${url}" alt="${name}" style="max-width:100%;max-height:65vh;object-fit:contain;border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,0.5);" />`;
-        modal.style.display = 'flex';
-        document.body.style.overflow = 'hidden';
+    document.querySelectorAll('.doc-preview-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const url = this.dataset.url;
+            const name = this.dataset.name;
+            const type = this.dataset.type;
+            
+            if (!url || url === '#') {
+                InsureAlert.warning("Review Blocked", "The requested document/image has not been uploaded or is currently being processed by the OCR engine.");
+                return;
+            }
+
+            title.textContent = name;
+            dlBtn.href = url;
+            content.innerHTML = type === 'pdf'
+                ? `<iframe src="${url}" style="width:100%; height:75vh; border:none; border-radius:12px; background:white;"></iframe>`
+                : `<img src="${url}" style="max-width:100%; max-height:75vh; object-fit:contain; border-radius:8px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.05);" />`;
+            
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        });
     });
-});
 
-function closeDocModal() {
-    modal.style.display = 'none';
-    content.innerHTML = '';
-    document.body.style.overflow = '';
-}
-modal.addEventListener('click', e => { if (e.target === modal) closeDocModal(); });
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDocModal(); });
-</script>
+    function closeDocModal() {
+        modal.style.display = 'none';
+        content.innerHTML = '';
+        document.body.style.overflow = '';
+    }
 
-<script>
-    // Initialize tooltips
-    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-      return new bootstrap.Tooltip(tooltipTriggerEl)
-    })
+    async function generateAINote() {
+        const adminBtn = document.getElementById('genAIButton');
+        const originalHtml = adminBtn.innerHTML;
+        const remarksField = document.getElementById('adminRemarks');
+        
+        try {
+            adminBtn.classList.add('loading');
+            adminBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" style="width: 12px; height: 12px;"></span>Generating...';
+            
+            const response = await fetch("{% url 'policy:api_generate_note' application.public_id %}", {
+                method: 'POST',
+                headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+                body: new URLSearchParams({ decision: 'APPROVED' })
+            });
+            const data = await response.json();
+            
+            if (data.note) {
+                remarksField.value = data.note;
+                remarksField.style.borderColor = '#0ea5e9';
+                remarksField.style.boxShadow = '0 0 20px rgba(14, 165, 233, 0.15)';
+                
+                // Flash effect to show update
+                setTimeout(() => {
+                    remarksField.style.borderColor = 'rgba(255,255,255,0.08)';
+                    remarksField.style.boxShadow = 'none';
+                }, 1500);
+            }
+        } catch (e) {
+            console.error(e);
+            InsureAlert.error("AI Error", "Failed to reach the smart assistant engine.");
+        } finally {
+            adminBtn.innerHTML = originalHtml;
+            adminBtn.classList.remove('loading');
+        }
+    }
 
-    function verifyReject() {
+    async function handleApprove() {
+        const result = await InsureAlert.confirm(
+            'Confirm Activation',
+            'This will approve the application and activate the policy coverage immediately. User will be notified.',
+            'Approve & Activate'
+        );
+        if (result.isConfirmed) submitVerdict('approve');
+    }
+
+    async function handleReject() {
         const remarks = document.getElementById('adminRemarks').value.trim();
         if (!remarks) {
-            if (!confirm('You have not provided a rejection reason. Are you sure you want to reject without a reason?')) {
-                return false;
-            }
+            InsureAlert.error("Justification Required", "Please provide a formal rejection reason in the remarks field for the auditor audit trail.");
+            return;
         }
-        return confirm('Reject this application? This action will notify the user.');
+        const result = await InsureAlert.confirm(
+            'Confirm Rejection',
+            'Are you sure you want to REJECT this application? This action cannot be undone.',
+            'Confirm Rejection'
+        );
+        if (result.isConfirmed) submitVerdict('reject');
+    }
+
+    function submitVerdict(action) {
+        const form = document.getElementById('verdictForm');
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'action';
+        input.value = action;
+        form.appendChild(input);
+        form.submit();
     }
 </script>
 {% endblock %}

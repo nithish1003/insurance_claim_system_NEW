@@ -1,0 +1,576 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="kyc-boot-loader" id="kycBootLoader" aria-hidden="true">
+    <div class="kyc-loader-stage">
+        <div class="kyc-holo-card">
+            <div class="holo-chip"><i class="bi bi-cpu"></i></div>
+            <div class="holo-lines">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <div class="holo-fingerprint">
+                <i class="bi bi-fingerprint"></i>
+            </div>
+        </div>
+        <div class="scan-ring ring-one"></div>
+        <div class="scan-ring ring-two"></div>
+        <div class="scan-beam"></div>
+        <div class="loader-core-label">KYC CORE</div>
+    </div>
+</div>
+
+<div class="kyc-detail-container" style="background: linear-gradient(135deg, #F4EEE2 0%, #FFFFFF 100%); min-height: 100vh; padding: 120px 2rem 5rem;">
+    <!-- Ambient Background Lighting -->
+    <div class="ambient-glow" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; overflow: hidden;">
+        <div style="position: absolute; top: -10%; right: -5%; width: 600px; height: 600px; background: radial-gradient(circle, rgba(0, 242, 255, 0.05) 0%, transparent 70%); border-radius: 50%;"></div>
+    </div>
+
+    <div class="content-wrapper" style="max-width: 1400px; margin: 0 auto; position: relative; z-index: 1;">
+        
+        <!-- Action Header -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2.5rem;">
+            <a href="{% url 'accounts:kyc_dashboard' %}" class="back-command-btn">
+                <div class="cmd-icon"><i class="bi bi-chevron-left"></i></div>
+                <div class="cmd-text">
+                    <span class="cmd-super">Navigate Back</span>
+                    <span class="cmd-sub">Audit Infrastructure</span>
+                </div>
+            </a>
+            
+            <div class="quick-stats" style="display: flex; gap: 2rem;">
+                <div class="stat-unit">
+                    <div class="stat-lbl">Applicant Name</div>
+                    <div class="stat-val text-white">{{ verification.submitted_full_name }}</div>
+                </div>
+                <div class="stat-unit">
+                    <div class="stat-lbl">User ID</div>
+                    <div class="stat-val" style="color: #6366f1;">#{{ verification.user.id|default:"N/A" }}</div>
+                </div>
+                <div class="stat-unit">
+                    <div class="stat-lbl">Submission Date</div>
+                    <div class="stat-val" style="color: rgba(156, 149, 143, 0.7);">{{ verification.created_at|date:"M d, Y H:i" }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="dossier-grid" style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
+            
+            <!-- Left Pane: Identity Comparison -->
+            <div class="forensic-pane" style="display: flex; flex-direction: column; gap: 2rem;">
+                
+                <!-- Cross-Reference Metadata -->
+                <div class="glass-panel forensic-card" style="padding: 2.5rem;">
+                    <h2 class="card-title gradient-title-cyan"><i class="bi bi-shield-lock" style="color: #00f2ff;"></i> Identity Cross-Reference Analysis</h2>
+                    
+                    <div class="comp-matrix" style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 3rem; margin-top: 2rem;">
+                        <!-- Aadhaar Validation -->
+                        <div class="matrix-unit">
+                            <label class="matrix-label">Document Payload</label>
+                            <div class="payload-box">
+                                <div class="payload-row">
+                                    <span class="p-lbl">User Input</span>
+                                    <span class="p-val font-mono">{{ verification.submitted_aadhaar_number }}</span>
+                                </div>
+                                <div class="payload-row">
+                                    <span class="p-lbl">Masked ID</span>
+                                    <span class="p-val font-mono">XXXX XXXX {{ verification.submitted_aadhaar_number|slice:"-4:" }}</span>
+                                </div>
+                                <div class="payload-row">
+                                    <span class="p-lbl">OCR Extracted</span>
+                                    <span class="p-val font-mono" style="color: #00f2ff;">{{ verification.extracted_number|default:"[UNREADABLE]" }}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="match-status-box {% if number_match %}success{% else %}danger{% endif %}" style="margin-top: 1.5rem;">
+                                {% if number_match %}
+                                    <i class="bi bi-check-circle-fill"></i> NUID String Verified
+                                {% else %}
+                                    <i class="bi bi-exclamation-triangle-fill"></i> String Mismatch Detected
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Linguistic Comparison -->
+                        <div class="matrix-unit">
+                            <label class="matrix-label">Linguistic Validation (Name Match)</label>
+                            <div class="name-comp-stack">
+                                <div class="name-box registry">
+                                    <div class="box-tag">Registry (DB)</div>
+                                    <div class="box-name">{{ verification.submitted_full_name }}</div>
+                                </div>
+                                <div class="name-box ocr">
+                                    <div class="box-tag">Extracted (OCR)</div>
+                                    <div class="box-name">{{ verification.extracted_name|default:"Metadata Missing" }}</div>
+                                </div>
+                            </div>
+                            
+                            <div class="similarity-gauge" style="margin-top: 1.5rem;">
+                                <div style="display: flex; justify-content: space-between; font-size: 0.75rem; font-weight: 800; color: rgba(156, 149, 143, 0.7); margin-bottom: 8px;">
+                                    <span>Match Percentage</span>
+                                    <span style="color: #fff;">{{ name_similarity_percent }}%</span>
+                                </div>
+                                <div class="gauge-track">
+                                    <div class="gauge-fill" style="width: {{ name_similarity_percent }}%; background: {% if name_match %}#10b981{% else %}#c55a5a{% endif %};"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Verdict & Notes -->
+                <div class="glass-panel forensic-card" style="padding: 2rem; border-left: 5px solid #6366f1;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h3 class="card-title gradient-title-cyan" style="margin: 0; font-size: 1rem;"><i class="bi bi-terminal" style="color: #6366f1;"></i> AI Adjudication Verdict</h3>
+                        <span style="font-size: 0.7rem; font-weight: 800; color: #6366f1; letter-spacing: 1px;">VERDICT CODE: {{ reason_code }}</span>
+                    </div>
+                    <p style="color: #cbd5e1; font-size: 0.95rem; line-height: 1.6; margin: 0; font-style: italic;">"{{ reason_text }}"</p>
+                </div>
+            </div>
+
+            <!-- Right Pane: Artifact Viewer & Actions -->
+            <div class="artifact-pane" style="display: flex; flex-direction: column; gap: 2rem;">
+                
+                <!-- Image Preview -->
+                <div class="glass-panel forensic-card" style="padding: 1.5rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h3 class="card-title gradient-title-cyan" style="margin: 0; font-size: 0.9rem;">Identity Artifact</h3>
+                        <a href="{{ verification.profile.id_proof.url }}" target="_blank" class="expand-btn"><i class="bi bi-arrows-fullscreen"></i></a>
+                    </div>
+                    
+                    <div class="artifact-view">
+                        {% if verification.profile.id_proof %}
+                            <img src="{{ verification.profile.id_proof.url }}" alt="Aadhaar Artifact">
+                        {% else %}
+                            <div class="missing-artifact">
+                                <i class="bi bi-file-earmark-image"></i>
+                                <span>Artifact Desynchronized</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="ocr-meta" style="margin-top: 1.5rem;">
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <div class="conf-circle" style="background: conic-gradient(#00f2ff {{ confidence_percent }}%, rgba(255,255,255,0.05) 0);">
+                                <div class="inner-circle">{{ confidence_percent }}%</div>
+                            </div>
+                            <div>
+                                <div style="color: #fff; font-size: 0.85rem; font-weight: 700;">Extraction Reliability</div>
+                                <div style="color: rgba(156, 149, 143, 0.6); font-size: 0.7rem;">Engine: PaddleOCR Forensic Core</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Admin Action Hub -->
+                <div class="glass-panel action-hub" style="padding: 1.5rem;">
+                    <h3 class="card-title gradient-title-cyan" style="font-size: 0.9rem; margin-bottom: 1.5rem;">Governance Controls</h3>
+                    
+                    <form method="POST" style="display: flex; flex-direction: column; gap: 0.75rem;">
+                        {% csrf_token %}
+                        
+                        {% if verification.status == 'verified' or verification.status == 'approved_override' %}
+                            <!-- ✅ VERIFIED STATE -->
+                            <div class="governance-btn verified-badge" style="background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); cursor: default;">
+                                <i class="bi bi-patch-check-fill"></i> IDENTITY VERIFIED ✓
+                            </div>
+                            <button name="action" value="escalate" class="governance-btn flag">
+                                <i class="bi bi-arrow-up-right-circle"></i> Escalate to Manual Review
+                            </button>
+                            <button name="action" value="revoke" class="governance-btn reject">
+                                <i class="bi bi-slash-circle"></i> Revoke Approval
+                            </button>
+
+                        {% elif verification.status == 'manual_review' or verification.status == 'escalated' %}
+                            <!-- ⏳ PENDING / ESCALATED STATE -->
+                            {% if verification.status == 'escalated' %}
+                                <div class="governance-btn" style="background: rgba(200, 138, 45, 0.1); color: #C88A2D; border: 1px solid rgba(200, 138, 45, 0.3); cursor: default; margin-bottom: 0.5rem;">
+                                    <i class="bi bi-exclamation-triangle"></i> ESCALATED CASE
+                                </div>
+                            {% endif %}
+                            
+                            <button name="action" value="approve" class="governance-btn approve">
+                                <i class="bi bi-shield-check"></i> Authorize & Verify
+                            </button>
+                            <button name="action" value="reject" class="governance-btn reject">
+                                <i class="bi bi-shield-x"></i> Reject Identity
+                            </button>
+                            <button type="button" class="governance-btn flag" onclick="InsureAlert.warning('Flagged', 'Identity flagged for enhanced forensic investigation.')">
+                                <i class="bi bi-flag"></i> Flag High-Risk
+                            </button>
+
+                        {% elif verification.status == 'rejected' or verification.status == 'rejected_override' %}
+                            <!-- ❌ REJECTED STATE -->
+                            <div class="governance-btn rejected-badge" style="background: rgba(197, 90, 90, 0.1); color: #c55a5a; border: 1px solid rgba(197, 90, 90, 0.3); cursor: default;">
+                                <i class="bi bi-x-octagon-fill"></i> IDENTITY REJECTED ✗
+                            </div>
+                            <button name="action" value="reopen" class="governance-btn approve">
+                                <i class="bi bi-arrow-counterclockwise"></i> Reopen Case
+                            </button>
+                        {% endif %}
+
+                        <a href="{{ verification.profile.id_proof.url }}" download class="governance-btn download">
+                            <i class="bi bi-download"></i> Download Dossier
+                        </a>
+                    </form>
+                    
+                    <div style="margin-top: 1.5rem; text-align: center; font-size: 0.65rem; color: #475569; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">
+                        Audited by: {{ user.username }}
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .kyc-boot-loader {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: grid;
+        place-items: center;
+        background:
+            radial-gradient(circle at 50% 42%, rgba(0, 242, 255, 0.14), transparent 32%),
+            linear-gradient(135deg, #F4EEE2 0%, #08111f 48%, #FFFFFF 100%);
+        opacity: 1;
+        visibility: visible;
+        transition: opacity 0.7s ease, visibility 0.7s ease;
+    }
+
+    .kyc-boot-loader.is-loaded {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+    }
+
+    .kyc-loader-stage {
+        position: relative;
+        width: min(340px, 82vw);
+        aspect-ratio: 1;
+        display: grid;
+        place-items: center;
+        perspective: 900px;
+        transform-style: preserve-3d;
+    }
+
+    .kyc-holo-card {
+        width: 178px;
+        height: 230px;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        padding: 24px;
+        border-radius: 18px;
+        background:
+            linear-gradient(135deg, rgba(0, 242, 255, 0.2), rgba(99, 102, 241, 0.09)),
+            rgba(15, 23, 42, 0.9);
+        border: 1px solid rgba(0, 242, 255, 0.42);
+        box-shadow:
+            0 28px 80px rgba(0, 0, 0, 0.55),
+            0 0 38px rgba(0, 242, 255, 0.2),
+            inset 0 0 32px rgba(255, 255, 255, 0.04);
+        transform-style: preserve-3d;
+        animation: holo-card-orbit 2.8s ease-in-out infinite;
+        overflow: hidden;
+    }
+
+    .kyc-holo-card::before {
+        content: "";
+        position: absolute;
+        inset: -45%;
+        background: linear-gradient(115deg, transparent 35%, rgba(255, 255, 255, 0.42), transparent 56%);
+        animation: holo-glint 2.2s linear infinite;
+        transform: translateZ(48px);
+    }
+
+    .holo-chip {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        display: grid;
+        place-items: center;
+        color: #F4EEE2;
+        background: #00f2ff;
+        box-shadow: 0 0 24px rgba(0, 242, 255, 0.55);
+        transform: translateZ(54px);
+    }
+
+    .holo-lines {
+        display: grid;
+        gap: 10px;
+        transform: translateZ(38px);
+    }
+
+    .holo-lines span {
+        display: block;
+        height: 8px;
+        border-radius: 999px;
+        background: rgba(226, 232, 240, 0.72);
+    }
+
+    .holo-lines span:nth-child(2) { width: 74%; }
+    .holo-lines span:nth-child(3) { width: 56%; }
+
+    .holo-fingerprint {
+        margin-top: auto;
+        width: 72px;
+        height: 72px;
+        display: grid;
+        place-items: center;
+        align-self: center;
+        border-radius: 50%;
+        color: #00f2ff;
+        border: 1px solid rgba(0, 242, 255, 0.35);
+        background: rgba(0, 242, 255, 0.08);
+        font-size: 2.25rem;
+        transform: translateZ(72px);
+        animation: pulse-fingerprint 1.4s ease-in-out infinite;
+    }
+
+    .scan-ring {
+        position: absolute;
+        inset: 16%;
+        border: 1px solid rgba(0, 242, 255, 0.42);
+        border-radius: 50%;
+        transform-style: preserve-3d;
+    }
+
+    .ring-one {
+        animation: ring-spin-one 2.4s linear infinite;
+    }
+
+    .ring-two {
+        inset: 7%;
+        border-color: rgba(99, 102, 241, 0.42);
+        animation: ring-spin-two 3.2s linear infinite;
+    }
+
+    .scan-beam {
+        position: absolute;
+        width: 210px;
+        height: 3px;
+        border-radius: 999px;
+        background: linear-gradient(90deg, transparent, #00f2ff, transparent);
+        box-shadow: 0 0 22px rgba(0, 242, 255, 0.8);
+        animation: scan-sweep 1.6s ease-in-out infinite;
+        transform: translateZ(92px);
+    }
+
+    .loader-core-label {
+        position: absolute;
+        bottom: 16px;
+        color: rgba(156, 149, 143, 0.7);
+        font-size: 0.68rem;
+        font-weight: 900;
+        letter-spacing: 0.28em;
+        text-transform: uppercase;
+    }
+
+    .content-wrapper {
+        animation: dossier-rise 0.85s cubic-bezier(0.16, 1, 0.3, 1) both;
+        transform-style: preserve-3d;
+    }
+
+    .forensic-card,
+    .action-hub {
+        transform-style: preserve-3d;
+        animation: panel-depth-in 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    .forensic-pane .forensic-card:nth-child(2) { animation-delay: 0.08s; }
+    .artifact-pane .forensic-card { animation-delay: 0.12s; }
+    .action-hub { animation-delay: 0.18s; }
+
+    @keyframes holo-card-orbit {
+        0%, 100% { transform: rotateX(62deg) rotateZ(-9deg) translateY(0); }
+        50% { transform: rotateX(54deg) rotateZ(9deg) translateY(-12px); }
+    }
+
+    @keyframes holo-glint {
+        from { transform: translateX(-50%) rotate(12deg) translateZ(48px); }
+        to { transform: translateX(50%) rotate(12deg) translateZ(48px); }
+    }
+
+    @keyframes pulse-fingerprint {
+        0%, 100% { box-shadow: 0 0 0 rgba(0, 242, 255, 0); transform: translateZ(72px) scale(1); }
+        50% { box-shadow: 0 0 26px rgba(0, 242, 255, 0.55); transform: translateZ(82px) scale(1.06); }
+    }
+
+    @keyframes ring-spin-one {
+        from { transform: rotateX(72deg) rotateZ(0deg); }
+        to { transform: rotateX(72deg) rotateZ(360deg); }
+    }
+
+    @keyframes ring-spin-two {
+        from { transform: rotateY(68deg) rotateZ(360deg); }
+        to { transform: rotateY(68deg) rotateZ(0deg); }
+    }
+
+    @keyframes scan-sweep {
+        0%, 100% { transform: translateY(-92px) translateZ(92px); opacity: 0.2; }
+        50% { transform: translateY(92px) translateZ(92px); opacity: 1; }
+    }
+
+    @keyframes dossier-rise {
+        from { opacity: 0; transform: translateY(24px) rotateX(4deg); }
+        to { opacity: 1; transform: translateY(0) rotateX(0); }
+    }
+
+    @keyframes panel-depth-in {
+        from { opacity: 0; transform: translateY(22px) rotateX(8deg) translateZ(-20px); }
+        to { opacity: 1; transform: translateY(0) rotateX(0) translateZ(0); }
+    }
+
+    .glass-panel {
+        background: rgba(15, 23, 42, 0.7);
+        backdrop-filter: blur(25px);
+        -webkit-backdrop-filter: blur(25px);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 24px;
+    }
+    .card-title { color: #fff; font-size: 1.25rem; font-weight: 800; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.75rem; }
+    
+    .back-command-btn {
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+        text-decoration: none;
+        padding: 0.75rem 1.25rem;
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 16px;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .back-command-btn:hover {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(0, 242, 255, 0.3);
+        transform: translateX(-5px);
+        box-shadow: 0 10px 30px -10px rgba(0, 242, 255, 0.2);
+    }
+
+    .cmd-icon {
+        width: 36px;
+        height: 36px;
+        background: rgba(0, 242, 255, 0.1);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #00f2ff;
+        font-size: 1rem;
+        transition: all 0.3s;
+    }
+
+    .back-command-btn:hover .cmd-icon {
+        background: #00f2ff;
+        color: #F4EEE2;
+    }
+
+    .cmd-text {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .cmd-super {
+        color: rgba(156, 149, 143, 0.6);
+        font-size: 0.65rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .cmd-sub {
+        color: #fff;
+        font-size: 0.9rem;
+        font-weight: 700;
+    }
+
+    .back-link { display: inline-flex; align-items: center; gap: 8px; color: rgba(156, 149, 143, 0.6); text-decoration: none; font-size: 0.9rem; font-weight: 700; transition: color 0.3s; }
+    .back-link:hover { color: #fff; }
+
+    .stat-lbl { color: #475569; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+    .stat-val { font-size: 1rem; font-weight: 800; }
+
+    .matrix-label { display: block; color: rgba(156, 149, 143, 0.6); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; margin-bottom: 1rem; }
+    .payload-box { background: rgba(0,0,0,0.3); border-radius: 16px; padding: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem; }
+    .payload-row { display: flex; justify-content: space-between; font-size: 0.85rem; }
+    .p-lbl { color: #475569; font-weight: 700; }
+    .p-val { color: #cbd5e1; }
+
+    .match-status-box { padding: 10px; border-radius: 10px; font-size: 0.75rem; font-weight: 800; text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .match-status-box.success { background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); }
+    .match-status-box.danger { background: rgba(197, 90, 90, 0.1); color: #c55a5a; border: 1px solid rgba(197, 90, 90, 0.2); }
+
+    .name-comp-stack { display: flex; flex-direction: column; gap: 0.75rem; }
+    .name-box { background: rgba(0,0,0,0.3); padding: 1rem; border-radius: 12px; border-left: 3px solid transparent; }
+    .name-box.registry { border-color: #00f2ff; }
+    .name-box.ocr { border-color: #C88A2D; }
+    .box-tag { font-size: 0.65rem; font-weight: 800; color: rgba(156, 149, 143, 0.6); text-transform: uppercase; margin-bottom: 4px; }
+    .box-name { color: #fff; font-size: 1rem; font-weight: 700; }
+
+    .gauge-track { width: 100%; height: 8px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden; }
+    .gauge-fill { height: 100%; transition: width 1s cubic-bezier(0.4,0,0.2,1); }
+
+    .artifact-view { background: #000; border-radius: 16px; min-height: 200px; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); }
+    .artifact-view img { max-width: 100%; height: auto; }
+    .missing-artifact { text-align: center; color: #475569; }
+    .missing-artifact i { font-size: 3rem; margin-bottom: 0.5rem; }
+
+    .conf-circle { width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; position: relative; }
+    .inner-circle { width: 50px; height: 50px; border-radius: 50%; background: #FFFFFF; color: #fff; font-size: 0.8rem; font-weight: 900; display: flex; align-items: center; justify-content: center; }
+
+    .expand-btn { color: #00f2ff; font-size: 1rem; transition: transform 0.3s; }
+    .expand-btn:hover { transform: scale(1.2); }
+
+    .governance-btn { width: 100%; padding: 0.9rem; border-radius: 12px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; border: none; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; }
+    .approve { background: #00f2ff; color: #F4EEE2; box-shadow: 0 10px 20px -5px rgba(0, 242, 255, 0.4); }
+    .approve:hover { background: #fff; transform: translateY(-2px); }
+    .reject { background: rgba(197, 90, 90, 0.1); color: #c55a5a; border: 1px solid rgba(197, 90, 90, 0.2); }
+    .reject:hover { background: #c55a5a; color: #fff; }
+    .flag { background: rgba(200, 138, 45, 0.1); color: #C88A2D; border: 1px solid rgba(200, 138, 45, 0.2); }
+    .download { background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1); }
+    .download:hover { background: rgba(255,255,255,0.1); }
+
+    @media (max-width: 992px) {
+        .dossier-grid {
+            grid-template-columns: 1fr !important;
+        }
+
+        .quick-stats {
+            display: none !important;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .kyc-boot-loader,
+        .kyc-holo-card,
+        .kyc-holo-card::before,
+        .holo-fingerprint,
+        .scan-ring,
+        .scan-beam,
+        .content-wrapper,
+        .forensic-card,
+        .action-hub {
+            animation: none !important;
+            transition: none !important;
+        }
+    }
+</style>
+
+<script>
+    (function () {
+        const loader = document.getElementById('kycBootLoader');
+        if (!loader) return;
+
+        const finish = () => loader.classList.add('is-loaded');
+        window.addEventListener('load', () => window.setTimeout(finish, 450), { once: true });
+        window.setTimeout(finish, 2600);
+    })();
+</script>
+{% endblock %}

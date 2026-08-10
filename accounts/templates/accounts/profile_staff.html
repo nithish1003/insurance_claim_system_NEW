@@ -34,8 +34,8 @@
     margin: 0 auto;
 }
 .profile-header-card {
-    background: linear-gradient(145deg, #111c35 0%, #0f1b33 100%);
-    border: 1px solid #1f335c;
+    background: linear-gradient(145deg, #FFFFFF 0%, #0f1b33 100%);
+    border: 1px solid rgba(101, 96, 79, 0.25);
     border-radius: 16px;
     padding: 40px;
     display: flex;
@@ -58,15 +58,15 @@
 .profile-avatar-large {
     width: 120px;
     height: 120px;
-    background: linear-gradient(135deg, #1a6ef5 0%, #0a4ebd 100%);
+    background: linear-gradient(135deg, #65604F 0%, #0a4ebd 100%);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 50px;
     color: white;
-    box-shadow: 0 10px 30px rgba(26, 110, 245, 0.3);
-    border: 4px solid #1f335c;
+    box-shadow: 0 10px 30px rgba(101, 96, 79, 0.3);
+    border: 4px solid rgba(101, 96, 79, 0.25);
     flex-shrink: 0;
     z-index: 1;
 }
@@ -79,7 +79,7 @@
     color: white;
 }
 .profile-title p {
-    color: #9fb3d1;
+    color: rgba(156, 149, 143, 0.7);
     font-size: 16px;
     margin-bottom: 15px;
 }
@@ -92,13 +92,13 @@
     text-transform: uppercase;
     display: inline-block;
 }
-.role-admin { background: rgba(220, 53, 69, 0.15); color: #ff6b81; border: 1px solid rgba(220, 53, 69, 0.3); }
+.role-admin { background: rgba(220, 53, 69, 0.15); color: #B04A4A; border: 1px solid rgba(220, 53, 69, 0.3); }
 .role-staff { background: rgba(255, 193, 7, 0.15); color: #ffd32a; border: 1px solid rgba(255, 193, 7, 0.3); }
 .role-policyholder { background: rgba(40, 167, 69, 0.15); color: #2ed573; border: 1px solid rgba(40, 167, 69, 0.3); }
 
 .details-card {
-    background: #111c35;
-    border: 1px solid #1f335c;
+    background: #FFFFFF;
+    border: 1px solid rgba(101, 96, 79, 0.25);
     border-radius: 16px;
     padding: 30px;
 }
@@ -112,7 +112,7 @@
     gap: 10px;
 }
 .details-card h4 i {
-    color: #1a6ef5;
+    color: #65604F;
 }
 .info-row {
     display: flex;
@@ -125,7 +125,7 @@
 }
 .info-label {
     width: 35%;
-    color: #9fb3d1;
+    color: rgba(156, 149, 143, 0.7);
     font-size: 14px;
     font-weight: 500;
 }
@@ -138,9 +138,9 @@
 
 /* Sidebar active state */
 .sidebar-link.active {
-    background: rgba(26, 110, 245, 0.15) !important;
+    background: rgba(101, 96, 79, 0.15) !important;
     color: white !important;
-    border-left: 3px solid #1a6ef5 !important;
+    border-left: 3px solid #65604F !important;
     padding-left: 24px !important;
 }
 
@@ -220,16 +220,7 @@ Staff Profile
                     </div>
                 </div>
                 
-                <div class="info-row">
-                    <div class="info-label">Address</div>
-                    <div class="info-value">
-                        {% if request.user.address %}
-                            {{ request.user.address }}
-                        {% else %}
-                            <span class="text-muted"><i class="bi bi-dash"></i></span>
-                        {% endif %}
-                    </div>
-                </div>
+
                 
                 <div class="info-row">
                     <div class="info-label">Role</div>

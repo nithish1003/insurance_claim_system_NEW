@@ -1,0 +1,445 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}System Notifications | InsureCRM{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a href="/" class="text-decoration-none text-muted">Dashboard</a></li>
+        <li class="breadcrumb-item active" aria-current="page text-white">Notifications</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4" data-aos="fade-up">
+    <div class="row justify-content-center">
+        <div class="col-xl-9 col-lg-10">
+            <!-- Header Section -->
+            <div class="d-flex justify-content-between align-items-end mb-4 px-2">
+                <div>
+                    <h2 class="fw-bold mb-1 text-white">Notification Inbox</h2>
+                    <p class="text-muted small mb-0">Manage your system activity and alerts.</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <button id="markAllReadPageBtn" class="btn btn-glass btn-sm px-3 rounded-pill {% if not notifications.count > 0 %}disabled{% endif %}">
+                        <i class="bi bi-check-all me-1"></i> Mark all as read
+                    </button>
+                    <button id="clearAllNotifBtn" class="btn btn-outline-danger btn-sm px-3 rounded-pill {% if not notifications.count > 0 %}disabled{% endif %}">
+                        <i class="bi bi-trash3 me-1"></i> Clear all
+                    </button>
+                </div>
+            </div>
+
+            <!-- Inbox Card -->
+            <div class="premium-inbox-card">
+                <div class="inbox-scroll-area" id="fullNotifContainer">
+                    {% regroup notifications by created_at|date:"F d, Y" as grouped_notifs %}
+                    
+                    {% for group in grouped_notifs %}
+                    <div class="date-group">
+                        <div class="date-label px-4 py-2 text-uppercase fw-bold">{{ group.grouper }}</div>
+                        {% for notif in group.list %}
+                        <div class="notif-row-wrapper {% if notif.status == 'unread' %}is-unread{% endif %}" 
+                             id="notif-{{ notif.id }}"
+                             data-id="{{ notif.id }}">
+                            
+                            <div class="notif-row-content p-4 d-flex gap-4">
+                                <!-- Icon Column -->
+                                <div class="notif-badge-lg 
+                                    {% if notif.notification_type == 'expiry' %}bg-glow-warning
+                                    {% elif notif.notification_type == 'overdue' %}bg-glow-danger
+                                    {% elif notif.notification_type == 'success' %}bg-glow-success
+                                    {% elif notif.notification_type == 'claim' %}bg-glow-info
+                                    {% else %}bg-glow-secondary{% endif %}">
+                                    
+                                    <i class="bi 
+                                        {% if notif.notification_type == 'expiry' %}bi-clock-history
+                                        {% elif notif.notification_type == 'overdue' %}bi-shield-exclamation
+                                        {% elif notif.notification_type == 'success' %}bi-check-circle-fill
+                                        {% elif notif.notification_type == 'claim' %}bi-clipboard-pulse
+                                        {% else %}bi-info-circle-fill{% endif %}"></i>
+                                </div>
+
+                                <!-- Text Content Column -->
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-1">
+                                        <h6 class="notif-title fw-bold mb-0">{{ notif.title }}</h6>
+                                        <span class="notif-time text-muted small">{{ notif.created_at|naturaltime }}</span>
+                                    </div>
+                                    <p class="notif-msg text-muted pe-md-5 mb-3">{{ notif.message }}</p>
+                                    
+                                    <div class="d-flex gap-3 align-items-center">
+                                        <span class="notif-type-tag tag-{{ notif.notification_type }}">
+                                            {{ notif.get_notification_type_display }}
+                                        </span>
+                                        {% if notif.status == 'unread' %}
+                                        <button class="mark-single-read shadow-none" data-id="{{ notif.id }}">
+                                            Mark as read
+                                        </button>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <!-- Action Buttons -->
+                                <div class="notif-actions d-flex flex-column gap-2">
+                                    <button class="archive-btn" data-id="{{ notif.id }}" title="Archive notification">
+                                        <i class="bi bi-x-circle"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            {% if notif.status == 'unread' %}
+                            <div class="unread-pulse"></div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% empty %}
+                    <div class="inbox-empty-state text-center py-5">
+                        <div class="empty-icon-box mb-4 mx-auto">
+                            <i class="bi bi-inbox-fill"></i>
+                        </div>
+                        <h4 class="fw-bold text-white">Inbox Clean</h4>
+                        <p class="text-muted">You're all caught up! No notifications at this time.</p>
+                        <a href="{% url 'accounts:home' %}" class="btn btn-primary-modern px-4 mt-2">Back to Dashboard</a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    :root {
+        --glass-bg: rgba(15, 23, 42, 0.6);
+        --glass-border: rgba(255, 255, 255, 0.08);
+        --accent-blue: #3b82f6;
+        --accent-success: #10b981;
+        --accent-danger: #c55a5a;
+        --accent-warning: #C88A2D;
+    }
+
+    .premium-inbox-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--glass-border);
+        border-radius: 24px;
+        overflow: hidden;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+
+    .inbox-scroll-area {
+        max-height: calc(100vh - 250px);
+        overflow-y: auto;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+    }
+
+    .date-group {
+        border-bottom: 1px solid var(--glass-border);
+    }
+
+    .date-label {
+        background: rgba(255, 255, 255, 0.02);
+        color: rgba(156, 149, 143, 0.6);
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        backdrop-filter: blur(10px);
+    }
+
+    .notif-row-wrapper {
+        position: relative;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        background: transparent;
+    }
+
+    .notif-row-wrapper:hover {
+        background: rgba(255, 255, 255, 0.02);
+    }
+
+    .notif-row-wrapper.is-unread {
+        background: rgba(59, 130, 246, 0.03);
+    }
+
+    .notif-row-wrapper.is-unread::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        background: var(--accent-blue);
+        box-shadow: 2px 0 10px rgba(59, 130, 246, 0.4);
+    }
+
+    .notif-badge-lg {
+        width: 56px;
+        height: 56px;
+        border-radius: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        flex-shrink: 0;
+        transition: transform 0.3s ease;
+    }
+
+    .notif-row-wrapper:hover .notif-badge-lg {
+        transform: scale(1.05) rotate(-5deg);
+    }
+
+    /* Glow Backgrounds */
+    .bg-glow-info { background: rgba(59, 130, 246, 0.1); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.2); }
+    .bg-glow-success { background: rgba(16, 185, 129, 0.1); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.2); }
+    .bg-glow-danger { background: rgba(197, 90, 90, 0.1); color: #f87171; border: 1px solid rgba(197, 90, 90, 0.2); }
+    .bg-glow-warning { background: rgba(200, 138, 45, 0.1); color: #C88A2D; border: 1px solid rgba(200, 138, 45, 0.2); }
+    .bg-glow-secondary { background: rgba(148, 163, 184, 0.1); color: rgba(156, 149, 143, 0.7); border: 1px solid rgba(148, 163, 184, 0.2); }
+
+    .notif-title { color: #f1f5f9; font-size: 15px; }
+    .notif-msg { font-size: 14px; line-height: 1.6; }
+
+    .notif-type-tag {
+        font-size: 9px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        padding: 2px 8px;
+        border-radius: 100px;
+    }
+
+    .tag-expiry { background: rgba(200, 138, 45, 0.1); color: #C88A2D; }
+    .tag-overdue { background: rgba(197, 90, 90, 0.1); color: #c55a5a; }
+    .tag-success { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+    .tag-claim { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+
+    .mark-single-read {
+        background: transparent;
+        border: none;
+        color: var(--accent-blue);
+        font-size: 11px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: opacity 0.2s;
+        padding: 0;
+    }
+
+    .mark-single-read:hover { text-decoration: underline; opacity: 0.8; }
+
+    .archive-btn {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--glass-border);
+        color: rgba(156, 149, 143, 0.6);
+        width: 32px;
+        height: 32px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        opacity: 0;
+        transform: scale(0.8);
+        transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .notif-row-wrapper:hover .archive-btn {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    .archive-btn:hover {
+        background: rgba(197, 90, 90, 0.1);
+        color: var(--accent-danger);
+        border-color: rgba(197, 90, 90, 0.2);
+    }
+
+    .unread-pulse {
+        position: absolute;
+        top: 24px;
+        right: 24px;
+        width: 8px;
+        height: 8px;
+        background: var(--accent-blue);
+        border-radius: 50%;
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
+        70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
+        100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+    }
+
+    .btn-glass {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--glass-border);
+        color: #605E5B;
+        transition: all 0.2s;
+    }
+
+    .btn-glass:hover:not(.disabled) {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.2);
+        color: white;
+    }
+
+    .empty-icon-box {
+        width: 80px;
+        height: 80px;
+        background: rgba(255, 255, 255, 0.02);
+        border: 2px dashed var(--glass-border);
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 32px;
+        color: #475569;
+    }
+
+    /* Animation on removal */
+    .slide-out {
+        transform: translateX(30px);
+        opacity: 0;
+        pointer-events: none;
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const API_BASE = '/notifications/api/alerts/';
+    
+    // Helper to get CSRF token from cookie
+    function getCSRF() {
+        return document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
+               document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
+    }
+
+    // Helper to update Bell components globally if they exist
+    function updateBell() {
+        // If the bell script is in bell.html, we might not have direct access, 
+        // but we can trigger a sync if the bellIcon is globally available or just rely on its interval.
+        // Actually, we can manually update the badge count if we find it.
+        const badge = document.getElementById('countBadge');
+        if (badge) {
+            fetch(API_BASE + 'unread-count/')
+                .then(r => r.json())
+                .then(d => {
+                    badge.textContent = d.unread_count > 99 ? '99+' : d.unread_count;
+                    badge.style.display = d.unread_count > 0 ? 'flex' : 'none';
+                });
+        }
+    }
+
+    // Single Mark Read
+    document.querySelectorAll('.mark-single-read').forEach(btn => {
+        btn.onclick = async function() {
+            const id = this.dataset.id;
+            const row = this.closest('.notif-row-wrapper');
+            
+            try {
+                const resp = await fetch(`${API_BASE}${id}/read/`, {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': getCSRF() }
+                });
+                
+                if (resp.ok) {
+                    row.classList.remove('is-unread');
+                    row.querySelector('.unread-pulse')?.remove();
+                    this.remove();
+                    updateBell();
+                }
+            } catch (e) { console.error('Error marking read:', e); }
+        };
+    });
+
+    // Mark All Read
+    document.getElementById('markAllReadPageBtn').onclick = async function() {
+        if (this.classList.contains('disabled')) return;
+        
+        try {
+            this.classList.add('disabled');
+            this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processing...';
+            
+            const resp = await fetch(`${API_BASE}mark-read/`, {
+                method: 'POST',
+                headers: { 'X-CSRFToken': getCSRF() }
+            });
+            
+            if (resp.ok) {
+                document.querySelectorAll('.notif-row-wrapper.is-unread').forEach(row => {
+                    row.classList.remove('is-unread');
+                    row.querySelector('.unread-pulse')?.remove();
+                    row.querySelector('.mark-single-read')?.remove();
+                });
+                updateBell();
+            }
+        } catch (e) { 
+            console.error('Error marking all read:', e); 
+        } finally {
+            this.innerHTML = '<i class="bi bi-check-all me-1"></i> Mark all as read';
+            this.classList.remove('disabled');
+        }
+    };
+
+    // Archive Single
+    document.querySelectorAll('.archive-btn').forEach(btn => {
+        btn.onclick = async function() {
+            const id = this.dataset.id;
+            const row = this.closest('.notif-row-wrapper');
+            const group = this.closest('.date-group');
+            
+            try {
+                const resp = await fetch(`${API_BASE}${id}/clear/`, {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': getCSRF() }
+                });
+                
+                if (resp.ok) {
+                    row.classList.add('slide-out');
+                    setTimeout(() => {
+                        row.remove();
+                        // If date group is empty, remove it too
+                        if (group.querySelectorAll('.notif-row-wrapper').length === 0) {
+                            group.remove();
+                        }
+                        // If no more notifications, show empty state
+                        if (document.querySelectorAll('.notif-row-wrapper').length === 0) {
+                            location.reload(); // Simplest way to show empty state template
+                        }
+                        updateBell();
+                    }, 300);
+                }
+            } catch (e) { console.error('Error archiving:', e); }
+        };
+    });
+
+    // Clear All
+    document.getElementById('clearAllNotifBtn').onclick = async function() {
+        if (this.classList.contains('disabled')) return;
+        
+        const result = await InsureAlert.confirm('Clear Notifications', 'Are you sure you want to clear all visible notifications? This action is permanent.', 'Clear All');
+        if (!result.isConfirmed) return;
+
+        try {
+            this.classList.add('disabled');
+            const resp = await fetch(`${API_BASE}clear-all/`, { 
+                method: 'PATCH', 
+                headers: { 'X-CSRFToken': getCSRF() }
+            });
+            
+            if (resp.ok) {
+                document.getElementById('fullNotifContainer').style.opacity = '0';
+                setTimeout(() => location.reload(), 400);
+            }
+        } catch (e) { console.error('Error clearing all:', e); }
+    };
+});
+</script>
+{% endblock %}
+

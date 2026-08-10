@@ -1,0 +1,260 @@
+{% extends "base.html" %}
+
+{% block title %}Notification History | InsureCRM{% endblock %}
+
+{% block breadcrumb %}Notifications / History{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4 stagger-container">
+    <div class="mb-4">
+        {% if request.user.role == 'admin' or request.user.is_superuser %}
+        <a href="{% url 'accounts:admin_dashboard' %}" class="btn-glass-back">
+            <i class="bi bi-arrow-left me-2"></i> Back to Control Center
+        </a>
+        {% elif request.user.role == 'staff' or request.user.is_staff %}
+        <a href="{% url 'accounts:staff_dashboard' %}#dashboard" class="btn-glass-back">
+            <i class="bi bi-arrow-left me-2"></i> Back to Workspace
+        </a>
+        {% else %}
+        <a href="{% url 'accounts:policyholder_dashboard' %}" class="btn-glass-back">
+            <i class="bi bi-arrow-left me-2"></i> Back to Dashboard
+        </a>
+        {% endif %}
+
+        <div class="d-flex justify-content-between align-items-center mt-3">
+            <div>
+                <h2 class="text-white mb-1"><i class="bi bi-bell-fill text-primary me-2"></i>Inbox</h2>
+                <p class="text-white-50 small mb-0">System alerts, claim updates, and policy notifications.</p>
+            </div>
+            <div class="d-flex gap-2">
+                <button class="btn btn-outline-primary btn-sm" onclick="clearAllNotifs()">
+                    <i class="bi bi-trash me-1"></i> Clear All
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 📊 TABS -->
+    <ul class="nav nav-pills mb-4 gap-2 border-bottom border-white-10 pb-3" id="notifTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active rounded-pill px-4" id="all-tab" data-bs-toggle="pill" data-bs-target="#notif-list" type="button" onclick="loadTab('all')">All</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link rounded-pill px-4" id="unread-tab" data-bs-toggle="pill" data-bs-target="#notif-list" type="button" onclick="loadTab('unread')">Unread</button>
+        </li>
+    </ul>
+
+    <div class="row">
+        <div class="col-lg-8" id="notif-list">
+            <!-- Dynamic Content -->
+            <div class="text-center py-5" id="loader">
+                <div class="spinner-border text-primary" role="status"></div>
+                <p class="text-white-50 mt-3">Loading your inbox...</p>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card glass-card h-100">
+                <div class="card-body">
+                    <h6 class="text-white mb-3">Notification Settings</h6>
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <span class="text-white-50 small">Email Notifications</span>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" checked>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-between">
+                        <span class="text-white-50 small">In-App Sound Alerts</span>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" checked>
+                        </div>
+                    </div>
+                    <hr class="border-white-10">
+                    <p class="text-white-50 small">System cleanup automatically clears notifications older than 30 days.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .glass-card {
+        background: rgba(15, 23, 42, 0.6) !important;
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    }
+    .notif-item {
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 16px;
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        position: relative;
+    }
+    .notif-item:hover {
+        background: rgba(255, 255, 255, 0.04);
+        transform: translateX(8px);
+        border-color: rgba(101, 96, 79, 0.3);
+    }
+    .notif-item.unread {
+        border-left: 4px solid #3b82f6;
+        background: rgba(59, 130, 246, 0.04);
+    }
+    .notif-item-ico {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        flex-shrink: 0;
+    }
+    .c-info { color: #3b82f6; background: rgba(59, 130, 246, 0.1); }
+    .c-success { color: #10b981; background: rgba(16, 185, 129, 0.1); }
+    .c-warning { color: #C88A2D; background: rgba(200, 138, 45, 0.1); }
+    .c-error { color: #c55a5a; background: rgba(197, 90, 90, 0.1); }
+
+    .nav-link { color: rgba(156, 149, 143, 0.7); border: none !important; font-weight: 600; font-size: 14px; }
+    .nav-link.active { background: #3b82f6 !important; color: white !important; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); }
+
+    /* 💎 Premium Back Button Styling */
+    .btn-glass-back {
+        display: inline-flex;
+        align-items: center;
+        padding: 8px 16px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 10px;
+        color: rgba(156, 149, 143, 0.7);
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        backdrop-filter: blur(8px);
+        margin-bottom: 20px;
+    }
+    .btn-glass-back:hover {
+        background: rgba(255, 255, 255, 0.07);
+        border-color: rgba(255, 255, 255, 0.2);
+        color: #605E5B;
+        transform: translateX(-4px);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    }
+    .btn-glass-back i {
+        transition: transform 0.3s ease;
+    }
+    .btn-glass-back:hover i {
+        transform: translateX(-2px);
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentFilter = 'all';
+const API = '/notifications/api/';
+
+async function loadTab(filter) {
+    currentFilter = filter;
+    const list = document.getElementById('notif-list');
+    list.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-primary"></div></div>';
+    
+    try {
+        let url = API;
+        if (filter === 'unread') url += '?is_read=false';
+        
+        const res = await fetch(url, {
+            credentials: 'include',
+            headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+        });
+        const data = await res.json();
+        const items = data.results !== undefined ? data.results : data;
+        render(items);
+    } catch(e) { console.error(e); }
+}
+
+function render(items) {
+    const list = document.getElementById('notif-list');
+    if (!items || items.length === 0) {
+        list.innerHTML = `
+            <div class="card glass-card p-5 text-center">
+                <i class="bi bi-mailbox fs-1 text-white-50 mb-3"></i>
+                <h5 class="text-white">Your inbox is empty</h5>
+                <p class="text-white-50 mb-0">Check back later for system updates and alerts.</p>
+            </div>
+        `;
+        return;
+    }
+
+    list.innerHTML = items.map(n => {
+        const icon = getIcon(n.type);
+        return `
+            <div class="notif-item ${n.is_read ? '' : 'unread'}">
+                <div class="d-flex gap-4">
+                    <div class="notif-item-ico c-${n.type}"><i class="bi ${icon}"></i></div>
+                    <div class="flex-grow-1">
+                        <div class="d-flex justify-content-between">
+                            <h5 class="text-white mb-1" style="font-size: 16px;">${n.title}</h5>
+                            <span class="text-white-50" style="font-size: 12px;">${n.created_at_human}</span>
+                        </div>
+                        <p class="text-white-50 small mb-3">${n.message}</p>
+                        <div class="d-flex gap-2">
+                            ${!n.is_read ? `<button class="btn btn-outline-white btn-xs" onclick="markRead('${n.id}')">Mark as Read</button>` : ''}
+                            <button class="btn btn-outline-white btn-xs" onclick="clearNotif('${n.id}')">Clear</button>
+                            ${n.related_claim_id ? `<a href="/notifications/redirect/${n.id}/" class="btn btn-primary btn-xs">View Claim</a>` : ''}
+                            ${n.related_payment_id ? `<a href="/notifications/redirect/${n.id}/" class="btn btn-primary btn-xs">Pay Now</a>` : ''}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+async function markRead(id) {
+    await fetch(`${API}${id}/read/`, { 
+        method: 'PATCH', 
+        credentials: 'include',
+        headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+    });
+    loadTab(currentFilter);
+}
+
+async function clearNotif(id) {
+    await fetch(`${API}${id}/clear/`, { 
+        method: 'PATCH', 
+        credentials: 'include',
+        headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+    });
+    loadTab(currentFilter);
+}
+
+async function clearAllNotifs() {
+    const result = await InsureAlert.confirm("Clear Inbox", "Are you sure you want to permanently clear all notifications? This cannot be undone.", "Clear All");
+    if (result.isConfirmed) {
+        await fetch(`${API}clear-all/`, { 
+            method: 'PATCH', 
+            credentials: 'include',
+            headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+        });
+        loadTab(currentFilter);
+    }
+}
+
+function getIcon(t) {
+    const map = { 'success': 'bi-check-circle', 'warning': 'bi-exclamation-triangle', 'error': 'bi-x-octagon', 'info': 'bi-info-circle' };
+    return map[t] || 'bi-bell';
+}
+
+// Initial Load
+document.addEventListener('DOMContentLoaded', () => loadTab('all'));
+</script>
+
+<style>
+.btn-outline-white { border: 1px solid rgba(255,255,255,0.1); color: rgba(156, 149, 143, 0.7); font-size: 11px; font-weight: 700; text-transform: uppercase; padding: 4px 12px; }
+.btn-outline-white:hover { background: rgba(255,255,255,0.05); color: white; }
+.btn-xs { padding: 4px 10px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; border-radius: 6px; }
+</style>
+{% endblock %}

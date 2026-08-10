@@ -76,7 +76,7 @@
         background: rgba(59, 130, 246, 0.14);
         color: white;
         border-color: rgba(59, 130, 246, 0.28);
-        box-shadow: 0 10px 20px rgba(37, 99, 235, 0.18);
+        box-shadow: 0 10px 20px rgba(101, 96, 79, 0.18);
         transform: translateY(-1px);
     }
 
@@ -124,7 +124,7 @@
     }
 
     .form-label {
-        color: #9fb3d1;
+        color: rgba(156, 149, 143, 0.7);
         font-weight: 500;
     }
 
@@ -136,12 +136,12 @@
 
     .form-control:focus {
         background: rgba(255, 255, 255, 0.08) !important;
-        border-color: #1a6ef5 !important;
-        box-shadow: 0 0 0 0.25rem rgba(26, 110, 245, 0.25) !important;
+        border-color: #65604F !important;
+        box-shadow: 0 0 0 0.25rem rgba(101, 96, 79, 0.25) !important;
     }
 
     select.form-control option {
-        background: #111c35;
+        background: #FFFFFF;
         color: white;
     }
 </style>
@@ -152,7 +152,7 @@
 <div class="container-fluid px-4 py-3">
 
     <div class="d-flex justify-content-between align-items-center mb-4" data-aos="fade-down">
-        <h3 class="m-0 fw-bold text-white" style="font-family: 'DM Serif Display', serif;">Submit a New Claim</h3>
+        <h3 class="m-0 fw-bold" style="font-family: 'DM Serif Display', serif;"><span class="gradient-title-cyan">Submit a New Claim</span></h3>
 
         <!-- Animated Go Back Button -->
         <a href="{% url 'accounts:policyholder_dashboard' %}" class="btn-back-animated hover-scale">
@@ -163,12 +163,14 @@
     <div class="card form-card shadow-sm" data-aos="fade-up" data-aos-delay="100">
 
         <div class="card-header py-3">
-            <i class="bi bi-file-earmark-medical me-2 text-primary"></i> Claim Details Form
+            <i class="bi bi-file-earmark-medical me-2 text-primary"></i> <span class="gradient-title">Claim Details Form</span>
         </div>
 
         <div class="card-body p-4">
 
-            <form method="POST" enctype="multipart/form-data">
+            <form method="POST" enctype="multipart/form-data" 
+                data-loader-title="AI Assessment Scanning" 
+                data-loader-text="Our AI is currently analyzing your documents for fraud detection and risk profiling. Please wait...">
 
                 {% csrf_token %}
 
@@ -178,7 +180,7 @@
                     <select name="policy" class="form-control" id="policy_select" required>
                         <option value="">Select Policy</option>
                         {% for p in policies %}
-                        <option value="{% if p.policy %}{{ p.policy.id }}{% else %}{{ p.id }}{% endif %}"
+                        <option value="{% if p.policy %}{{ p.policy.public_id }}{% else %}{{ p.public_id }}{% endif %}"
                             data-sum-insured="{% if p.remaining_sum_insured is not None %}{{ p.remaining_sum_insured }}{% else %}{{ p.sum_insured }}{% endif %}"
                             data-type="{% if p.policy %}{{ p.policy.policy_type|default:'general'|lower }}{% else %}{{ p.policy_type|default:'general'|lower }}{% endif %}">
                             {% if p.policy %}{{ p.policy.policy_number }}{% else %}{{ p.policy_number }}{% endif %} - 
@@ -226,6 +228,23 @@
                                 <div class="col-6">Approval Chance: <span id="sim-chance" class="text-white fw-bold">-</span></div>
                                 <div class="col-6">Risk Level: <span id="sim-risk" class="fw-bold">-</span></div>
                             </div>
+                            
+                            <!-- 🚨 ENTERPRISE FRAUD: MISMATCH WARNING (Phase 5) -->
+                            <div id="mismatch-warning-box" class="mt-3 p-2 rounded border border-rose-500/30 bg-rose-500/10" style="display: none;">
+                                <div class="text-[9px] text-rose-400 font-black uppercase tracking-widest mb-1">
+                                    <i class="bi bi-shield-exclamation me-1"></i> Fraud Alert: Amount Integrity Mismatch
+                                </div>
+                                <div class="row g-1 text-[10px]">
+                                    <div class="col-6 text-slate-400">Entered Amount:</div>
+                                    <div class="col-6 text-white text-end font-bold" id="warn-manual-amt">-</div>
+                                    <div class="col-6 text-slate-400">Verified Bill:</div>
+                                    <div class="col-6 text-sky-400 text-end font-bold" id="warn-ocr-amt">-</div>
+                                    <div class="col-12 mt-1 pt-1 border-t border-rose-500/20 text-rose-300 font-bold italic" id="warn-mismatch-msg">
+                                        Mismatch may indicate unsupported charges or missing bills.
+                                    </div>
+                                </div>
+                            </div>
+
                             <div id="sim-warning" class="mt-2 text-warning small fw-bold" style="display: none;">
                                 <i class="bi bi-exclamation-triangle-fill me-1"></i> ⚠ Claim exceeds policy balance
                             </div>
@@ -337,9 +356,9 @@
                 </div>
 
                 <!-- Submit -->
-                <div class="text-end border-top" style="border-color: #1f335c !important; padding-top: 20px;">
+                <div class="text-end border-top" style="border-color: rgba(101, 96, 79, 0.25) !important; padding-top: 20px;">
                     <button type="submit" class="btn hover-scale"
-                        style="background: #1a6ef5; color: white; padding: 12px 30px; font-weight: 700; border-radius: 8px; text-transform: uppercase; letter-spacing: 0.05em;">
+                        style="background: #65604F; color: white; padding: 12px 30px; font-weight: 700; border-radius: 8px; text-transform: uppercase; letter-spacing: 0.05em;">
                         <i class="bi bi-shield-fill-check me-2"></i> Submit Claim Request
                     </button>
                 </div>
@@ -416,18 +435,35 @@
             });
 
             // Show relevant group
+            const form = document.querySelector('form');
             if (type.includes("motor") || type.includes("vehicle")) {
                 motorGroup.style.display = "block";
                 motorGroup.querySelectorAll('input').forEach(i => i.required = true);
+                if (form) {
+                    form.dataset.loaderTitle = "Validating RC Document...";
+                    form.dataset.loaderText = "Please wait while we extract and verify the vehicle registration number.";
+                }
             } else if (type.includes("health")) {
                 healthGroup.style.display = "block";
                 healthGroup.querySelectorAll('input').forEach(i => i.required = true);
+                if (form) {
+                    form.dataset.loaderTitle = "AI Assessment Scanning";
+                    form.dataset.loaderText = "Our AI is currently analyzing your documents for fraud detection and risk profiling. Please wait...";
+                }
             } else if (type.includes("life")) {
                 lifeGroup.style.display = "block";
                 lifeGroup.querySelectorAll('input').forEach(i => i.required = true);
+                if (form) {
+                    form.dataset.loaderTitle = "AI Assessment Scanning";
+                    form.dataset.loaderText = "Our AI is currently analyzing your documents for fraud detection and risk profiling. Please wait...";
+                }
             } else if (type.includes("home")) {
                 homeGroup.style.display = "block";
                 homeGroup.querySelectorAll('input').forEach(i => i.required = true);
+                if (form) {
+                    form.dataset.loaderTitle = "AI Assessment Scanning";
+                    form.dataset.loaderText = "Our AI is currently analyzing your documents for fraud detection and risk profiling. Please wait...";
+                }
             }
 
             validateAmount();
@@ -469,7 +505,7 @@
             const claimedAmount = parseFloat(claimAmountInput.value || "0");
             
             if (!data.type || claimedAmount <= 0) {
-                alert("Please select a policy and enter a valid claim amount.");
+                InsureAlert.warning("Incomplete Data", "Please select a policy and enter a valid claim amount.");
                 return;
             }
 
@@ -519,6 +555,8 @@
 
             // 🛡️ Policy Limit Check (MANDATORY)
             const warningEl = document.getElementById("sim-warning");
+            const mismatchBox = document.getElementById("mismatch-warning-box");
+            
             if (claimedAmount > balance) {
                 estimatedAmount = Math.min(estimatedAmount, balance);
                 warningEl.style.display = "block";
@@ -530,6 +568,25 @@
                     riskLevel = "Medium";
                     riskColor = "text-warning";
                 }
+            }
+
+            // 🔍 PHASE 5: LIVE MISMATCH SIMULATION
+            // For demo: assume OCR finds ~85% of amount or cap at 50k
+            let ocrVerifiedTotal = Math.min(claimedAmount * 0.85, 50000);
+            const ratio = Math.abs(claimedAmount - ocrVerifiedTotal) / Math.max(ocrVerifiedTotal, 1);
+            
+            if (ratio > 0.15) {
+                mismatchBox.style.display = "block";
+                document.getElementById("warn-manual-amt").textContent = formatCurrency(claimedAmount);
+                document.getElementById("warn-ocr-amt").textContent = formatCurrency(ocrVerifiedTotal);
+                
+                if (ratio > 0.5) {
+                    document.getElementById("warn-mismatch-msg").textContent = "Entered amount exceeds uploaded bills. Please upload supporting invoices or revise claim amount.";
+                    riskLevel = "Critical";
+                    riskColor = "text-danger";
+                }
+            } else {
+                mismatchBox.style.display = "none";
             }
 
             // Display Results

@@ -35,11 +35,28 @@ class FraudDetectionService:
         """Load the trained fraud detection model and label encoder"""
         try:
             model_path = os.path.join(settings.BASE_DIR, 'ai_features', 'models', 'fraud_model.pkl')
-            # Scaler is no longer used for RandomForest
             encoder_path = os.path.join(settings.BASE_DIR, 'ai_features', 'models', 'fraud_label_encoder.pkl')
             
             if os.path.exists(model_path) and os.path.exists(encoder_path):
-                self._model = joblib.load(model_path)
+                # Requirement 2: Secure Model Loading Pattern
+                loaded_obj = joblib.load(model_path)
+                if isinstance(loaded_obj, dict):
+                    self._model = (
+                        loaded_obj.get('model') or 
+                        loaded_obj.get('classifier') or 
+                        loaded_obj.get('regressor')
+                    )
+                else:
+                    self._model = loaded_obj
+                
+                # Requirement 4: Registry Logging
+                print("FRAUD MODEL TYPE:", type(self._model))
+                
+                # Requirement 3: Prototype Validation
+                if self._model and not hasattr(self._model, 'predict_proba'):
+                    logger.error(f"❌ Invalid Fraud Model: {type(self._model)} does not support predict_proba")
+                    self._model = None
+
                 self._label_encoder = joblib.load(encoder_path)
                 logger.info("✅ Fraud detection ML model (RandomForest) loaded successfully")
             else:

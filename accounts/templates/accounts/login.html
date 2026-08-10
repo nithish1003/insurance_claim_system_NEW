@@ -1,550 +1,391 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>ClaimIQ — Sign In</title>
-
-    <link
-        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Serif+Display&display=swap"
-        rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-
-    <style>
-        body {
-            font-family: 'DM Sans', sans-serif;
-            background: #0a1628;
-            color: white;
-            margin: 0;
-            padding: 30px 20px;
-            background-image:
-                radial-gradient(circle at 15% 50%, rgba(26, 110, 245, 0.08), transparent 25%),
-                radial-gradient(circle at 85% 30%, rgba(26, 110, 245, 0.08), transparent 25%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .auth-wrapper {
-            width: 100%;
-            max-width: 900px;
-            background: rgba(17, 28, 53, 0.6);
-            backdrop-filter: blur(15px);
-            border-radius: 20px;
-            display: flex;
-            overflow: hidden;
-            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            position: relative;
-            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-
-        .auth-wrapper:hover {
-            transform: translateY(-5px);
-            border-color: rgba(26, 110, 245, 0.3);
-        }
-
-        /* LEFT SIDE - BRANDING */
-        .auth-left {
-            width: 45%;
-            padding: 50px 40px;
-            background: linear-gradient(135deg, rgba(15, 27, 51, 0.5) 0%, rgba(10, 22, 40, 0.8) 100%);
-            border-right: 1px solid rgba(255, 255, 255, 0.05);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            gap: 30px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .auth-left::before {
-            content: '';
-            position: absolute;
-            top: -100px;
-            left: -100px;
-            width: 400px;
-            height: 400px;
-            background: radial-gradient(circle, rgba(26, 110, 245, 0.1) 0%, rgba(0, 0, 0, 0) 70%);
-            border-radius: 50%;
-            z-index: 0;
-        }
-
-        .brand-header {
-            z-index: 1;
-        }
-
-        .brand-header h1 {
-            font-family: 'DM Serif Display', serif;
-            font-size: 42px;
-            margin-bottom: 5px;
-            color: white;
-            letter-spacing: 0.5px;
-            position: relative;
-            display: inline-block;
-        }
-
-        .brand-header h1::after {
-            content: '';
-            position: absolute;
-            bottom: -4px;
-            left: 0;
-            width: 60px;
-            height: 4px;
-            background: #1a6ef5;
-            border-radius: 2px;
-        }
-
-        .brand-header p {
-            color: #9fb3d1;
-            font-size: 16px;
-            line-height: 1.6;
-            margin-top: 20px;
-        }
-
-        .features {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            margin-top: 10px;
-            z-index: 1;
-        }
-
-        .feature-card {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            padding: 15px;
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.04);
-            border-radius: 14px;
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        .feature-card:hover {
-            border-color: rgba(26, 110, 245, 0.5);
-            transform: translateX(10px);
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .feature-icon {
-            width: 45px;
-            height: 45px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            flex-shrink: 0;
-        }
-
-        .icon-blue {
-            background: rgba(26, 110, 245, 0.15);
-            color: #3d8bff;
-        }
-
-        .icon-green {
-            background: rgba(0, 198, 100, 0.15);
-            color: #00c664;
-        }
-
-        .icon-gold {
-            background: rgba(255, 193, 7, 0.15);
-            color: #ffd32a;
-        }
-
-        .feature-text h4 {
-            color: white;
-            font-size: 15px;
-            font-weight: 600;
-            margin: 0 0 4px 0;
-        }
-
-        .feature-text p {
-            color: #7a8ba8;
-            font-size: 13px;
-            margin: 0;
-            line-height: 1.4;
-        }
-
-        /* RIGHT SIDE - FORM */
-        .auth-right {
-            width: 55%;
-            padding: 50px;
-            background: transparent;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        .auth-right h2 {
-            font-family: 'DM Serif Display', serif;
-            font-size: 32px;
-            margin-bottom: 5px;
-            color: white;
-        }
-
-        .auth-right>p {
-            color: #9fb3d1;
-            margin-bottom: 30px;
-            font-size: 15px;
-        }
-
-        .form-label {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 13px;
-            font-weight: 600;
-            margin-bottom: 8px;
-            display: flex;
-            justify-content: space-between;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        .form-control {
-            width: 100%;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: white;
-            border-radius: 10px;
-            padding: 14px 18px;
-            transition: all 0.3s ease;
-        }
-
-        .form-control:focus {
-            background: rgba(255, 255, 255, 0.06);
-            border-color: #1a6ef5;
-            color: white;
-            outline: none;
-            box-shadow: 0 0 0 4px rgba(26, 110, 245, 0.1);
-        }
-
-        .form-control::placeholder {
-            color: rgba(255, 255, 255, 0.15);
-        }
-
-        .password-container {
-            position: relative;
-        }
-
-        .password-toggle {
-            position: absolute;
-            right: 18px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #7a8ba8;
-            cursor: pointer;
-            font-size: 18px;
-            transition: 0.3s ease;
-            z-index: 10;
-        }
-
-        .password-toggle:hover {
-            color: white;
-        }
-
-        .btn-login {
-            width: 100%;
-            padding: 15px;
-            border: none;
-            border-radius: 12px;
-            background: linear-gradient(135deg, #1a6ef5 0%, #0d5ddb 100%);
-            color: white;
-            font-weight: 700;
-            font-size: 16px;
-            cursor: pointer;
-            margin-top: 25px;
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 12px;
-            box-shadow: 0 10px 25px rgba(26, 110, 245, 0.3);
-        }
-
-        .btn-login:hover {
-            transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 15px 35px rgba(26, 110, 245, 0.4);
-            background: linear-gradient(135deg, #3d8bff 0%, #1a6ef5 100%);
-        }
-
-        .auth-footer {
-            margin-top: 40px;
-            padding-top: 30px;
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
-            text-align: center;
-        }
-
-        .auth-footer p {
-            font-size: 14px;
-            color: #7a8ba8;
-            margin-bottom: 15px;
-        }
-
-        .btn-signup-alt {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            padding: 12px 24px;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 12px;
-            color: white;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 14px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .btn-signup-alt:hover {
-            background: rgba(26, 110, 245, 0.1);
-            border-color: rgba(26, 110, 245, 0.4);
-            color: #3d8bff;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        .btn-signup-alt i {
-            font-size: 18px;
-            transition: transform 0.3s ease;
-        }
-
-        .btn-signup-alt:hover i {
-            transform: scale(1.1) rotate(-10deg);
-        }
-
-
-        .alert-message {
-            padding: 15px 18px;
-            border-radius: 10px;
-            margin-bottom: 25px;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            background: rgba(220, 53, 69, 0.1);
-            color: #ff6b81;
-            border: 1px solid rgba(220, 53, 69, 0.2);
-        }
-
-        .alert-message.success {
-            background: rgba(0, 198, 100, 0.1) !important;
-            color: #00c664 !important;
-            border-color: rgba(0, 198, 100, 0.2) !important;
-        }
-
-        .alert-message.warning {
-            background: rgba(255, 193, 7, 0.1) !important;
-            color: #ffc107 !important;
-            border-color: rgba(255, 193, 7, 0.2) !important;
-        }
-
-        /* Stagger Logic */
-        .stagger-container>* {
-            opacity: 0;
-        }
-
-        .stagger-active>*:nth-child(1) {
-            animation: slideUp 0.5s ease forwards 0.1s;
-        }
-
-        .stagger-active>*:nth-child(2) {
-            animation: slideUp 0.5s ease forwards 0.2s;
-        }
-
-        .stagger-active>*:nth-child(3) {
-            animation: slideUp 0.5s ease forwards 0.3s;
-        }
-
-        .stagger-active>*:nth-child(4) {
-            animation: slideUp 0.5s ease forwards 0.4s;
-        }
-
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(15px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @media (max-width: 992px) {
-            body {
-                padding: 20px 15px;
-                align-items: flex-start;
-            }
-
-            .auth-wrapper {
-                flex-direction: column;
-            }
-
-            .auth-left,
-            .auth-right {
-                width: 100%;
-                padding: 40px 30px;
-            }
-
-            .auth-left {
-                border-right: none;
-                border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            }
-        }
-    </style>
-
-</head>
-
-<body>
-
-    <div class="auth-wrapper" data-aos="zoom-in" data-aos-duration="1000">
-
-        <!-- LEFT SIDE - BRANDING -->
-        <div class="auth-left" data-aos="fade-right" data-aos-delay="200">
-
-            <div class="brand-header">
-                <h1 data-aos="fade-down" data-aos-delay="400">ClaimIQ</h1>
-                <p data-aos="fade-up" data-aos-delay="600">
-                    Welcome back! Log in to access your secure portal. Manage your policies and track claims with ease.
-                </p>
-            </div>
-
-            <div class="features stagger-container" id="brand-features">
-
-                <div class="feature-card">
-                    <div class="feature-icon icon-blue">
-                        <i class="bi bi-robot"></i>
-                    </div>
-                    <div class="feature-text">
-                        <h4>Smart Document Analysis</h4>
-                        <p>Instantly extracts data from documents using accurate OCR parsing.</p>
-                    </div>
-                </div>
-
-                <div class="feature-card">
-                    <div class="feature-icon icon-green">
-                        <i class="bi bi-activity"></i>
-                    </div>
-                    <div class="feature-text">
-                        <h4>Real-time Tracking</h4>
-                        <p>Monitor your claim status with instant live dashboard updates.</p>
-                    </div>
-                </div>
-
-                <div class="feature-card">
-                    <div class="feature-icon icon-gold">
-                        <i class="bi bi-shield-check"></i>
-                    </div>
-                    <div class="feature-text">
-                        <h4>Secure Processing</h4>
-                        <p>Bank-grade encryption protecting all your sensitive insurance info.</p>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-
-
-        <!-- RIGHT SIDE - FORM -->
-        <div class="auth-right" data-aos="fade-left" data-aos-delay="200">
-
-            <h2 data-aos="fade-down" data-aos-delay="400">Sign In</h2>
-            <p data-aos="fade-up" data-aos-delay="500">Please enter your credentials to proceed.</p>
-
-            {% if messages %}
-            {% for message in messages %}
-            <div class="alert-message {{ message.tags }}" data-aos="shake">
-                {% if message.tags == 'success' %}
-                <i class="bi bi-check-circle-fill"></i>
-                {% elif message.tags == 'warning' %}
-                <i class="bi bi-exclamation-circle-fill"></i>
-                {% else %}
-                <i class="bi bi-exclamation-triangle-fill"></i>
-                {% endif %}
-                {{ message }}
-            </div>
-            {% endfor %}
-            {% endif %}
-
-            <form method="POST" class="stagger-container" id="login-form">
-                {% csrf_token %}
-
-                <div class="mb-4">
-                    <label class="form-label">Username</label>
-                    <input type="text" name="username" class="form-control" required placeholder="Enter your username">
-                </div>
-
-                <div class="mb-2">
-                    <label class="form-label">
-                        <span>Password</span>
-                        <a href="{% url 'accounts:password_reset' %}"
-                            style="color: #3d8bff; text-decoration: none; font-size: 12px; transition: 0.3s ease;">Forgot
-                            Password?</a>
-                    </label>
-                    <div class="password-container">
-                        <input type="password" name="password" id="login_password" class="form-control pr-5" required
-                            placeholder="••••••••">
-                        <i class="bi bi-eye password-toggle" onclick="togglePassword('login_password', this)"></i>
-                    </div>
-                </div>
-
-                <button type="submit" class="btn-login">
-                    Sign In to Account <i class="bi bi-box-arrow-in-right"></i>
-                </button>
-
-            </form>
-
-            <div class="auth-footer" data-aos="fade-up" data-aos-delay="900">
-                <p>New to ClaimIQ?</p>
-                <a href="{% url 'accounts:register' %}" class="btn-signup-alt">
-                    <i class="bi bi-person-plus"></i> Create New Account
-                </a>
-            </div>
-
-
-        </div>
-
-    </div>
-
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <title>Sign In — ClaimIQ Enterprise AI</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            AOS.init({
-                duration: 800,
-                easing: 'ease-out-cubic',
-                once: true
-            });
-
-            // Trigger staggers
-            setTimeout(() => {
-                document.getElementById('brand-features').classList.add('stagger-active');
-                document.getElementById('login-form').classList.add('stagger-active');
-            }, 600);
-        });
-
-        function togglePassword(inputId, icon) {
-            const input = document.getElementById(inputId);
-            if (input.type === "password") {
-                input.type = "text";
-                icon.classList.remove("bi-eye");
-                icon.classList.add("bi-eye-slash");
-            } else {
-                input.type = "password";
-                icon.classList.remove("bi-eye-slash");
-                icon.classList.add("bi-eye");
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        primary: '#65604F',
+                        primaryHover: '#575243',
+                        gold: '#AA8758',
+                        slate: '#4E6987',
+                        bg: '#FAF9F7',
+                        bgAlt: '#F7F4EC',
+                        surface: '#FCFAF6',
+                        neutral: '#E4DACB',
+                        borderLight: '#DDD3C6',
+                        textMain: '#605E5B',
+                        textSec: '#7A746E',
+                        textMuted: '#9C958F',
+                        success: '#3E7C45',
+                        danger: '#B04A4A',
+                    },
+                    boxShadow: {
+                        'glass': '0 10px 40px -10px rgba(101, 96, 79, 0.1)',
+                        'glass-hover': '0 20px 50px -10px rgba(101, 96, 79, 0.15)',
+                        'glass-deep': '0 30px 60px -15px rgba(101, 96, 79, 0.2)',
+                        'input': '0 2px 4px 0 rgba(101, 96, 79, 0.02)',
+                        'btn-glow': '0 0 20px rgba(170, 135, 88, 0.4)',
+                    }
+                }
             }
         }
     </script>
+    <style>
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #FAF9F7; 
+            overflow-x: hidden;
+            /* Subtle dot pattern */
+            background-image: radial-gradient(rgba(170, 135, 88, 0.15) 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+        
+        .glass-panel {
+            background: rgba(252, 250, 246, 0.65);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.9);
+        }
+        
+        /* Floating Animations */
+        .float-slow { animation: float 8s ease-in-out infinite; }
+        .float-medium { animation: float 6s ease-in-out 1s infinite; }
+        .float-fast { animation: float 4s ease-in-out 2s infinite; }
+        
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-12px); }
+            100% { transform: translateY(0px); }
+        }
 
+        /* Progress Bar Animation */
+        @keyframes progress {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        .animate-progress { animation: progress 2s ease-in-out infinite; }
+        
+        /* Fade In Animation */
+        @keyframes fade-in-up {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in { animation: fade-in-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        
+        /* Checkmark Animation for Button */
+        .btn-loading .btn-text, .btn-loading .btn-icon { display: none; }
+        .btn-loading::after {
+            content: "";
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="min-h-screen flex text-textMain relative">
+    
+    <!-- Warm Cream Gradient Base -->
+    <div class="fixed inset-0 bg-gradient-to-br from-white via-bgAlt to-neutral opacity-50 -z-10 pointer-events-none"></div>
+
+    <!-- Soft Radial Glows for Depth -->
+    <div class="absolute top-[10%] left-[20%] w-[500px] h-[500px] bg-gold/15 rounded-full blur-[100px] pointer-events-none mix-blend-multiply"></div>
+    <div class="absolute bottom-[10%] right-[10%] w-[600px] h-[600px] bg-primary/10 rounded-full blur-[120px] pointer-events-none mix-blend-multiply"></div>
+
+    <!-- LEFT: Enterprise Dashboard Panel -->
+    <div class="hidden lg:flex w-[55%] relative flex-col justify-start items-center pt-48 p-12 overflow-hidden border-r border-borderLight/30">
+        
+        <!-- 3D Perspective Wrapper -->
+        <div class="relative w-full max-w-2xl perspective-1000">
+            
+            <!-- Radial Glow directly behind the dashboard -->
+            <div class="absolute inset-0 bg-gold/10 blur-[80px] rounded-full z-0 transform scale-110"></div>
+
+            <!-- Main AI Mockup -->
+            <div class="glass-panel p-6 rounded-[2.5rem] shadow-glass-deep relative z-10 w-full transform transition-transform duration-700 hover:scale-[1.02] float-slow">
+                
+                <!-- Top Bar -->
+                <div class="flex justify-between items-center mb-6">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-[1.25rem] bg-primary flex items-center justify-center text-white shadow-md">
+                            <i data-lucide="cpu" class="w-6 h-6"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-extrabold text-textMain text-xl tracking-tight">AI Engine</h3>
+                            <div class="flex items-center gap-1.5 mt-1">
+                                <span class="w-2 h-2 rounded-full bg-success shadow-[0_0_8px_rgba(62,124,69,0.8)] animate-pulse"></span>
+                                <span class="text-[10px] uppercase tracking-widest font-bold text-success">Online & Processing</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-[10px] uppercase tracking-widest text-textSec font-bold mb-1">Response Time</div>
+                        <div class="font-mono font-bold text-textMain text-lg">0.4 <span class="text-xs text-textMuted font-sans">sec</span></div>
+                    </div>
+                </div>
+                
+                <!-- 4 Stats Grid -->
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <!-- Circular Risk Score -->
+                    <div class="bg-white/50 backdrop-blur-sm p-4 rounded-3xl border border-white/80 flex items-center gap-4 hover:shadow-md transition-shadow group">
+                        <div class="relative w-14 h-14 rounded-full border-[5px] border-gold border-r-borderLight flex items-center justify-center shrink-0 shadow-inner group-hover:rotate-45 transition-transform duration-700">
+                            <span class="text-sm font-black text-textMain group-hover:-rotate-45 transition-transform duration-700">92%</span>
+                        </div>
+                        <div>
+                            <div class="text-[10px] text-textSec font-bold uppercase tracking-wider mb-1">Confidence Score</div>
+                            <div class="text-xs font-bold text-textMain">High Reliability</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Live Timeline -->
+                    <div class="bg-white/50 backdrop-blur-sm p-4 rounded-3xl border border-white/80 hover:shadow-md transition-shadow">
+                        <div class="text-[10px] text-textSec font-bold uppercase tracking-wider mb-3">Live Processing</div>
+                        <div class="space-y-3">
+                            <div class="flex items-center gap-2">
+                                <span class="w-1.5 h-1.5 rounded-full bg-success animate-pulse"></span>
+                                <div class="h-1.5 bg-success/20 rounded-full w-full overflow-hidden">
+                                    <div class="h-full bg-success w-full animate-progress"></div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="w-1.5 h-1.5 rounded-full bg-primary/30"></span>
+                                <div class="h-1.5 bg-borderLight rounded-full w-full"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Today's Stats -->
+                    <div class="bg-white/50 backdrop-blur-sm p-4 rounded-3xl border border-white/80 flex flex-col justify-center hover:shadow-md transition-shadow">
+                        <div class="text-[10px] text-textSec font-bold uppercase tracking-wider mb-1 flex items-center gap-1.5"><i data-lucide="layers" class="w-3 h-3 text-primary"></i> Claims Today</div>
+                        <div class="text-2xl font-black text-primary">2,481</div>
+                    </div>
+                    <div class="bg-white/50 backdrop-blur-sm p-4 rounded-3xl border border-white/80 flex flex-col justify-center hover:shadow-md transition-shadow">
+                        <div class="text-[10px] text-textSec font-bold uppercase tracking-wider mb-1 flex items-center gap-1.5"><i data-lucide="target" class="w-3 h-3 text-gold"></i> Detection Acc.</div>
+                        <div class="text-2xl font-black text-success">99.8%</div>
+                    </div>
+                </div>
+                
+                <!-- Sophisticated SVG Line Chart -->
+                <div class="h-28 w-full border-b border-l border-borderLight/40 relative rounded-bl-xl overflow-hidden group">
+                    <!-- Subtle Grid -->
+                    <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9InJnYmEoMTcwLCAxMzUsIDg4LCAwLjIpIi8+PC9zdmc+')]"></div>
+                    
+                    <!-- SVG Line -->
+                    <svg class="w-full h-full absolute inset-0 group-hover:scale-[1.02] transition-transform duration-500" viewBox="0 0 100 40" preserveAspectRatio="none">
+                        <path d="M0,35 Q10,25 20,30 T40,15 T60,20 T80,5 T100,10 L100,40 L0,40 Z" fill="url(#grad)" opacity="0.6"/>
+                        <path d="M0,35 Q10,25 20,30 T40,15 T60,20 T80,5 T100,10" fill="none" stroke="#AA8758" stroke-width="2" stroke-linecap="round"/>
+                        <defs>
+                            <linearGradient id="grad" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="#AA8758" stop-opacity="0.5"/>
+                                <stop offset="100%" stop-color="#AA8758" stop-opacity="0"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                    <!-- Fade out bottom -->
+                    <div class="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-surface/80 to-transparent"></div>
+                </div>
+            </div>
+
+            <!-- Floating Mini Cards (Different Depths) -->
+            <div class="absolute -right-8 top-16 glass-panel p-3 pr-5 rounded-2xl shadow-glass-hover z-20 flex items-center gap-3 float-fast backdrop-blur-md">
+                <div class="w-8 h-8 rounded-full bg-success/15 flex items-center justify-center text-success border border-success/20">
+                    <i data-lucide="check" class="w-4 h-4"></i>
+                </div>
+                <div>
+                    <div class="text-[11px] font-bold text-textMain">Claim #8492</div>
+                    <div class="text-[9px] font-medium text-textSec">Verified • 1.2s</div>
+                </div>
+            </div>
+
+            <div class="absolute -left-10 bottom-24 glass-panel p-3 pr-5 rounded-2xl shadow-glass-hover z-30 flex items-center gap-3 float-medium backdrop-blur-xl">
+                <div class="w-8 h-8 rounded-full bg-gold/15 flex items-center justify-center text-gold border border-gold/20">
+                    <i data-lucide="scan-line" class="w-4 h-4"></i>
+                </div>
+                <div>
+                    <div class="text-[11px] font-bold text-textMain">Auto-Extraction</div>
+                    <div class="text-[9px] font-medium text-textSec">Scanning doc...</div>
+                </div>
+            </div>
+            
+            <div class="absolute -bottom-8 right-12 glass-panel p-3 px-4 rounded-2xl shadow-glass z-0 flex items-center gap-2 float-slow backdrop-blur-sm opacity-80">
+                <i data-lucide="shield" class="w-3.5 h-3.5 text-primary"></i>
+                <span class="text-[10px] font-bold text-textMain">Fraud Check Passed</span>
+            </div>
+        </div>
+        
+    </div>
+
+    <!-- RIGHT: Login Form Area -->
+    <div class="w-full lg:w-[45%] flex flex-col justify-start items-center pt-20 lg:pt-32 p-6 sm:p-12 relative z-10">
+        
+        <div class="w-full max-w-[420px] opacity-0 animate-fade-in">
+            <!-- Mobile Logo -->
+            <div class="lg:hidden flex justify-center mb-8">
+                <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-primaryHover shadow-glass-hover flex items-center justify-center text-white">
+                    <i data-lucide="shield-check" class="w-7 h-7"></i>
+                </div>
+            </div>
+
+            <!-- Header -->
+            <div class="mb-12 text-center lg:text-left">
+                <!-- Trust Badge -->
+                <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/5 border border-primary/10 text-[10px] font-bold uppercase tracking-widest text-primary mb-5">
+                    <i data-lucide="lock" class="w-3 h-3"></i> Secure Login • AI Protected
+                </div>
+                
+                <h1 class="text-5xl lg:text-[3.5rem] font-extrabold text-primary mb-3 tracking-tight leading-tight">Welcome back</h1>
+                <p class="text-textSec text-base font-medium">Sign in to your enterprise account.</p>
+            </div>
+
+            {% if form.errors or messages %}
+            <div class="bg-danger/5 border border-danger/20 p-4 rounded-xl mb-8 shadow-sm">
+                {% for message in messages %}
+                    <p class="text-danger text-xs font-bold flex items-center gap-2 mb-1"><i data-lucide="alert-circle" class="w-4 h-4"></i> {{ message }}</p>
+                {% endfor %}
+                {% if form.non_field_errors %}
+                    {% for error in form.non_field_errors %}
+                        <p class="text-danger text-xs font-bold flex items-center gap-2 mb-1"><i data-lucide="alert-circle" class="w-4 h-4"></i> {{ error }}</p>
+                    {% endfor %}
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <form method="POST" id="loginForm" class="space-y-6">
+                {% csrf_token %}
+
+                <!-- Username with Icon and Floating Label -->
+                <div class="relative group">
+                    <i data-lucide="user" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-textMuted group-focus-within:text-gold transition-colors pointer-events-none z-10"></i>
+                    
+                    <input type="text" name="username" id="username" class="peer w-full bg-white border border-borderLight rounded-xl pl-12 pr-4 pt-7 pb-2 text-sm font-semibold text-textMain outline-none shadow-input focus:ring-4 focus:ring-gold/15 focus:border-gold transition-all placeholder-transparent" required placeholder="Username">
+                    
+                    <label for="username" class="absolute left-12 top-2 text-[10px] uppercase tracking-widest font-bold text-textMuted transition-all peer-placeholder-shown:text-sm peer-placeholder-shown:normal-case peer-placeholder-shown:tracking-normal peer-placeholder-shown:font-medium peer-placeholder-shown:top-[1.1rem] pointer-events-none peer-focus:top-2 peer-focus:text-[10px] peer-focus:uppercase peer-focus:tracking-widest peer-focus:font-bold peer-focus:text-gold z-10">Username</label>
+                </div>
+
+                <!-- Password with Icon and Floating Label -->
+                <div class="relative group">
+                    <i data-lucide="lock" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-textMuted group-focus-within:text-gold transition-colors pointer-events-none z-10"></i>
+                    
+                    <input type="password" name="password" id="pass" class="peer w-full bg-white border border-borderLight rounded-xl pl-12 pr-12 pt-7 pb-2 text-sm font-semibold text-textMain outline-none shadow-input focus:ring-4 focus:ring-gold/15 focus:border-gold transition-all placeholder-transparent" required placeholder="Password">
+                    
+                    <label for="pass" class="absolute left-12 top-2 text-[10px] uppercase tracking-widest font-bold text-textMuted transition-all peer-placeholder-shown:text-sm peer-placeholder-shown:normal-case peer-placeholder-shown:tracking-normal peer-placeholder-shown:font-medium peer-placeholder-shown:top-[1.1rem] pointer-events-none peer-focus:top-2 peer-focus:text-[10px] peer-focus:uppercase peer-focus:tracking-widest peer-focus:font-bold peer-focus:text-gold z-10">Password</label>
+                    
+                    <button type="button" id="eye" class="absolute right-4 top-1/2 transform -translate-y-1/2 text-textMuted hover:text-textMain transition-colors focus:outline-none z-10">
+                        <i data-lucide="eye" class="w-5 h-5"></i>
+                    </button>
+                </div>
+
+                <!-- Options -->
+                <div class="flex items-center justify-between pt-1 pb-3">
+                    <label class="flex items-center gap-2 cursor-pointer group">
+                        <input type="checkbox" name="remember" class="w-4 h-4 rounded border-borderLight text-gold focus:ring-gold accent-gold cursor-pointer transition-colors">
+                        <span class="text-xs text-textSec font-semibold group-hover:text-textMain transition-colors">Remember me</span>
+                    </label>
+                    <a href="{% url 'accounts:password_reset' %}" class="text-xs font-extrabold text-gold hover:text-primary transition-colors">Forgot password?</a>
+                </div>
+
+                <!-- Premium CTA -->
+                <button type="submit" id="submitBtn" class="w-full py-4 bg-gradient-to-r from-primary to-gold text-white rounded-xl font-bold text-[15px] shadow-btn-glow hover:shadow-[0_0_25px_rgba(170,135,88,0.6)] hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-2 group relative overflow-hidden">
+                    <!-- Shine Effect -->
+                    <div class="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent group-hover:animate-[progress_1s_ease-in-out]"></div>
+                    
+                    <span class="btn-text relative z-10">Sign In to ClaimIQ</span> 
+                    <i data-lucide="arrow-right" class="w-4 h-4 btn-icon relative z-10 group-hover:translate-x-1 transition-transform"></i>
+                </button>
+            </form>
+
+            <!-- Trust Indicators -->
+            <div class="grid grid-cols-3 gap-2 mt-10 text-center pt-8 border-t border-borderLight/60">
+                <div class="flex flex-col items-center gap-2 group">
+                    <div class="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center border border-borderLight/50 group-hover:border-primary transition-colors">
+                        <i data-lucide="lock" class="w-4 h-4 text-primary"></i>
+                    </div>
+                    <span class="text-[9px] font-extrabold uppercase tracking-widest text-textSec">256-bit<br/>Encryption</span>
+                </div>
+                <div class="flex flex-col items-center gap-2 group">
+                    <div class="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center border border-borderLight/50 group-hover:border-gold transition-colors">
+                        <i data-lucide="bot" class="w-4 h-4 text-gold"></i>
+                    </div>
+                    <span class="text-[9px] font-extrabold uppercase tracking-widest text-textSec">AI<br/>Protected</span>
+                </div>
+                <div class="flex flex-col items-center gap-2 group">
+                    <div class="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center border border-borderLight/50 group-hover:border-success transition-colors">
+                        <i data-lucide="users" class="w-4 h-4 text-success"></i>
+                    </div>
+                    <span class="text-[9px] font-extrabold uppercase tracking-widest text-textSec">Trusted By<br/>15K+ Users</span>
+                </div>
+            </div>
+
+            <!-- Navigation Links -->
+            <div class="mt-12 flex flex-col items-center gap-3">
+                <p class="text-[13px] text-textSec font-medium">Don't have an account? <a href="{% url 'accounts:register' %}" class="text-gold font-bold hover:text-primary transition-colors">Create one</a></p>
+                <a href="/" class="inline-flex items-center gap-1.5 text-xs font-bold text-textMuted hover:text-textMain transition-colors">
+                    <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Back to home
+                </a>
+            </div>
+
+            <!-- Footer Links -->
+            <div class="mt-8 flex flex-wrap justify-center gap-x-6 gap-y-2 text-[11px] font-semibold text-textMuted border-t border-borderLight/40 pt-6">
+                <a href="#" class="hover:text-textMain transition-colors">Privacy Policy</a>
+                <a href="#" class="hover:text-textMain transition-colors">Terms of Service</a>
+                <a href="#" class="hover:text-textMain transition-colors">Security</a>
+                <span class="text-borderLight">|</span>
+                <span>© ClaimIQ 2026</span>
+            </div>
+            
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        // Init Lucide Icons
+        lucide.createIcons();
+
+        // Loading State
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            const btn = document.getElementById('submitBtn');
+            btn.classList.add('btn-loading');
+            
+            // Allow form to submit, just show visual loading state
+            // If you want SweetAlert instead, uncomment below and e.preventDefault()
+            /*
+            Swal.fire({
+                title: 'Authenticating...',
+                text: 'Securing your connection to ClaimIQ Enterprise',
+                background: '#FCFAF6',
+                color: '#605E5B',
+                showConfirmButton: false,
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+            */
+        });
+
+        // Eye Toggle
+        const pass = document.getElementById('pass');
+        const eyeBtn = document.getElementById('eye');
+        let isVisible = false;
+        eyeBtn.addEventListener('click', () => {
+            isVisible = !isVisible;
+            pass.type = isVisible ? 'text' : 'password';
+            eyeBtn.innerHTML = isVisible ? '<i data-lucide="eye-off" class="w-5 h-5"></i>' : '<i data-lucide="eye" class="w-5 h-5"></i>';
+            lucide.createIcons();
+        });
+    </script>
 </body>
-
 </html>

@@ -6,7 +6,7 @@
 {% block extra_css %}
 <style>
     .manage-card {
-        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        background: linear-gradient(135deg, #FFFFFF 0%, #FFFFFF 100%);
         border-radius: 16px;
         border: 1px solid rgba(255, 255, 255, 0.05);
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
@@ -20,10 +20,10 @@
     }
     .manage-body { padding: 32px; }
     
-    .info-label { color: #94a3b8; font-size: 13px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+    .info-label { color: rgba(156, 149, 143, 0.7); font-size: 13px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
     .info-value { color: #e2e8f0; font-size: 16px; font-weight: 600; margin-bottom: 24px; }
     
-    .form-label { color: #94a3b8; font-weight: 500; margin-bottom: 8px; }
+    .form-label { color: rgba(156, 149, 143, 0.7); font-weight: 500; margin-bottom: 8px; }
     .form-control, .form-select {
         background: rgba(15, 23, 42, 0.6);
         border: 1px solid rgba(255, 255, 255, 0.1);
@@ -33,13 +33,13 @@
     }
     .form-control:focus, .form-select:focus {
         background: rgba(15, 23, 42, 0.8);
-        border-color: #1a6ef5;
+        border-color: #65604F;
         color: #fff;
-        box-shadow: 0 0 0 3px rgba(26, 110, 245, 0.2);
+        box-shadow: 0 0 0 3px rgba(101, 96, 79, 0.2);
     }
     
     .btn-save {
-        background: #1a6ef5;
+        background: #65604F;
         border: none;
         color: white;
         padding: 10px 24px;
@@ -47,7 +47,7 @@
         font-weight: 600;
         transition: all 0.3s ease;
     }
-    .btn-save:hover { background: #1656c4; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(26, 110, 245, 0.3); }
+    .btn-save:hover { background: #1656c4; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(101, 96, 79, 0.3); }
 
     .status-badge {
         padding: 6px 14px;
@@ -171,15 +171,24 @@
                     <div class="mt-5 pt-4 border-top border-secondary border-opacity-10">
                         <div class="small info-label text-danger opacity-75 mb-3">⚠️ Administrative Override (DANGER ZONE)</div>
                         <p class="x-small text-muted mb-4">Deleting this record will permanently remove it from the transaction ledger. This should only be used to correct erroneous or duplicate system entries.</p>
-                        <form method="POST" onsubmit="return confirm('CRITICAL: Permanent Deletion. Proceed with voiding this transaction?')">
+                        <form id="deleteForm" method="POST">
                             {% csrf_token %}
                             <input type="hidden" name="action" value="delete">
                             <div class="d-grid">
-                                <button type="submit" class="btn btn-outline-danger btn-sm py-2">
+                                <button type="button" class="btn btn-outline-danger btn-sm py-2" onclick="handleDelete()">
                                     <i class="bi bi-trash-fill me-2"></i> Void & Delete Transaction
                                 </button>
                             </div>
                         </form>
+
+                        <script>
+                            async function handleDelete() {
+                                const result = await InsureAlert.confirm('DANGER: Void Transaction', 'This will permanently remove the record from the ledger. Are you sure you want to proceed?', 'Void Now');
+                                if (result.isConfirmed) {
+                                    document.getElementById('deleteForm').submit();
+                                }
+                            }
+                        </script>
                     </div>
                     {% endif %}
                 </div>

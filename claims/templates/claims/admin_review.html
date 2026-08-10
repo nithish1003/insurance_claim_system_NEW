@@ -1,0 +1,584 @@
+{% extends "base.html" %}
+{% load static humanize file_filters %}
+
+{% block title %}Admin Review - {{ claim.claim_number }}{% endblock %}
+{% block breadcrumb %}ClaimIQ / Admin Review{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/admin_review.css' %}">
+<style>
+    /* 🌟 PREMIUM CYBERPUNK GLASSMORPHISM AI BUTTON */
+    .ai-rationale-glow-btn {
+        background: linear-gradient(135deg, rgba(6, 182, 212, 0.1) 0%, rgba(101, 96, 79, 0.15) 100%);
+        border: 1px solid rgba(6, 182, 212, 0.35);
+        color: #06b6d4 !important;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        padding: 6px 14px;
+        border-radius: 8px;
+        font-size: 0.75rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        text-shadow: 0 0 8px rgba(6, 182, 212, 0.3);
+        box-shadow: 0 4px 12px rgba(6, 182, 212, 0.05), inset 0 1px 0 rgba(255,255,255,0.05);
+        cursor: pointer;
+        backdrop-filter: blur(4px);
+    }
+    
+    .ai-rationale-glow-btn i {
+        font-size: 0.85rem;
+        transition: transform 0.3s ease;
+        animation: ai-stars-pulse 2s infinite ease-in-out;
+    }
+    
+    .ai-rationale-glow-btn:hover {
+        background: linear-gradient(135deg, rgba(6, 182, 212, 0.2) 0%, rgba(101, 96, 79, 0.25) 100%);
+        border-color: rgba(6, 182, 212, 0.6);
+        color: #22d3ee !important;
+        box-shadow: 0 0 16px rgba(6, 182, 212, 0.35), inset 0 0 8px rgba(101, 96, 79, 0.2);
+        transform: translateY(-1px);
+        text-shadow: 0 0 12px rgba(6, 182, 212, 0.6);
+    }
+    
+    .ai-rationale-glow-btn:hover i {
+        transform: rotate(45deg) scale(1.15);
+    }
+    
+    .ai-rationale-glow-btn:active {
+        transform: translateY(1px);
+        box-shadow: 0 2px 6px rgba(6, 182, 212, 0.2);
+    }
+    
+    .ai-rationale-glow-btn:disabled {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border-color: rgba(255, 255, 255, 0.1) !important;
+        color: rgba(156, 149, 143, 0.6) !important;
+        cursor: not-allowed;
+        box-shadow: none !important;
+        text-shadow: none !important;
+        transform: none !important;
+    }
+
+    .ai-rationale-glow-btn:disabled i {
+        animation: none !important;
+    }
+    
+    @keyframes ai-stars-pulse {
+        0%, 100% { transform: scale(1); opacity: 0.8; }
+        50% { transform: scale(1.2); opacity: 1; filter: drop-shadow(0 0 6px rgba(6, 182, 212, 0.8)); }
+    }
+    
+    /* 🔮 NEON BREATHING HIGHLIGHT FOR TEXTAREA */
+    .ai-textarea-activated {
+        animation: ai-border-breath 2s infinite alternate ease-in-out !important;
+        background: rgba(6, 182, 212, 0.05) !important;
+    }
+    
+    @keyframes ai-border-breath {
+        0% { border-color: rgba(6, 182, 212, 0.25); box-shadow: 0 0 8px rgba(6, 182, 212, 0.05); }
+        100% { border-color: rgba(6, 182, 212, 0.65); box-shadow: 0 0 16px rgba(6, 182, 212, 0.25); }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-review-page animate-fade-in">
+    {% with payload=review_payload %}
+    <div class="master-container">
+        <!-- 🎭 PREMIUM HEADER: GOVERNANCE CONSOLE -->
+        <header class="d-flex justify-content-between align-items-end mb-5 gap-4">
+            <div>
+                <span class="hero-kicker mb-2 block animate-slide-up" style="animation-delay: 0.1s;">Governance Console / Forensic Audit</span>
+                <h1 class="gradient-title mb-2 animate-slide-up" style="animation-delay: 0.2s;">Dossier: {{ payload.claim_id }}</h1>
+                <p class="text-muted mb-0 animate-slide-up" style="max-width: 600px; animation-delay: 0.3s;">
+                    Authoritative administrative review panel. Finalizing settlement logic for 
+                    <span class="text-info fw-bold">{{ payload.product_name }}</span> dossier with 
+                    <span class="text-white fw-bold">{{ payload.risk_label }}</span> risk profile.
+                </p>
+            </div>
+            <div class="d-flex gap-3 animate-slide-up" style="animation-delay: 0.4s;">
+                <div class="status-chip status-{{ claim.status }} px-4 py-2 h-auto">
+                    <i class="bi bi-shield-check me-2"></i>{{ payload.status }}
+                </div>
+                <div class="status-chip status-type px-4 py-2 h-auto" style="background: rgba(255,255,255,0.05); color: #FFF;">
+                    <i class="bi bi-file-earmark-medical me-2"></i>{{ payload.product_name }}
+                </div>
+            </div>
+        </header>
+
+        <div class="dashboard-grid-layout">
+            
+            <!-- 🚀 LEFT COLUMN: ANALYSIS & EVIDENCE (70%) -->
+            <div class="analysis-column">
+                
+                <div class="dashboard-grid mb-4">
+                    <!-- SECTION 1: CLAIM SUMMARY -->
+                    <article class="card glass-card hover-lift">
+                        <div class="section-heading mb-4">
+                            <div>
+                                <span class="section-kicker">Section 1</span>
+                                <h2>Claim Summary</h2>
+                            </div>
+                            <div class="card-icon-box">
+                                <i class="bi bi-clipboard2-data"></i>
+                            </div>
+                        </div>
+                        <div class="detail-list">
+                            <div class="detail-row">
+                                <span>Policyholder</span>
+                                <strong class="text-white">{{ applicant.get_full_name|default:applicant.username }}</strong>
+                            </div>
+                            <div class="detail-row">
+                                <span>Policy Number</span>
+                                <strong class="text-primary fw-black">{{ claim.policy.policy_number|default:"N/A" }}</strong>
+                            </div>
+                            <div class="detail-row">
+                                <span>Reported Date</span>
+                                <strong class="text-white">{{ claim.reported_date|date:"d M Y" }}</strong>
+                            </div>
+                            <div class="detail-row">
+                                <span>Incident Date</span>
+                                <strong class="text-white">{{ claim.incident_date|date:"d M Y" }}</strong>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- SECTION 2: RISK GOVERNANCE -->
+                    <article class="card glass-card hover-lift">
+                        <div class="section-heading mb-4">
+                            <div>
+                                <span class="section-kicker">Section 2</span>
+                                <h2>Risk Governance</h2>
+                            </div>
+                            <span class="mini-chip mini-chip--{% if payload.risk_label == 'HIGH' %}danger{% elif payload.risk_label == 'MEDIUM' %}warning{% else %}success{% endif %}">
+                                {{ payload.risk_label }} Risk
+                            </span>
+                        </div>
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <span class="stat-label">Risk Score</span>
+                                <strong class="fs-4 {% if payload.risk_score > 50 %}text-danger{% else %}text-info{% endif %}">{{ payload.risk_score }}</strong>
+                                <div class="progress mt-2" style="height: 4px; background: rgba(255,255,255,0.05);">
+                                    <div class="progress-bar {% if payload.risk_score > 50 %}bg-danger{% else %}bg-info{% endif %}" style="width: {{ payload.risk_score }}%"></div>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-label">Confidence</span>
+                                <strong class="fs-4 text-success">{{ payload.assessment_confidence }}</strong>
+                                <div class="progress mt-2" style="height: 4px; background: rgba(255,255,255,0.05);">
+                                    <div class="progress-bar bg-success" style="width: {{ payload.assessment_confidence }}"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <span class="section-kicker">Risk Drivers</span>
+                            <div class="d-flex flex-wrap gap-2 mt-2">
+                                {% for driver in payload.drivers %}
+                                <span class="badge bg-black bg-opacity-30 border border-white border-opacity-10 py-2 px-3 rounded-pill small">
+                                    <span class="text-muted me-2">{{ driver.name }}</span>
+                                    <strong class="text-info">{{ driver.impact }}</strong>
+                                </span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </article>
+                </div>
+
+                <!-- SECTION 3: FINANCIAL RECONCILIATION -->
+                <section class="card glass-card mb-4">
+                    <div class="section-heading mb-4">
+                        <div>
+                            <span class="section-kicker">Section 3</span>
+                            <h2>Financial Reconciliation</h2>
+                        </div>
+                        <div class="card-icon-box text-success">
+                            <i class="bi bi-currency-exchange"></i>
+                        </div>
+                    </div>
+                    <div class="summary-grid">
+                        <div class="summary-card">
+                            <span class="summary-label">Declared Amount</span>
+                            <strong class="fs-4">₹{{ payload.declared_amount|floatformat:2|intcomma }}</strong>
+                        </div>
+                        <div class="summary-card border-info border-opacity-20">
+                            <span class="summary-label">Verified Bill</span>
+                            <strong class="fs-4 text-info">₹{{ payload.verified_bill|floatformat:2|intcomma }}</strong>
+                        </div>
+                        <div class="summary-card border-success border-opacity-20">
+                            <span class="summary-label">Recommended Payout</span>
+                            <strong class="fs-3 text-success">₹{{ payload.final_amount|floatformat:2|intcomma }}</strong>
+                        </div>
+                    </div>
+                    
+                    <div class="alert-panel mt-4 p-3 rounded-4" style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2);">
+                        <div class="d-flex align-items-center gap-3">
+                            <i class="bi bi-info-circle-fill fs-5 text-info"></i>
+                            <div>
+                                <strong class="text-info">System Methodology</strong>
+                                <p class="mb-0 small text-white-50">Calculation utilizes <b>{{ payload.basis_label }}</b> as the authoritative baseline. Net settlement after deductible (₹{{ payload.deductible|floatformat:2|intcomma }}) and risk adjustments.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- SECTION 4: FORENSIC COMPARISON -->
+                <section class="card glass-card mb-4">
+                    <div class="section-heading mb-3">
+                        <div>
+                            <span class="section-kicker">Section 4</span>
+                            <h2>Auditor vs AI Comparison</h2>
+                        </div>
+                        <div class="card-icon-box text-warning">
+                            <i class="bi bi-person-check"></i>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table-modern w-100">
+                            <thead>
+                                <tr>
+                                    <th>Assessment Source</th>
+                                    <th>Verdict & Assurance</th>
+                                    <th class="text-end">Calculated Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <i class="bi bi-robot text-info fs-5"></i>
+                                            <span class="text-white fw-bold">AI Recommendation Engine</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="mini-chip mini-chip--success">Auto-Approve</span>
+                                            <span class="text-muted small">({{ payload.assessment_confidence }})</span>
+                                        </div>
+                                    </td>
+                                    <td class="text-info fw-bold text-end">
+                                        ₹{{ payload.final_amount|floatformat:2|intcomma }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <i class="bi bi-person-badge text-warning fs-5"></i>
+                                            <span class="text-white fw-bold">Staff Audit (@{{ claim.assigned_to.username|default:"auditor" }})</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="mini-chip {% if claim.staff_recommendation == 'APPROVE' %}mini-chip--success{% else %}mini-chip--warning{% endif %}">
+                                                {{ claim.staff_recommendation|default:"WAITING" }}
+                                            </span>
+                                            <span class="text-muted small">(Human Verified)</span>
+                                        </div>
+                                    </td>
+                                    <td class="text-success fw-bold text-end">
+                                        ₹{{ claim.approved_amount|floatformat:2|intcomma|default:payload.final_amount }}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section class="card glass-card mb-4">
+                    <div class="section-heading mb-3">
+                        <div>
+                            <span class="section-kicker">Section 4.5</span>
+                            <h2>Forensic Reconciliation Ledger</h2>
+                        </div>
+                        <div class="card-icon-box text-info">
+                            <i class="bi bi-calculator"></i>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table-modern w-100">
+                            <thead>
+                                <tr>
+                                    <th>Audit Step</th>
+                                    <th class="text-end">AI Path</th>
+                                    <th class="text-end">Staff Path</th>
+                                    <th style="padding-left: 40px;">Rationale</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Verified Bill Basis</td>
+                                    <td class="text-white text-end">₹{{ payload.verified_bill|floatformat:2|intcomma }}</td>
+                                    <td class="text-white text-end">₹{{ payload.verified_bill|floatformat:2|intcomma }}</td>
+                                    <td class="text-muted small">OCR Verified Basis</td>
+                                </tr>
+                                <tr>
+                                    <td>Policy Deductible</td>
+                                    <td class="text-danger text-end">-₹{{ payload.deductible|floatformat:2|intcomma }}</td>
+                                    <td class="text-danger text-end">-₹{{ payload.deductible|floatformat:2|intcomma }}</td>
+                                    <td class="text-muted small">Mandatory Co-pay</td>
+                                </tr>
+                                <tr>
+                                    <td>Room Rent Excess</td>
+                                    <td class="text-warning text-end">-₹{{ payload.room_excess|floatformat:2|intcomma }}</td>
+                                    <td class="text-muted text-end">₹0.00</td>
+                                    <td class="text-muted small">
+                                        {% if payload.room_excess > 0 %}
+                                        <span class="text-warning">Limit Exceeded</span>
+                                        {% else %}
+                                        Within Limits
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% if payload.risk_amount > 0 %}
+                                <tr>
+                                    <td>AI Risk Reserve</td>
+                                    <td class="text-danger text-end">-₹{{ payload.risk_amount|floatformat:2|intcomma }}</td>
+                                    <td class="text-muted text-end">₹0.00</td>
+                                    <td class="text-muted small">
+                                        Risk Adjust. ({{ payload.risk_score|floatformat:2 }}%)
+                                    </td>
+                                </tr>
+                                {% endif %}
+                                <tr class="border-top border-white border-opacity-10">
+                                    <td class="fw-bold text-primary">Final Settlement</td>
+                                    <td class="text-info fw-bold text-end">₹{{ payload.final_amount|floatformat:2|intcomma }}</td>
+                                    <td class="text-success fw-bold text-end">₹{{ claim.approved_amount|default:payload.policy_baseline|floatformat:2|intcomma }}</td>
+                                    <td>
+                                        <span class="mini-chip mini-chip--{% if claim.approved_amount|default:payload.policy_baseline|floatformat:2 != payload.final_amount|floatformat:2 %}warning{% else %}success{% endif %}">
+                                            {% if claim.approved_amount|default:payload.policy_baseline|floatformat:2 != payload.final_amount|floatformat:2 %}Variance Detected{% else %}Zero Variance{% endif %}
+                                        </span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    {% if claim.approved_amount|default:payload.policy_baseline|floatformat:2 != payload.final_amount|floatformat:2 %}
+                    <div class="alert-panel mt-3 p-3 rounded-4" style="background: rgba(200, 138, 45, 0.05); border: 1px dashed rgba(200, 138, 45, 0.2);">
+                        <p class="mb-0 small text-warning">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            <strong>Variance Analysis:</strong> 
+                            {% if payload.room_excess > 0 and payload.risk_amount > 0 %}
+                                The AI applied a <b>₹{{ payload.room_excess|floatformat:2|intcomma }}</b> room rent penalty and a <b>₹{{ payload.risk_amount|floatformat:2|intcomma }}</b> risk reserve, while the auditor waived these based on manual verification.
+                            {% elif payload.room_excess > 0 %}
+                                The AI identified a <b>₹{{ payload.room_excess|floatformat:2|intcomma }}</b> room rent penalty which the auditor excluded.
+                            {% elif payload.risk_amount > 0 %}
+                                The AI reserved <b>₹{{ payload.risk_amount|floatformat:2|intcomma }}</b> based on a {{ payload.risk_score|floatformat:2 }}% risk score, while the auditor approved the full baseline.
+                            {% else %}
+                                A manual variance of <b>₹{{ claim.approved_amount|floatformat:2|intcomma }}</b> was recorded by the audit staff.
+                            {% endif %}
+                        </p>
+                    </div>
+                    {% endif %}
+                </section>
+
+                <!-- SECTION 5: DOCUMENTARY EVIDENCE -->
+                <section class="card glass-card mb-4">
+                    <div class="section-heading mb-4">
+                        <div>
+                            <span class="section-kicker">Section 5</span>
+                            <h2>Documentary Evidence</h2>
+                        </div>
+                        <div class="card-icon-box text-primary">
+                            <i class="bi bi-files"></i>
+                        </div>
+                    </div>
+                    <div class="docs-grid">
+                        {% for doc in documents %}
+                        <div class="doc-card">
+                            <div class="doc-card__header">
+                                <div class="doc-card__icon">
+                                    <i class="bi {% if 'bill' in doc.document_type|lower %}bi-receipt{% elif 'identity' in doc.document_type|lower %}bi-person-vcard{% else %}bi-file-earmark-pdf{% endif %}"></i>
+                                </div>
+                                <div class="doc-card__meta">
+                                    <strong class="text-white">{{ doc.get_document_type_display|upper }}</strong>
+                                    <span class="truncate">{{ doc.file.name }}</span>
+                                </div>
+                            </div>
+                            <div class="doc-card__footer d-flex justify-content-between align-items-center">
+                                <span class="doc-date small text-muted">{{ doc.uploaded_at|date:"d M Y" }}</span>
+                                <button type="button" class="btn btn-sm btn-outline-info rounded-pill px-3 doc-preview-btn" 
+                                        data-doc-url="{% url 'claim:view_document' doc.public_id %}" 
+                                        data-doc-type="{% if doc.file.name|lower|slice:'-4:' == '.pdf' %}pdf{% else %}image{% endif %}"
+                                        data-doc-name="{{ doc.get_document_type_display|upper }}">
+                                    <i class="bi bi-eye me-1"></i>View
+                                </button>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="text-center py-5 w-100 opacity-50">
+                            <i class="bi bi-folder-x fs-1 mb-2 d-block"></i>
+                            <p>No supporting evidence found in this dossier.</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </section>
+
+            </div> <!-- End Analysis Column -->
+
+            <!-- 🛡️ RIGHT COLUMN: GOVERNANCE & VERDICT (30%) -->
+            <div class="governance-column">
+                <article class="card glass-card actions-card mb-4 sticky-top" style="top: 2rem;">
+                    <div class="section-heading mb-4">
+                        <div>
+                            <span class="section-kicker">Decision Flow</span>
+                            <h2>Management Verdict</h2>
+                        </div>
+                        <div class="card-icon-box text-primary shadow-glow">
+                            <i class="bi bi-shield-check"></i>
+                        </div>
+                    </div>
+
+                    <form method="post" action="{% url 'claim:review' claim.public_id %}" id="verdictForm">
+                        {% csrf_token %}
+                        <div class="text-center mb-4 pb-4 border-bottom border-white border-opacity-10">
+                            <span class="section-kicker">Recommended Payout</span>
+                            <div class="fs-2 fw-bold text-info">₹{{ payload.final_amount|floatformat:2|intcomma }}</div>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <label class="form-label text-muted small fw-bold text-uppercase mb-0" for="adminComment">Governance Rationale</label>
+                            <button type="button" class="ai-rationale-glow-btn" id="generateAiRationale" data-claim-id="{{ claim.public_id }}">
+                                <i class="bi bi-stars"></i><span>Generate with AI</span>
+                            </button>
+                        </div>
+                        <textarea
+                            id="adminComment"
+                            name="admin_comment"
+                            class="form-control mb-4 bg-black bg-opacity-30 border-white border-opacity-10 text-white"
+                            style="min-height: 120px; border-radius: 12px; font-size: 0.85rem;"
+                            placeholder="Provide professional rationale..."
+                        ></textarea>
+                        <input type="hidden" name="action" id="reviewVerdictAction">
+
+                        <div class="d-grid gap-3">
+                            <button type="button" class="btn btn-success py-3 rounded-4 fw-bold shadow-sm hover-lift" data-review-action="approve">
+                                <i class="bi bi-check-circle-fill me-2"></i>Approve
+                            </button>
+                            <button type="button" class="btn btn-outline-danger py-3 rounded-4 fw-bold hover-lift" data-review-action="reject">
+                                <i class="bi bi-x-circle-fill me-2"></i>Decline
+                            </button>
+                        </div>
+                    </form>
+                </article>
+
+                <article class="card glass-card">
+                    <div class="section-heading mb-3">
+                        <div>
+                            <span class="section-kicker">Traceability</span>
+                            <h2>Audit Ledger</h2>
+                        </div>
+                        <i class="bi bi-clock-history text-muted"></i>
+                    </div>
+                    <div class="timeline-list">
+                        {% for log in audit_logs|slice:":10" %}
+                        <div class="timeline-item">
+                            <div class="timeline-dot"></div>
+                            <div class="timeline-content">
+                                <div class="timeline-meta d-flex justify-content-between align-items-center">
+                                    <strong class="text-white small">@{{ log.performed_by.username|default:"System" }}</strong>
+                                    <span class="text-muted" style="font-size: 0.65rem;">{{ log.created_at|date:"d M, H:i" }}</span>
+                                </div>
+                                <p class="mb-0 text-muted small italic mt-1">{{ log.description|truncatechars:100 }}</p>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="text-center py-3 opacity-50">
+                            <p class="mb-0 small">No audit logs recorded.</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </article>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden Forms & Modals -->
+    <form method="post" action="{% url 'claim:delete' claim.public_id %}" id="deleteClaimForm" class="d-none">
+        {% csrf_token %}
+    </form>
+
+    <div class="admin-modal" id="docPreviewModal" hidden>
+        <div class="admin-modal__backdrop" data-close-modal="docPreviewModal"></div>
+        <div class="admin-modal__dialog admin-modal__dialog--preview" role="dialog" aria-modal="true" style="background: #FFFFFF; border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; overflow: hidden; max-width: 90vw; width: 1000px;">
+            <div class="admin-modal__header p-4 d-flex justify-content-between align-items-center border-bottom border-white border-opacity-10">
+                <h3 id="docPreviewTitle" class="mb-0 fs-5 text-white">Document Preview</h3>
+                <div class="admin-modal__controls d-flex gap-2">
+                    <a href="#" id="docPreviewOpen" target="_blank" class="btn btn-sm btn-outline-light rounded-circle" title="Open in new tab">
+                        <i class="bi bi-box-arrow-up-right"></i>
+                    </a>
+                    <button type="button" class="btn btn-sm btn-outline-danger rounded-circle" data-close-modal="docPreviewModal">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="admin-modal__body p-0" id="docPreviewBody" style="height: 70vh;"></div>
+        </div>
+    </div>
+    {% endwith %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/admin_review.js' %}"></script>
+<script>
+    // 🤖 AI Rationale Generator (Template-Embedded)
+    document.addEventListener("DOMContentLoaded", function() {
+        const generateAiBtn = document.getElementById('generateAiRationale');
+        const adminCommentArea = document.getElementById('adminComment');
+        
+        if (generateAiBtn && adminCommentArea) {
+            generateAiBtn.addEventListener('click', async function (e) {
+                e.preventDefault();
+                
+                // Visual Feedback
+                const originalHtml = generateAiBtn.innerHTML;
+                generateAiBtn.disabled = true;
+                generateAiBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Generating...';
+
+                try {
+                    // Use Django's URL template tag for absolute accuracy
+                    const apiUrl = "{% url 'claim:generate_remark' claim.public_id %}";
+                    
+                    const response = await fetch(`${apiUrl}?mode=detailed`);
+                    const data = await response.json();
+
+                    if (data.remark) {
+                        adminCommentArea.value = data.remark;
+                        
+                        // Apply premium neon border breath to text area
+                        adminCommentArea.classList.add('ai-textarea-activated');
+                        setTimeout(() => {
+                            adminCommentArea.classList.remove('ai-textarea-activated');
+                        }, 5000);
+                        
+                        // Auto-expand textarea
+                        adminCommentArea.style.height = 'auto';
+                        adminCommentArea.style.height = adminCommentArea.scrollHeight + 'px';
+                        
+                        if (window.InsureAlert) {
+                            window.InsureAlert.success("AI Generation Success", "Professional rationale has been synthesized from dossier data.");
+                        }
+                    } else if (data.error) {
+                        if (window.InsureAlert) {
+                            window.InsureAlert.error("AI Engine Error", data.error);
+                        } else {
+                            alert("AI Error: " + data.error);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Failed to generate AI rationale:', error);
+                    if (window.InsureAlert) {
+                        window.InsureAlert.error("System Failure", "The forensic intelligence engine is currently unreachable.");
+                    } else {
+                        alert("System Error: AI engine connection failed.");
+                    }
+                } finally {
+                    generateAiBtn.disabled = false;
+                    generateAiBtn.innerHTML = originalHtml;
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

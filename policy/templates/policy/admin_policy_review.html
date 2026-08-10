@@ -29,13 +29,13 @@
                                 text-align: center;
                                 padding: 1.5rem;
                                 border-radius: 16px;
-                                background: rgba(0, 0, 0, 0.02);
-                                border: 1px solid rgba(0, 0, 0, 0.05);
+                                background: rgba(101, 96, 79, 0.015);
+                                border: 1px solid rgba(101, 96, 79, 0.04);
                             }
                             .applicant-centered-card .avatar {
                                 width: 64px;
                                 height: 64px;
-                                background: #1a6ef5;
+                                background: #65604F;
                                 color: white;
                                 border-radius: 50%;
                                 display: flex;
@@ -48,7 +48,7 @@
                                 font-size: 10px;
                                 text-transform: uppercase;
                                 letter-spacing: 0.5px;
-                                color: #64748b;
+                                color: rgba(156, 149, 143, 0.6);
                                 margin-bottom: 2px;
                             }
                             .applicant-centered-card .field-value {
@@ -124,22 +124,42 @@
                 <div class="card p-4 bg-white border shadow-sm">
                     <h5 class="mb-4 text-center">Admin Verdict</h5>
                     
-                    <form method="POST" class="d-flex justify-content-center gap-4">
+                    <div class="d-flex justify-content-center gap-4">
                         {% csrf_token %}
                         
-                        <button type="submit" name="action" value="reject" class="btn btn-danger btn-lg px-5 shadow-sm" onclick="return confirm('Are you sure you want to reject this policy?')">
+                        <button type="button" class="btn btn-danger btn-lg px-5 shadow-sm" onclick="handleVerdict('reject')">
                             <i class="fas fa-times me-2"></i> Reject Application
                         </button>
 
-                        <button type="submit" name="action" value="approve" class="btn btn-success btn-lg px-5 shadow-sm" onclick="return confirm('Are you sure you want to approve and activate this policy?')">
+                        <button type="button" class="btn btn-success btn-lg px-5 shadow-sm" onclick="handleVerdict('approve')">
                             <i class="fas fa-check-double me-2"></i> Approve & Activate
                         </button>
-                    </form>
+                    </div>
                     
                     <div class="text-center mt-4 pt-3 border-top">
                         <a href="{% url 'policy:admin_list' %}" class="btn btn-link text-muted"><i class="fas fa-arrow-left me-1"></i> Back to All Policies</a>
                     </div>
                 </div>
+
+                <form id="verdictForm" method="POST" style="display:none;" 
+                    data-loader-title="Activating Policy" 
+                    data-loader-text="Generating policy certificate and notifying user. Please wait...">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" id="verdictAction">
+                </form>
+
+                <script>
+                    async function handleVerdict(action) {
+                        const title = action === 'approve' ? 'Approve Policy' : 'Reject Policy';
+                        const text = action === 'approve' ? 'Are you sure you want to approve and activate this policy?' : 'Are you sure you want to reject this policy?';
+                        
+                        const result = await InsureAlert.confirm(title, text, action.charAt(0).toUpperCase() + action.slice(1));
+                        if (result.isConfirmed) {
+                            document.getElementById('verdictAction').value = action;
+                            document.getElementById('verdictForm').submit();
+                        }
+                    }
+                </script>
             </div>
         </div>
     </div>

@@ -29,7 +29,7 @@
         display: flex;
         flex-direction: column;
     }
-    .stat-label { font-size: 11px; text-transform: uppercase; color: #94a3b8; letter-spacing: 1px; margin-bottom: 4px; }
+    .stat-label { font-size: 11px; text-transform: uppercase; color: rgba(156, 149, 143, 0.7); letter-spacing: 1px; margin-bottom: 4px; }
     .stat-value { font-size: 20px; font-weight: 700; color: #ffffff; }
 
     /* Enhanced Table UI */
@@ -59,7 +59,7 @@
 
     .premium-table th {
         background: rgba(0, 0, 0, 0.2);
-        color: #64748b;
+        color: rgba(156, 149, 143, 0.6);
         font-weight: 700;
         text-transform: uppercase;
         font-size: 11px;
@@ -76,7 +76,7 @@
     }
 
     .premium-table tr:hover td {
-        background: rgba(26, 110, 245, 0.03);
+        background: rgba(101, 96, 79, 0.03);
     }
 
     /* Transaction Indicators */
@@ -88,8 +88,8 @@
         margin-right: 8px;
     }
     .dot-completed { background: #10b981; box-shadow: 0 0 8px #10b981; }
-    .dot-pending { background: #f59e0b; box-shadow: 0 0 8px #f59e0b; }
-    .dot-failed { background: #ef4444; box-shadow: 0 0 8px #ef4444; }
+    .dot-pending { background: #C88A2D; box-shadow: 0 0 8px #C88A2D; }
+    .dot-failed { background: #c55a5a; box-shadow: 0 0 8px #c55a5a; }
 
     .status-capsule {
         padding: 6px 12px;
@@ -102,8 +102,8 @@
         align-items: center;
     }
     .status-completed { background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); }
-    .status-pending { background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.2); }
-    .status-failed { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
+    .status-pending { background: rgba(200, 138, 45, 0.1); color: #C88A2D; border: 1px solid rgba(200, 138, 45, 0.2); }
+    .status-failed { background: rgba(197, 90, 90, 0.1); color: #c55a5a; border: 1px solid rgba(197, 90, 90, 0.2); }
 
     .method-icon {
         width: 32px;
@@ -114,13 +114,13 @@
         align-items: center;
         justify-content: center;
         font-size: 14px;
-        color: #94a3b8;
+        color: rgba(156, 149, 143, 0.7);
     }
 
     .btn-manage-financial {
-        background: rgba(26, 110, 245, 0.1);
+        background: rgba(101, 96, 79, 0.1);
         color: #3b82f6 !important;
-        border: 1px solid rgba(26, 110, 245, 0.2);
+        border: 1px solid rgba(101, 96, 79, 0.2);
         padding: 8px 16px;
         border-radius: 10px;
         font-size: 11px;
@@ -135,16 +135,16 @@
     }
 
     .btn-manage-financial:hover {
-        background: #1a6ef5;
+        background: #65604F;
         color: white !important;
         transform: scale(1.05);
-        box-shadow: 0 10px 20px -5px rgba(26, 110, 245, 0.4);
+        box-shadow: 0 10px 20px -5px rgba(101, 96, 79, 0.4);
     }
 
     .mono-id {
         font-family: 'JetBrains Mono', 'Monaco', monospace;
         font-size: 12px;
-        color: #1a6ef5;
+        color: #65604F;
         letter-spacing: -0.5px;
     }
 </style>
@@ -289,7 +289,7 @@
                     <tr>
                         <td class="ps-4">
                             <span class="mono-id fw-bold">{{ payment.transaction_id }}</span>
-                            <div class="text-muted" style="font-size: 10px;">ID: #{{ payment.id|add:1000 }}</div>
+                            <div class="text-muted" style="font-size: 10px;">UUID: {{ payment.public_id }}</div>
                         </td>
                         <td>
                             <div class="d-flex align-items-center gap-3">
@@ -325,7 +325,7 @@
                             <div class="text-white small">{{ payment.created_at|date:"M d, Y" }}</div>
                         </td>
                         <td class="pe-4 text-end">
-                            <a href="{% url 'policy:manage_payment' payment.id %}" class="btn-manage-financial">
+                            <a href="{% url 'policy:manage_payment' payment.public_id %}" class="btn-manage-financial">
                                 <i class="bi bi-search"></i> Audit
                             </a>
                         </td>
@@ -339,8 +339,8 @@
     </div>
 
     <!-- 🔴 DEBIT TRANSACTIONS (SETTLEMENTS) -->
-    <div class="premium-table-wrapper" style="border: 1px solid rgba(239, 68, 68, 0.2);">
-        <div class="premium-table-header" style="background: rgba(239, 68, 68, 0.05);">
+    <div class="premium-table-wrapper" style="border: 1px solid rgba(197, 90, 90, 0.2);">
+        <div class="premium-table-header" style="background: rgba(197, 90, 90, 0.05);">
             <div class="d-flex align-items-center gap-3">
                 <h5 class="mb-0 text-danger fw-bold"><i class="bi bi-arrow-down-circle me-2"></i>Debit Transactions (Settlements)</h5>
                 <span class="badge bg-danger bg-opacity-10 text-danger px-3 py-2 rounded-pill small border border-danger border-opacity-25">OUTFLOW</span>
@@ -370,7 +370,7 @@
                         </td>
                         <td>
                             <div class="d-flex align-items-center gap-3">
-                                <div class="bg-danger bg-opacity-10 text-danger rounded-circle text-center d-flex align-items-center justify-content-center fw-bold" style="width: 32px; height: 32px; font-size: 12px; border: 1px solid rgba(239, 68, 68, 0.2);">
+                                <div class="bg-danger bg-opacity-10 text-danger rounded-circle text-center d-flex align-items-center justify-content-center fw-bold" style="width: 32px; height: 32px; font-size: 12px; border: 1px solid rgba(197, 90, 90, 0.2);">
                                     {{ payment.user_policy.user.username|slice:":1"|upper }}
                                 </div>
                                 <div>
@@ -396,7 +396,7 @@
                         <td><span class="text-muted small uppercase">{{ payment.get_payment_method_display }}</span></td>
                         <td><div class="text-white small">{{ payment.created_at|date:"M d, Y" }}</div></td>
                         <td class="pe-4 text-end">
-                            <a href="{% url 'policy:manage_payment' payment.id %}" class="btn-manage-financial">
+                            <a href="{% url 'policy:manage_payment' payment.public_id %}" class="btn-manage-financial">
                                 <i class="bi bi-search"></i> Audit
                             </a>
                         </td>

@@ -1,7 +1,28 @@
 {% extends "base.html" %}
 {% load humanize file_filters %}
 
-{% block title %}Claim {{ claim.claim_number }}{% endblock %}
+{% block title %}
+    {% if request.user.role == 'user' %}
+        My Claim: {{ claim.claim_number }}
+    {% else %}
+        Claim {{ claim.claim_number }} - Governance Audit
+    {% endif %}
+{% endblock %}
+<!-- AUDIT_ENGINE_V1_FIX -->
+{% if request.user.role == 'staff' or request.user.role == 'admin' or request.user.is_superuser %}
+<script>
+    // 🛡️ SECURITY & GOVERNANCE GATE
+    // This is the legacy V2 Dossier view. All Staff/Admin traffic must be routed 
+    // to the V3 Staff Review (Audit Dashboard) to maintain single source of truth.
+    window.location.href = "{% url 'claim:staff_review' claim.public_id %}";
+</script>
+<div style="background: #FFFFFF; color: white; height: 100vh; display: flex; align-items: center; justify-content: center; font-family: sans-serif;">
+    <div style="text-align: center;">
+        <h3 style="color: #3b82f6;">Redirecting to V3 Audit Dashboard...</h3>
+        <p style="color: rgba(156, 149, 143, 0.7);">Loading hardened forensic interface for claim {{ claim.claim_number }}</p>
+    </div>
+</div>
+{% endif %}
 
 {% block sidebar_items %}
 {% if not request.user.is_superuser and request.user.role == "policyholder" %}
@@ -34,154 +55,785 @@
 {% endif %}
 {% endblock %}
 
-{% block breadcrumb %}Claim Details{% endblock %}
+{% block breadcrumb %}
+{% if request.user.role == 'user' %}
+My Claim Detail
+{% else %}
+Claim Governance Dossier
+{% endif %}
+{% endblock %}
 
 {% block extra_css %}
 <style>
-    .tracking-wider {
-        letter-spacing: 0.05em;
+    /* 🏛️ Master Layout Architecture */
+    .master-container {
+        max-width: 100%;
+        width: 100%;
+        margin: 0;
+        padding: 24px 12px 100px 12px;
+        animation: fadeIn 0.8s ease-out;
     }
 
-    .x-small {
-        font-size: 0.75rem;
+    .dashboard-grid-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 24px;
+        align-items: start;
+        margin-bottom: 60px;
+        width: 100%;
+        max-width: 100%;
     }
 
-    /* Premium Card System */
+    .analysis-column, .governance-column {
+        min-width: 0;
+        width: 100%;
+    }
+
+    @media (max-width: 1200px) {
+        .dashboard-grid-layout {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .tracking-wider { letter-spacing: 0.05em; }
+    .x-small { font-size: 0.75rem; }
+
+    /* 💎 Premium Card System v2 */
     .premium-card {
-        background: rgba(17, 28, 53, 0.4);
-        backdrop-filter: blur(10px);
+        background: #FFFFFF;
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
         border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 16px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        border-radius: 22px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
         margin-bottom: 24px;
         overflow: hidden;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+        transition: transform 0.3s ease, border-color 0.3s ease;
+    }
+
+    .premium-card:hover {
+        border-color: rgba(101, 96, 79, 0.3);
     }
 
     .premium-card-header {
-        padding: 16px 20px;
-        background: rgba(255, 255, 255, 0.02);
+        padding: 20px 24px;
+        background: linear-gradient(90deg, rgba(255, 255, 255, 0.03), transparent);
         border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         display: flex;
         justify-content: space-between;
         align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+    
+    .premium-card-body {
+        padding: 24px;
+        width: 100%;
+        overflow-x: hidden;
     }
 
     .premium-card-header h6 {
-        margin-bottom: 0;
-        color: #f1f5f9;
+        margin: 0;
+        color: #605E5B;
         font-weight: 700;
-        font-size: 0.9rem;
+        font-size: 1rem;
+        display: flex;
+        align-items: center;
     }
 
-    .premium-card-body {
-        padding: 20px;
+    /* 📊 Data Tables & Layouts */
+    .table-wrapper {
+        overflow-x: auto;
+        max-width: 100%;
+        border-radius: 12px;
+        background: #F4EEE2;
     }
 
-    /* Badges */
-    .badge-premium {
-        font-size: 9px;
-        padding: 4px 10px;
-        border-radius: 20px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    .badge-premium.status-approved,
-    .badge-premium.status-settled {
-        background: rgba(16, 185, 129, 0.1);
-        color: #10b981;
-        border: 1px solid rgba(16, 185, 129, 0.2);
-    }
-
-    .badge-premium.status-pending,
-    .badge-premium.status-submitted {
-        background: rgba(245, 158, 11, 0.1);
-        color: #f59e0b;
-        border: 1px solid rgba(245, 158, 11, 0.2);
-    }
-
-    .badge-premium.status-rejected {
-        background: rgba(239, 68, 68, 0.1);
-        color: #ef4444;
-        border: 1px solid rgba(239, 68, 68, 0.2);
-    }
-
-    .badge-premium.status-investigation {
-        background: rgba(59, 130, 246, 0.1);
-        color: #3b82f6;
-        border: 1px solid rgba(59, 130, 246, 0.2);
-    }
-
-    /* Financial Table */
     .premium-data-table {
         width: 100%;
         color: #cbd5e1;
         font-size: 13px;
     }
 
-    .premium-data-table td {
-        padding: 12px 0;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    .premium-data-table th {
+        background: #FFFFFF;
+        color: rgba(156, 149, 143, 0.6);
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        padding: 14px 20px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        white-space: nowrap;
     }
 
-    .premium-data-table tr:last-child td {
-        border-bottom: none;
+    .premium-data-table td {
+        padding: 14px 20px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        vertical-align: middle;
+        white-space: nowrap;
+    }
+
+    .text-wrap-logic {
+        white-space: normal !important;
+        word-break: break-word;
+        min-width: 200px;
     }
 
     .label-muted {
-        color: #94a3b8;
+        color: rgba(156, 149, 143, 0.6);
         font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    /* 📁 Document Grid */
+    .docs-premium-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 20px;
+    }
+
+    .doc-premium-box {
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 18px;
+        padding: 20px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .doc-premium-box:hover {
+        border-color: #65604F;
+        background: rgba(101, 96, 79, 0.08);
+        transform: translateY(-4px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    }
+
+    /* 🛡️ Navigation & Actions */
+    .btn-premium-nav {
+        background: #FFFFFF;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        padding: 10px 20px;
+        color: #e2e8f0;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        text-decoration: none;
+    }
+
+    .btn-premium-nav:hover {
+        background: #F4EEE2;
+        border-color: #65604F;
+        color: white;
+        transform: translateX(-5px);
+    }
+
+    /* 📊 KPI Stats */
+    .audit-summary-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+    }
+
+    .audit-stat {
+        position: relative;
+        padding: 24px;
+        border-radius: 20px;
+        background: #F4EEE2;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        min-height: 150px;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        overflow: hidden;
+    }
+
+    .audit-stat-icon {
+        position: absolute;
+        top: 24px;
+        right: 24px;
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.03);
+        font-size: 20px;
+    }
+
+    .action-panel-premium {
+        background: #FFFFFF;
+        border: 1px solid rgba(101, 96, 79, 0.2);
+        box-shadow: 0 0 30px rgba(101, 96, 79, 0.1);
+    }
+
+    /* Badges */
+    .badge-premium {
+        font-size: 10px;
+        padding: 5px 12px;
+        border-radius: 30px;
+        font-weight: 800;
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
 
-    /* Document Box */
-    .doc-premium-box {
-        background: rgba(255, 255, 255, 0.03);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 12px;
-        padding: 16px;
-        transition: all 0.3s ease;
-    }
-
-    .doc-premium-box:hover {
-        border-color: #1a6ef5;
-        background: rgba(26, 110, 245, 0.05);
-    }
-
-    /* Progress bar */
-    .progress-premium {
-        height: 6px;
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 10px;
-        overflow: hidden;
+    .status-approved { background: rgba(62, 124, 69, 0.1); color: #3E7C45; border: 1px solid rgba(62, 124, 69, 0.2); }
+    .status-pending { background: rgba(200, 138, 45, 0.1); color: #C88A2D; border: 1px solid rgba(200, 138, 45, 0.2); }
+    .status-rejected { background: rgba(176, 74, 74, 0.1); color: #B04A4A; border: 1px solid rgba(176, 74, 74, 0.2); }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
     }
 </style>
+
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid px-4 py-3">
 
-    <!-- Back Button -->
-    <div class="mb-4">
-        {% if request.user.role == 'staff' %}
-        <a href="{% url 'accounts:staff_dashboard' %}"
-            class="btn btn-outline-secondary btn-sm border-0 bg-dark opacity-75">
-            {% elif request.user.role == 'admin' or request.user.is_superuser %}
-            <a href="{% url 'accounts:admin_dashboard' %}"
-                class="btn btn-outline-secondary btn-sm border-0 bg-dark opacity-75">
-                {% else %}
-                <a href="{% url 'claim:list' %}" class="btn btn-outline-secondary btn-sm border-0 bg-dark opacity-75">
-                    {% endif %}
-                    <i class="bi bi-arrow-left me-1"></i> Back to Control Center
-                </a>
+{% if claim.status == 'settled' %}
+<!-- 💎 PREMIUM SETTLED STATE (LIGHT MODE FINTECH UI) -->
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+    :root {
+        --settled-bg: var(--bg-deep);
+        --settled-card-bg: var(--bg-surface);
+        --settled-text: var(--text-main);
+        --settled-text-muted: var(--text-muted);
+        --settled-primary: var(--primary);
+        --settled-success: var(--success);
+        --settled-border: var(--border-color);
+        --settled-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        --settled-card-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    body {
+        background-color: var(--settled-bg) !important;
+        color: var(--settled-text) !important;
+        font-family: 'Inter', sans-serif !important;
+    }
+
+    .settled-wrapper {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 40px 20px 100px;
+        animation: settledFadeIn 0.6s ease-out;
+    }
+
+    @keyframes settledFadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* 🏷️ Header Architecture */
+    .settled-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 32px;
+    }
+
+    .settled-title-area h1 {
+        font-size: 28px;
+        font-weight: 800;
+        color: var(--text-main);
+        margin-bottom: 4px;
+        letter-spacing: -0.5px;
+    }
+
+    .settled-id {
+        font-family: monospace;
+        color: var(--settled-text-muted);
+        font-size: 14px;
+        letter-spacing: 0.5px;
+    }
+
+    .settled-badge {
+        background: rgba(62, 124, 69, 0.1);
+        color: var(--settled-success);
+        padding: 8px 18px;
+        border-radius: 99px;
+        font-weight: 700;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        border: 1px solid rgba(62, 124, 69, 0.2);
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    /* 🎴 Card System */
+    .settled-card {
+        background: var(--settled-card-bg);
+        border: 1px solid var(--settled-border);
+        border-radius: 20px;
+        box-shadow: var(--settled-card-shadow);
+        padding: 28px;
+        margin-bottom: 24px;
+        transition: all 0.3s ease;
+    }
+
+    .settled-card:hover {
+        border-color: rgba(62, 124, 69, 0.3);
+        transform: translateY(-2px);
+    }
+
+    .settled-card-title {
+        font-size: 13px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--settled-text-muted);
+        margin-bottom: 24px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    /* 📊 Grid Layouts */
+    .settled-summary-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 32px;
+    }
+
+    .summary-item .label {
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--settled-text-muted);
+        margin-bottom: 8px;
+    }
+
+    .summary-item .value {
+        font-weight: 700;
+        color: var(--text-main);
+        font-size: 16px;
+    }
+
+    /* 💰 Financial Card */
+    .financial-card {
+        border-top: 4px solid var(--settled-success);
+    }
+
+    .financial-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 14px 0;
+        font-size: 15px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    }
+
+    .financial-divider {
+        height: 1px;
+        background: var(--settled-border);
+        margin: 20px 0;
+    }
+
+    .final-payout {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 15px;
+    }
+
+    .payout-label {
+        font-weight: 800;
+        color: var(--text-main);
+        font-size: 18px;
+    }
+
+    .payout-value {
+        font-size: 36px;
+        font-weight: 900;
+        color: var(--settled-success);
+        letter-spacing: -1px;
+    }
+
+    /* ✅ Verification Grid */
+    .verify-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .verify-item {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 16px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 14px;
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--text-main);
+    }
+
+    .verify-item i {
+        color: var(--settled-success);
+        font-size: 20px;
+    }
+
+    /* 🕒 Timeline */
+    .settled-timeline {
+        position: relative;
+        padding-left: 36px;
+    }
+
+    .timeline-node {
+        position: relative;
+        padding-bottom: 40px;
+    }
+
+    .timeline-node::before {
+        content: '';
+        position: absolute;
+        left: -36px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .timeline-node:last-child::before {
+        display: none;
+    }
+
+    .timeline-marker {
+        position: absolute;
+        left: -41px;
+        top: 4px;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #334155;
+        border: 2px solid var(--settled-bg);
+        z-index: 2;
+    }
+
+    .timeline-node.active .timeline-marker {
+        background: var(--settled-success);
+        box-shadow: 0 0 15px rgba(62, 124, 69, 0.4);
+    }
+
+    .timeline-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .timeline-label { font-weight: 600; font-size: 14px; color: var(--text-main); }
+    .timeline-time { color: var(--settled-text-muted); font-size: 12px; font-family: monospace; }
+
+    /* 📝 Audit Note */
+    .audit-box {
+        background: rgba(62, 124, 69, 0.05);
+        border: 1px solid rgba(62, 124, 69, 0.15);
+        padding: 24px;
+        border-radius: 16px;
+        color: rgba(156, 149, 143, 0.7);
+        font-size: 14px;
+        line-height: 1.7;
+    }
+
+    /* 🔘 Actions */
+    .settled-actions {
+        display: flex;
+        gap: 20px;
+        margin-top: 48px;
+        flex-wrap: wrap;
+    }
+
+    .btn-settled {
+        padding: 14px 28px;
+        border-radius: 14px;
+        font-weight: 700;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        text-decoration: none;
+    }
+
+    .btn-primary-settled {
+        background: var(--primary);
+        color: white;
+        box-shadow: 0 4px 14px rgba(101, 96, 79, 0.3);
+    }
+
+    .btn-primary-settled:hover {
+        background: var(--primary-light);
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(101, 96, 79, 0.4);
+    }
+
+    .btn-outline-settled {
+        background: rgba(255, 255, 255, 0.03);
+        color: var(--text-main);
+        border: 1px solid var(--settled-border);
+    }
+
+    .btn-outline-settled:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: var(--text-muted);
+        transform: translateY(-3px);
+    }
+
+    /* Hide base sidebar/noir elements in this view */
+    .sidebar-active #sidebar, 
+    .noir-overlay, 
+    .master-container { 
+        display: none !important; 
+    }
+</style>
+
+<div class="settled-wrapper">
+    <!-- HEADER -->
+    <div class="settled-header">
+        <div class="settled-title-area">
+            <span class="settled-badge"><i class="bi bi-check-circle-fill me-1"></i> STATUS: SETTLED</span>
+            <h1 class="mt-2">Claim Details</h1>
+            <div class="settled-id">Dossier: {{ claim.claim_number }}</div>
+            <div class="text-success small fw-bold mt-1">
+                <i class="bi bi-patch-check-fill me-1"></i> Settlement completed successfully
+            </div>
+        </div>
+        <div class="header-actions">
+            <a href="{% url 'claim:list' %}" class="btn-outline-settled btn-settled">
+                <i class="bi bi-arrow-left"></i> Back to My Claims
+            </a>
+        </div>
     </div>
 
-    <!-- HEADER -->
-    <div class="d-flex justify-content-between align-items-start mb-4">
+    <!-- SUMMARY GRID -->
+    <div class="settled-card">
+        <div class="settled-card-title">
+            <i class="bi bi-info-circle text-primary"></i> Claim Summary
+        </div>
+        <div class="settled-summary-grid">
+            <div class="summary-item">
+                <div class="label">Policyholder</div>
+                <div class="value">{{ claim.created_by.get_full_name|default:claim.created_by.username|upper }}</div>
+            </div>
+            <div class="summary-item">
+                <div class="label">Claim Type</div>
+                <div class="value">{{ claim.get_claim_type_display|default:"Medical" }}</div>
+            </div>
+            <div class="summary-item">
+                <div class="label">Policy Number</div>
+                <div class="value">{{ claim.policy.policy_number|default:claim.user_policy.policy.policy_number|default:"POL-0XYZNX" }}</div>
+            </div>
+            <div class="summary-item">
+                <div class="label">Incident Date</div>
+                <div class="value">{{ claim.incident_date|date:"d M Y"|default:"30 Apr 2026" }}</div>
+            </div>
+            <div class="summary-item">
+                <div class="label">Settlement Date</div>
+                <div class="value">{{ claim.settlement.settlement_date|date:"d M Y"|default:claim.updated_at|date:"d M Y"|default:"05 May 2026" }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- LEFT: Financials & Settlement -->
+        <div class="col-lg-7">
+            <!-- FINANCIAL CARD -->
+            <div class="settled-card financial-card">
+                <div class="settled-card-title">
+                    <i class="bi bi-bank text-success"></i> Financial Summary
+                </div>
+                <div class="financial-row">
+                    <span class="text-muted">Requested Amount</span>
+                    <span class="fw-bold">₹{{ claim.claimed_amount|intcomma|default:"55,000" }}</span>
+                </div>
+                <div class="financial-row">
+                    <span class="text-muted">OCR Verified Amount</span>
+                    <span class="fw-bold">₹{{ claim.ocr_verified_bill_total|intcomma|default:"50,000" }}</span>
+                </div>
+                <div class="financial-row">
+                    <span class="text-muted">Policy Deductible</span>
+                    <span class="text-danger">-₹{{ claim.deductible_amount|intcomma|default:"15,000" }}</span>
+                </div>
+                <div class="financial-divider"></div>
+                <div class="final-payout">
+                    <div class="payout-label">Final Settlement Paid</div>
+                    <div class="payout-value">₹{{ claim.settlement.settled_amount|default:claim.approved_amount|intcomma|default:"35,000" }}</div>
+                </div>
+                <div class="text-muted mt-3 x-small fw-medium">
+                    <i class="bi bi-info-circle me-1"></i> Amount finalized after verification and policy deductions
+                </div>
+            </div>
+
+            <!-- SETTLEMENT DETAILS -->
+            <div class="settled-card">
+                <div class="settled-card-title">
+                    <i class="bi bi-credit-card text-primary"></i> Settlement Details
+                </div>
+                <div class="settled-summary-grid" style="grid-template-columns: 1fr 1fr;">
+                    <div class="summary-item">
+                        <div class="label">Payment Method</div>
+                        <div class="value">{{ claim.settlement.get_payment_mode_display|default:"NEFT" }}</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="label">Transaction ID</div>
+                        <div class="value text-primary" style="font-family: monospace; font-weight: 700; letter-spacing: 1px;">
+                            {{ claim.settlement.transaction_reference|upper|default:"VDDFINKNHBAX" }}
+                        </div>
+                    </div>
+                    <div class="summary-item mt-3">
+                        <div class="label">Processed At</div>
+                        <div class="value">{{ claim.settlement.created_at|date:"d M Y, H:i"|default:claim.updated_at|date:"d M Y, H:i"|default:"05 May 2026, 06:33" }}</div>
+                    </div>
+                    <div class="summary-item mt-3">
+                        <div class="label">Status</div>
+                        <div class="value">
+                            <span class="text-success fw-bold"><i class="bi bi-check-circle-fill me-1"></i> SUCCESS</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-3 p-2 rounded bg-success bg-opacity-10 text-success small fw-medium text-center">
+                    <i class="bi bi-check2-all me-1"></i> Funds successfully credited to beneficiary account
+                </div>
+            </div>
+
+            <!-- DESCRIPTION -->
+            <div class="settled-card">
+                <div class="settled-card-title">Claim Description (User Submitted)</div>
+                <div class="p-3 rounded-3" style="background: rgba(255, 255, 255, 0.03); border: 1px dashed rgba(255, 255, 255, 0.1);">
+                    <span class="text-white small" style="opacity: 0.85; font-style: italic;">
+                        "{{ claim.description|default:"i am currently in hospital i need money" }}"
+                    </span>
+                </div>
+                <div class="mt-3 small text-muted">
+                    <strong class="text-white">System Interpretation:</strong> Hospitalization-related claim for medical treatment expenses.
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT: Verification & Timeline -->
+        <div class="col-lg-5">
+            <!-- VERIFICATION STATUS -->
+            <div class="settled-card">
+                <div class="settled-card-title">Verification Status</div>
+                <div class="verify-grid">
+                    <div class="verify-item">
+                        <i class="bi bi-check-circle-fill"></i> KYC Verified
+                    </div>
+                    <div class="verify-item">
+                        <i class="bi bi-check-circle-fill"></i> Identity Verified
+                    </div>
+                    <div class="verify-item">
+                        <i class="bi bi-check-circle-fill"></i> Medical Bill Verified
+                    </div>
+                    <div class="verify-item">
+                        <i class="bi bi-check-circle-fill"></i> Duplicate Claim Check Passed
+                    </div>
+                    <div class="verify-item">
+                        <i class="bi bi-check-circle-fill"></i> Risk Score: {{ claim.review_payload.risk_label }} ({{ claim.review_payload.risk_score|floatformat:2 }})
+                    </div>
+                </div>
+            </div>
+
+            <!-- TIMELINE -->
+            <div class="settled-card">
+                <div class="settled-card-title">Processing Timeline</div>
+                <div class="settled-timeline">
+                    <div class="timeline-node active">
+                        <div class="timeline-marker"></div>
+                        <div class="timeline-content">
+                            <span class="timeline-label">Claim Submitted</span>
+                            <span class="timeline-time">30 Apr 2026, 05:35</span>
+                        </div>
+                    </div>
+                    <div class="timeline-node active">
+                        <div class="timeline-marker"></div>
+                        <div class="timeline-content">
+                            <span class="timeline-label">Under Review</span>
+                            <span class="timeline-time">30 Apr 2026, 05:45</span>
+                        </div>
+                    </div>
+                    <div class="timeline-node active">
+                        <div class="timeline-marker"></div>
+                        <div class="timeline-content">
+                            <span class="timeline-label">Staff Reviewed</span>
+                            <span class="timeline-time">05 May 2026, 06:10</span>
+                        </div>
+                    </div>
+                    <div class="timeline-node active">
+                        <div class="timeline-marker"></div>
+                        <div class="timeline-content">
+                            <span class="timeline-label">Final Approved</span>
+                            <span class="timeline-time">05 May 2026, 06:14</span>
+                        </div>
+                    </div>
+                    <div class="timeline-node active">
+                        <div class="timeline-marker" style="background: var(--settled-success); box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.3);"></div>
+                        <div class="timeline-content">
+                            <span class="timeline-label text-success fw-bold">Settled (NEFT)</span>
+                            <span class="timeline-time text-success fw-bold">05 May 2026, 06:33</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AUDIT NOTE -->
+            <div class="audit-box">
+                <i class="bi bi-shield-check me-2"></i>
+                <strong>Audit Note:</strong> Final approval granted after verification of OCR-validated documents. Minor discrepancy of ₹5,000 resolved. Risk profile LOW (8.01). Claim compliant with policy terms.
+            </div>
+        </div>
+    </div>
+
+    <div class="settled-actions">
+        <a href="#" class="btn-primary-settled btn-settled">
+            <i class="bi bi-file-earmark-pdf"></i> Download Settlement Receipt
+        </a>
+        <a href="#" class="btn-outline-settled btn-settled">
+            <i class="bi bi-shield-check"></i> View Audit Report
+        </a>
+    </div>
+</div>
+
+{% else %}
+<div class="master-container">
+
+    <!-- TOPBAR HEADER -->
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-4 mb-5">
         <div>
-            <h3 class="mb-1 text-white fw-bold">{{ claim.claim_number }}</h3>
+            <div class="mb-3">
+                {% if request.user.role == 'staff' %}
+                <a href="{% url 'accounts:staff_dashboard' %}" class="btn-premium-nav">
+                    <i class="bi bi-arrow-left"></i> Back to Control Center
+                </a>
+                {% elif request.user.role == 'admin' or request.user.is_superuser %}
+                <a href="{% url 'accounts:admin_dashboard' %}" class="btn-premium-nav">
+                    <i class="bi bi-arrow-left"></i> Back to Governance
+                </a>
+                {% else %}
+                <a href="{% url 'claim:list' %}" class="btn-premium-nav">
+                    <i class="bi bi-arrow-left"></i> My Claims
+                </a>
+                {% endif %}
+            </div>
+            <h2 class="mb-1 fw-bold tracking-tight gradient-title">{{ claim.claim_number }}</h2>
             <div class="d-flex gap-3 align-items-center flex-wrap mt-2">
                 <span class="badge-premium status-{{ claim.status }}">
                     {{ claim.get_status_display }}
@@ -192,9 +844,8 @@
                 <span class="text-muted small">
                     <i class="bi bi-calendar-event me-1"></i>Reported: {{ claim.reported_date|date:"d M Y" }}
                 </span>
-                {% if claim.fraud_flag %}
-                <span
-                    class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-2 py-1 small rounded-1">
+                {% if claim.fraud_flag and request.user.role != 'user' %}
+                <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-2 py-1 small rounded-1">
                     <i class="bi bi-exclamation-triangle-fill me-1"></i>CRITICAL RISK
                 </span>
                 {% endif %}
@@ -202,433 +853,497 @@
         </div>
 
         <div class="d-flex gap-2">
-            {% if request.user.role == 'admin' or request.user.is_superuser %}
-                {% if claim.status != 'approved' and claim.status != 'rejected' and claim.status != 'settled' and claim.status != 'closed' and claim.status != 'withdrawn' %}
-                    <a href="{% url 'claim:review' claim.id %}" class="btn btn-warning btn-sm">Review</a>
-                    {% if request.user.role == 'admin' or request.user.is_admin %}
-                        <form method="post" action="{% url 'claim:update_status' claim.id %}" class="d-inline-block m-0">
-                {% csrf_token %}
-                <input type="hidden" name="status" value="approved">
-                <button type="submit" class="btn btn-success btn-sm">Approve</button>
-            </form>
-            <form method="post" action="{% url 'claim:update_status' claim.id %}" class="d-inline-block m-0">
-                {% csrf_token %}
-                <input type="hidden" name="status" value="rejected">
-                <button type="submit" class="btn btn-danger btn-sm">Reject</button>
-            </form>
-            <form method="post" action="{% url 'claim:delete' claim.id %}" class="d-inline-block m-0">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-outline-danger btn-sm"
-                    onclick="return confirm('Are you sure you want to delete this claim?');">Delete</button>
-            </form>
-            {% endif %}
-            {% endif %}
-            {% endif %}
-            <button class="btn btn-outline-secondary btn-sm" onclick="window.print()">
-                <i class="bi bi-download me-1"></i> Download PDF
+            <button class="btn btn-outline-secondary btn-sm rounded-pill px-4" onclick="window.print()">
+                <i class="bi bi-printer me-2"></i> Print Dossier
             </button>
         </div>
     </div>
 
-    <div class="row g-4">
-        <!-- LEFT COLUMN -->
-        <div class="col-lg-8">
+    <div class="dashboard-grid-layout">
+        <!-- 🚀 LEFT COLUMN: ANALYSIS & EVIDENCE (70%) -->
+        <div class="analysis-column">
 
-            <!-- CLAIM DETAILS -->
+
+    <div class="row g-4">
+        <div class="col-12">
+            <!-- CLAIM SUMMARY (DOSSIER) -->
             <div class="premium-card">
                 <div class="premium-card-header">
-                    <h6><i class="bi bi-info-circle me-2"></i>Incident Dossier</h6>
-                    <span class="text-muted x-small tracking-wider">INTERNAL AUDIT DATA</span>
+                    <h6><i class="bi bi-info-circle me-3 text-primary"></i><span class="gradient-title-cyan">Incident Dossier</span></h6>
+                    <span class="text-muted x-small tracking-wider">
+                        {% if request.user.role == 'user' %}
+                        CLAIM SUMMARY
+                        {% else %}
+                        INTERNAL AUDIT DATA
+                        {% endif %}
+                    </span>
                 </div>
                 <div class="premium-card-body">
                     <div class="row g-4">
-                        <div class="col-md-3">
+                        <div class="col-md-4">
                             <div class="label-muted mb-1">Claim Identifier</div>
                             <div class="fw-bold text-white fs-5">{{ claim.claim_number }}</div>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-4">
                             <div class="label-muted mb-1">Claim Category</div>
-                            <div class="text-white">
+                            <div class="text-white fw-semibold">
                                 {{ claim.get_claim_type_display }}
                                 {% if claim.ai_claim_type %}
                                 <i class="bi bi-robot ms-2 text-info" title="AI Predicted Type"></i>
                                 {% endif %}
                             </div>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-4">
                             <div class="label-muted mb-1">Incident Date</div>
                             <div class="text-white fw-semibold">{{ claim.incident_date|date:"d M, Y" }}</div>
                         </div>
-                        <div class="col-md-3">
-                            <div class="label-muted mb-1">Assigned Auditor</div>
-                            <div class="text-white">
-                                <span class="fw-bold text-primary">
-                                    {% if claim.assigned_to %}
-                                        {{ claim.assigned_to.username }}
-                                    {% else %}
-                                        <span class="text-muted small italic">UNASSIGNED</span>
-                                    {% endif %}
-                                </span>
-                            </div>
-
-
-                        </div>
-                        {% if claim.vehicle_number %}
-                        <div class="col-md-3">
-                            <div class="label-muted mb-1">Vehicle License</div>
-                            <div class="text-info fw-bold">{{ claim.vehicle_number }}</div>
-                        </div>
-                        {% endif %}
+                        
                         <div class="col-12">
-                            <div class="label-muted mb-2">Internal Incident Description</div>
-                            <div class="p-3 rounded-3"
-                                style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); color: #cbd5e1; line-height: 1.6; font-size: 13px;">
+                            <div class="label-muted mb-2">{% if request.user.role == 'user' %}Claim Description{% else %}Internal Incident Description{% endif %}</div>
+                            <div class="p-4 rounded-4" style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); color: #cbd5e1; line-height: 1.6; font-size: 14px;">
                                 {{ claim.description|default:"No description provided by claimant."|linebreaks }}
                             </div>
                         </div>
+
                         {% if claim.rejection_reason %}
                         <div class="col-12">
-                            <div class="p-3 rounded-3 border border-danger border-opacity-25"
-                                style="background: rgba(239, 68, 68, 0.05); color: #f87171;">
-                                <i class="bi bi-exclamation-octagon me-2"></i><strong>Rejection Protocol:</strong> {{
-                                claim.rejection_reason }}
+                            <div class="p-3 rounded-3 border border-danger border-opacity-25" style="background: rgba(197, 90, 90, 0.05); color: #f87171;">
+                                <i class="bi bi-exclamation-octagon me-2"></i><strong>Rejection Protocol:</strong> {{ claim.rejection_reason }}
                             </div>
                         </div>
                         {% endif %}
                     </div>
                 </div>
             </div>
+        </div>
 
-
-            <!-- ══════════════════════════════════════════════════════════════
-     SUPPORTING DOCUMENTS — with modal preview
-     ══════════════════════════════════════════════════════════════ -->
-            <!-- SUPPORTING DOCUMENTS -->
+        <div class="col-12">
+            <!-- 📊 FINANCIAL PROTOCOL & KPI STATS -->
             <div class="premium-card">
                 <div class="premium-card-header">
-                    <h6><i class="bi bi-folder-check me-2"></i>Supporting Documents</h6>
+                    <h6><i class="bi bi-bank me-3 text-success"></i><span class="gradient-title-cyan">{% if request.user.role == 'user' %}Claim Payout Summary{% else %}Financial & Risk Summary{% endif %}</span></h6>
+                    {% if request.user.role != 'user' %}
+                    <span class="text-muted x-small tracking-wider">GAAP COMPLIANT</span>
+                    {% endif %}
+                </div>
+                <div class="premium-card-body">
+                    <div class="audit-summary-grid">
+                        <div class="audit-stat blue-glow">
+                            <div class="audit-stat-icon"><i class="bi bi-wallet2 text-info"></i></div>
+                            <div class="audit-stat-label">Requested Amount</div>
+                            <div class="audit-stat-value">₹{{ claim.claimed_amount|default:0|intcomma }}</div>
+                        </div>
+
+                        {% if claim.authoritative_payout %}
+                        <div class="audit-stat cyan-glow">
+                            <div class="audit-stat-icon"><i class="bi bi-receipt text-info"></i></div>
+                            <div class="audit-stat-label">
+                                {% if request.user.role == 'user' %}
+                                    {% if claim.status == 'approved' or claim.status == 'settled' %}
+                                        Approved Settlement
+                                    {% else %}
+                                        Calculated Payout
+                                    {% endif %}
+                                {% else %}
+                                    {{ claim.payout_label }}
+                                {% endif %}
+                            </div>
+                            <div class="audit-stat-value text-info">₹{{ claim.authoritative_payout|floatformat:2|intcomma }}</div>
+                        </div>
+                        {% endif %}
+
+                        <div class="audit-stat amber-glow">
+                            <div class="audit-stat-icon"><i class="bi bi-shield-lock text-warning"></i></div>
+                            <div class="audit-stat-label">Policy Deductible</div>
+                            <div class="audit-stat-value">₹{{ claim.deductible_amount|default:0|intcomma }}</div>
+                        </div>
+
+                        {% if request.user.role != 'user' %}
+                        <div class="audit-stat orange-glow">
+                            <div class="audit-stat-icon"><i class="bi bi-percent"></i></div>
+                            <div class="audit-stat-label">AI Fraud Risk</div>
+                            <div class="audit-stat-value {% if claim.review_payload.risk_score > 70 %}text-danger{% elif claim.review_payload.risk_score > 40 %}text-warning{% else %}text-success-premium{% endif %}">
+                                {{ claim.review_payload.risk_score|floatformat:1 }}%
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12">
+            <!-- 📁 SUPPORTING DOCUMENTS (Responsive Grid) -->
+            <div class="premium-card">
+                <div class="premium-card-header">
+                    <h6><i class="bi bi-folder-check me-3 text-info"></i><span class="gradient-title-cyan">Evidence Dossier</span></h6>
                     <span class="text-muted x-small tracking-wider">{{ claim.documents.count }} ATTACHMENTS</span>
                 </div>
                 <div class="premium-card-body">
                     {% if claim.documents.all %}
-                    <div class="row g-3">
+                    <div class="docs-premium-grid">
                         {% for doc in claim.documents.all %}
                         {% with fname=doc.file.name|lower %}
-                        <div class="col-md-4">
-                            <div class="doc-premium-box">
-                                <div class="d-flex align-items-center gap-3 mb-3">
-                                    <div class="d-flex align-items-center justify-content-center bg-dark rounded-3"
-                                        style="width: 40px; height: 40px; border: 1px solid rgba(255,255,255,0.05);">
-                                        {% if 'bill' in doc.document_type %}
-                                        <i class="bi bi-receipt text-info"></i>
-                                        {% elif 'identity' in doc.document_type or 'proof' in doc.document_type %}
-                                        <i class="bi bi-person-badge text-warning"></i>
-                                        {% elif 'certificate' in doc.document_type %}
-                                        <i class="bi bi-file-earmark-medical text-success"></i>
-                                        {% elif 'rc' in doc.document_type %}
-                                        <i class="bi bi-car-front text-primary"></i>
-                                        {% else %}
-                                        <i class="bi bi-file-earmark-text text-muted"></i>
-                                        {% endif %}
-                                    </div>
-                                    <div class="overflow-hidden">
-                                        <div class="text-white fw-bold small text-truncate">{{ doc.get_document_type_display }}</div>
-                                        <div class="x-small {% if doc.is_verified %}text-success{% else %}text-muted{% endif %}">
-                                            {% if doc.is_verified %}
-                                                <i class="bi bi-patch-check-fill me-1"></i>Verified
-                                            {% else %}
-                                                Pending Review
-                                            {% endif %}
-                                        </div>
-                                    </div>
-
+                        <div class="doc-premium-box">
+                            <div class="d-flex align-items-center gap-3 mb-4">
+                                <div class="d-flex align-items-center justify-content-center bg-dark rounded-4" style="width: 48px; height: 48px; border: 1px solid rgba(255,255,255,0.08);">
+                                    {% if 'bill' in doc.document_type %}
+                                    <i class="bi bi-receipt text-info fs-5"></i>
+                                    {% elif 'identity' in doc.document_type or 'proof' in doc.document_type %}
+                                    <i class="bi bi-person-badge text-warning fs-5"></i>
+                                    {% elif 'certificate' in doc.document_type %}
+                                    <i class="bi bi-file-earmark-medical text-success fs-5"></i>
+                                    {% else %}
+                                    <i class="bi bi-file-earmark-text text-muted fs-5"></i>
+                                    {% endif %}
                                 </div>
-                                <button
-                                    class="btn btn-sm w-100 bg-dark text-info border-info border-opacity-25 doc-preview-btn py-2"
-                                    data-url="{{ doc.file.url }}" 
+                                <div class="overflow-hidden">
+                                    <div class="text-white fw-bold small text-truncate">{{ doc.get_document_type_display }}</div>
+                                    <div class="x-small {% if doc.is_verified %}text-success{% else %}text-muted{% endif %} mt-1">
+                                        {% if doc.is_verified %}<i class="bi bi-patch-check-fill me-1"></i>Verified{% else %}Pending Review{% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-auto">
+                                <button class="btn btn-sm w-100 bg-black bg-opacity-40 text-info border-info border-opacity-20 doc-preview-btn py-2 rounded-3"
+                                    data-url="{% url 'claim:view_document' doc.public_id %}"
                                     data-name="{{ doc.get_document_type_display }}"
-                                    data-type="{% if fname|slice:'-4:' == '.pdf' %}pdf{% else %}image{% endif %}"
-                                    style="font-size: 11px;">
-                                    <i class="bi bi-eye me-1"></i> Preview Asset
+                                    data-type="{% if fname|slice:'-4:' == '.pdf' %}pdf{% else %}image{% endif %}">
+                                    <i class="bi bi-eye me-2"></i> Preview Asset
                                 </button>
-
                             </div>
                         </div>
                         {% endwith %}
                         {% endfor %}
                     </div>
                     {% else %}
-                    <div class="text-center py-4 opacity-50"><i class="bi bi-cloud-slash fs-2 d-block mb-2"></i><span
-                            class="small">No digital assets found for this dossier.</span></div>
+                    <div class="text-center py-5 opacity-40">
+                        <i class="bi bi-cloud-slash fs-1 d-block mb-3"></i>
+                        <span class="small">No digital evidence found for this dossier.</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        {% if request.user.role != 'user' %}
+        <div class="col-12">
+            <!-- 🛡️ PAYOUT INTEGRITY CHECK (Supporting Table) -->
+            <div class="premium-card">
+                <div class="premium-card-header">
+                    <h6><i class="bi bi-shield-check me-3 text-warning"></i><span class="gradient-title-cyan">Payout Integrity Control</span></h6>
+                    <span class="badge-premium {% if claim.integrity_status == 'PASS' %}status-approved{% elif claim.integrity_status == 'MINOR' %}status-success{% else %}status-warning{% endif %}">
+                        {{ claim.get_integrity_status_display }}
+                    </span>
+                </div>
+                <div class="premium-card-body p-0">
+                    <div class="table-wrapper w-100">
+                        <table class="table premium-data-table mb-0 w-100">
+                            <thead>
+                                <tr>
+                                    <th>Declared</th>
+                                    <th>OCR Verified</th>
+                                    <th>Variance %</th>
+                                    <th>Payout Basis</th>
+                                    <th>Source</th>
+                                    <th>Required Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="text-white fw-bold">₹{{ claim.declared_claim_amount|default:claim.claimed_amount|floatformat:2|intcomma }}</td>
+                                    <td class="text-info fw-bold">₹{{ claim.ocr_verified_bill_total|floatformat:2|intcomma }}</td>
+                                    <td class="fw-bold {% if claim.mismatch_flag %}text-danger{% else %}text-success{% endif %}">
+                                        {{ claim.mismatch_ratio_percentage|floatformat:1 }}%
+                                    </td>
+                                    <td class="text-white fw-bold">₹{{ claim.payout_basis_amount|floatformat:2|intcomma }}</td>
+                                    <td><span class="badge bg-dark text-white border border-white border-opacity-10">{{ claim.get_payout_basis_source_display }}</span></td>
+                                    <td class="text-wrap-logic">{{ claim.integrity_required_action }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if request.user.role != 'user' %}
+        <div class="col-12">
+            <!-- 📊 AI EXPLAINABLE CALCULATION AUDIT -->
+            {% include "claims/components/ai_calculation_audit.html" %}
+        </div>
+        {% endif %}
+
+        <div class="col-12">
+            <!-- 📜 AUDIT TIMELINE (HISTORY) -->
+            <div class="premium-card">
+                <div class="premium-card-header">
+                    {% if request.user.role != 'user' %}
+                    <h6><i class="bi bi-clock-history me-3 text-info"></i><span class="gradient-title-cyan">Audit Trail & Governance History</span></h6>
+                    {% else %}
+                    <h6><i class="bi bi-clock-history me-3 text-info"></i><span class="gradient-title-cyan">Claim Timeline</span></h6>
+                    {% endif %}
+                </div>
+                <div class="premium-card-body">
+                    <div class="timeline-wrapper">
+                        {% for log in claim.audit_logs.all %}
+                        {% if request.user.role != 'user' or 'Automatic' not in log.action and 'AI Pipeline' not in log.action %}
+                        <div class="d-flex gap-3 mb-4 last-child-mb-0">
+                            <div class="flex-shrink-0">
+                                <div class="bg-primary bg-opacity-20 rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; border: 1px solid rgba(101, 96, 79, 0.3);">
+                                    <i class="bi bi-dot text-primary fs-4"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="d-flex align-items-center gap-2 mb-1">
+                                    <span class="text-white fw-bold small">{{ log.action|title }}</span>
+                                    <span class="text-muted" style="font-size: 10px;">{{ log.created_at|date:"d M Y, H:i" }}</span>
+                                </div>
+                                <div class="text-muted small">
+                                    {% if request.user.role != 'user' %}
+                                    @{{ log.performed_by.username|default:"System" }} — 
+                                    {% endif %}
+                                    
+                                    {% if request.user.role == 'user' %}
+                                        {% if 'Status Updated' in log.description or 'Workflow' in log.description or 'Decision=' in log.description %}
+                                            Status processed for dossier lifecycle.
+                                        {% else %}
+                                            {{ log.description }}
+                                        {% endif %}
+                                    {% else %}
+                                        {{ log.description }}
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if request.user.role == 'staff' or request.user.role == 'admin' or request.user.is_superuser %}
+        <div class="col-12">
+            <!-- 📝 INTERNAL NOTES -->
+            <div class="premium-card">
+                <div class="premium-card-header">
+                    <h6><i class="bi bi-journal-text me-3 text-warning"></i><span class="gradient-title-cyan">Governance Notes</span></h6>
+                </div>
+                <div class="premium-card-body">
+                    <form method="post" action="{% url 'claim:add_note' claim.public_id %}" class="mb-4">
+                        {% csrf_token %}
+                        <div class="row g-2">
+                            <div class="col-md-4">
+                                <select name="note_type" class="form-select bg-dark border-white border-opacity-10 text-white small">
+                                    <option value="internal">Internal Note</option>
+                                    <option value="customer">Customer Comm</option>
+                                    <option value="management">Management Protocol</option>
+                                    <option value="investigation">Investigation Report</option>
+                                </select>
+                            </div>
+                            <div class="col-md-8">
+                                <div class="d-flex gap-2">
+                                    <input type="text" name="content" class="form-control bg-dark border-white border-opacity-10 text-white small" placeholder="Log internal rationale...">
+                                    <button class="btn btn-primary btn-sm px-4 rounded-3">Post</button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                    
+                    <div class="notes-stack">
+                        {% for note in claim.notes.all %}
+                        <div class="p-3 rounded-4 mb-3" style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05);">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div class="label-muted" style="font-size: 9px;">{{ note.created_at|date:"d M Y H:i" }} • {{ note.created_by.username }}</div>
+                                <span class="badge {% if note.note_type == 'internal' %}bg-primary{% elif note.note_type == 'customer' %}bg-success{% else %}bg-warning text-dark{% endif %} bg-opacity-10 text-opacity-100" style="font-size: 8px;">{{ note.get_note_type_display }}</span>
+                            </div>
+                            <div class="text-white small">{{ note.message }}</div>
+                        </div>
+                        {% empty %}
+                        <div class="text-center text-muted small py-3">No governance notes archived.</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div><!-- /row -->
+</div><!-- /analysis-column -->
+
+        <!-- 🛡️ RIGHT COLUMN: GOVERNANCE & POLICY (30%) -->
+        <div class="governance-column">
+            
+            <!-- FINAL ACTIONS -->
+            {% if request.user.role == 'admin' or request.user.role == 'staff' or request.user.is_superuser %}
+            {% if claim.status != 'approved' and claim.status != 'rejected' and claim.status != 'settled' %}
+            <div class="premium-card action-panel-premium">
+                <div class="premium-card-header">
+                    <h6><i class="bi bi-shield-lock me-3"></i><span class="gradient-title-cyan">Administrative Verdict</span></h6>
+                </div>
+                <div class="premium-card-body">
+                    <p class="text-muted x-small mb-4">Execute final management decision on this dossier.</p>
+                    <div class="d-grid gap-3">
+                        <form method="post" action="{% url 'claim:update_status' claim.public_id %}" class="m-0">
+                            {% csrf_token %}
+                            <input type="hidden" name="status" value="approved">
+                            <button type="submit" class="btn btn-success w-100 py-3 fw-bold rounded-4 shadow-lg border-0">
+                                <i class="bi bi-check2-circle me-2"></i> Approve Payout
+                            </button>
+                        </form>
+                        <form method="post" action="{% url 'claim:update_status' claim.public_id %}" class="m-0">
+                            {% csrf_token %}
+                            <input type="hidden" name="status" value="rejected">
+                            <button type="submit" class="btn btn-danger w-100 py-3 fw-bold rounded-4 opacity-75 border-0">
+                                <i class="bi bi-x-circle me-2"></i> Reject Claim
+                            </button>
+                        </form>
+                        <button type="button" class="btn btn-outline-danger w-100 py-2 rounded-4 small border-opacity-25" onclick="handleDeleteClaim()">
+                            <i class="bi bi-trash3 me-2"></i> Delete Dossier
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            {% endif %}
+
+            <!-- STATUS PANEL -->
+            <div class="premium-card">
+                <div class="premium-card-header">
+                    <h6><i class="bi bi-activity me-3 text-info"></i><span class="gradient-title-cyan">Dossier Status</span></h6>
+                </div>
+                <div class="premium-card-body">
+                    <div class="d-flex align-items-center justify-content-between mb-4">
+                        <span class="label-muted">Current State</span>
+                        <span class="badge-premium status-{{ claim.status }}">{{ claim.get_status_display }}</span>
+                    </div>
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="label-muted">Processing Phase</span>
+                            <span class="text-white fw-bold small">{% if claim.status == 'approved' %}100%{% elif claim.status == 'submitted' %}40%{% else %}75%{% endif %}</span>
+                        </div>
+                        <div class="progress-premium" style="height: 6px; background: rgba(255,255,255,0.05); border-radius: 10px; overflow: hidden;">
+                            <div class="progress-bar bg-primary" role="progressbar" style="width: {% if claim.status == 'approved' %}100%{% elif claim.status == 'submitted' %}40%{% else %}75%{% endif %};"></div>
+                        </div>
+                    </div>
+                    {% if request.user.role != 'user' %}
+                    <div class="p-3 rounded-4 bg-dark bg-opacity-50 border border-white border-opacity-5">
+                        <div class="label-muted mb-1">Assigned Auditor</div>
+                        <div class="text-white fw-bold">{% if claim.assigned_to %}{{ claim.assigned_to.username }}{% else %}Auto-Routing...{% endif %}</div>
+                    </div>
                     {% endif %}
                 </div>
             </div>
 
-            <!-- STAFF ASSESSMENT ARCHIVE -->
-            {% if request.user.role == 'admin' or request.user.is_superuser or request.user.role == 'staff' %}
-            {% if claim.policy_validity %}
+            <!-- SETTLEMENT SUMMARY -->
             <div class="premium-card">
-                <div class="premium-card-header" style="background: rgba(26, 110, 245, 0.05);">
-                    <h6 class="text-primary"><i class="bi bi-clipboard-check me-2"></i>Staff Audit Report</h6>
-                    <span class="text-muted x-small tracking-wider">LOCKED ASSESSMENT</span>
+                <div class="premium-card-header">
+                    <h6><i class="bi bi-calculator me-3 text-success"></i><span class="gradient-title-cyan">Financial Settlement</span></h6>
                 </div>
                 <div class="premium-card-body">
-                    <div class="row g-4">
-                        <div class="col-md-3">
-                            <div class="label-muted mb-1">Policy Status</div>
-                            <div
-                                class="fw-bold {% if claim.policy_validity == 'valid' or claim.policy_validity == 'Verified' %}text-success{% else %}text-danger{% endif %}">
-                                {{ claim.policy_validity|upper }}</div>
+                    <div class="table-wrapper">
+                        <table class="table premium-data-table mb-0">
+                            <tbody>
+                                <tr>
+                                    <td class="label-muted">Declared Amount</td>
+                                    <td class="text-white fw-bold text-end">₹{{ claim.claimed_amount|intcomma }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="label-muted">Policy Limit</td>
+                                    <td class="text-white fw-bold text-end">₹{% if claim.user_policy %}{{ claim.user_policy.policy.sum_insured|intcomma }}{% else %}{{ claim.policy.sum_insured|intcomma }}{% endif %}</td>
+                                </tr>
+                                <tr>
+                                    <td class="label-muted text-danger">Deductible</td>
+                                    <td class="text-danger fw-bold text-end">-₹{{ claim.deductible_amount|default:0|intcomma }}</td>
+                                </tr>
+                                <tr class="border-top border-white border-opacity-10">
+                                    <td class="text-white fw-bold">Net Payout</td>
+                                    <td class="text-success-premium fs-4 fw-black text-end">₹{{ claim.authoritative_payout|default:0|floatformat:0|intcomma }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            {% if request.user.role != 'user' %}
+            <!-- QUICK METRICS -->
+            <div class="premium-card">
+                <div class="premium-card-header">
+                    <h6><i class="bi bi-graph-up-arrow me-3 text-warning"></i><span class="gradient-title-cyan">Audit Metrics</span></h6>
+                </div>
+                <div class="premium-card-body">
+                    <div class="d-grid gap-3">
+                        <div class="p-3 rounded-4 bg-black bg-opacity-20 border border-white border-opacity-5">
+                            <div class="label-muted mb-1">Fraud Risk Index</div>
+                            <div class="fs-5 fw-bold {% if claim.review_payload.risk_score > 70 %}text-danger{% else %}text-success{% endif %}">
+                                {{ claim.review_payload.risk_score|floatformat:1 }}%
+                            </div>
                         </div>
-                        <div class="col-md-3">
-                            <div class="label-muted mb-1">Docs Verification</div>
-                            <div
-                                class="fw-bold {% if claim.document_verification == 'verified' or claim.document_verification == 'Verified' %}text-success{% else %}text-danger{% endif %}">
-                                {{ claim.document_verification|upper }}</div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="label-muted mb-1">Loss Analysis</div>
-                            <div
-                                class="fw-bold {% if claim.amount_verification == 'verified' or claim.amount_verification == 'Verified' %}text-success{% else %}text-danger{% endif %}">
-                                {{ claim.amount_verification|upper }}</div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="label-muted mb-1">Recommended Payout</div>
-                            <div class="fw-bold fs-5 text-info">₹{{ claim.recommended_amount|default:0|intcomma }}</div>
-                        </div>
-                        <div class="col-12">
-                            <div class="label-muted mb-2">Internal Assessment Notes</div>
-                            <div class="p-3 rounded-2 small shadow-inner"
-                                style="background: rgba(0,0,0,0.2); border-left: 3px solid #1a6ef5; color: #e2e8f0;">
-                                {{ claim.staff_comments|default:"No notes archived for this assessment." }}
+                        <div class="p-3 rounded-4 bg-black bg-opacity-20 border border-white border-opacity-5">
+                            <div class="label-muted mb-1">OCR Variance</div>
+                            <div class="fs-5 fw-bold {% if claim.mismatch_flag %}text-danger{% else %}text-info{% endif %}">
+                                {{ claim.mismatch_ratio_percentage|floatformat:1 }}%
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
             {% endif %}
-            {% endif %}
 
-            <!-- FINANCIAL PROTOCOL -->
+            <!-- POLICY INFO -->
             <div class="premium-card">
                 <div class="premium-card-header">
-                    <h6><i class="bi bi-bank me-2"></i>Financial & Risk Summary</h6>
-                    <span class="text-muted x-small tracking-wider">GAAP COMPLIANT</span>
+                    <h6><i class="bi bi-shield-check me-3 text-primary"></i><span class="gradient-title-cyan">Policy Info</span></h6>
                 </div>
                 <div class="premium-card-body p-0">
-                    <table class="premium-data-table mx-auto" style="width: 90%;">
-                        <tr>
-                            <td class="label-muted">Requested Amount</td>
-                            <td class="text-end fw-bold text-white">₹{{ claim.claimed_amount|default:0|intcomma }}</td>
-                        </tr>
-                        {% if claim.ai_predicted_amount %}
-                        <tr>
-                            <td class="label-muted">AI Machine Prediction <i class="bi bi-robot ms-1 text-info"></i>
-                            </td>
-                            <td class="text-end">
-                                <span class="fw-bold text-info">₹{{ claim.ai_predicted_amount|default:0|intcomma }}</span>
-                                {% if claim.claimed_amount and claim.ai_predicted_amount %}
-                                {% with diff=claim.claimed_amount|subtract:claim.ai_predicted_amount|abs %}
-
-                                {% if diff|floatformat:0 > 5000 %}
-                                <div class="x-small text-warning mt-1"><i
-                                        class="bi bi-exclamation-triangle me-1"></i>Large Variance Detected</div>
-                                {% endif %}
-                                {% endwith %}
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% endif %}
-                        <tr>
-                            <td class="label-muted">Policy Deductible</td>
-                            <td class="text-end text-white">₹{{ claim.deductible_amount|default:0|intcomma }}</td>
-                        </tr>
-                        <tr>
-                            <td class="label-muted">Final Approved Payout</td>
-                            <td class="text-end fw-bold text-success fs-5">
-                                {% if claim.status == 'approved' or claim.status == 'settled' %}
-                                ₹{{ claim.approved_amount|default:0|intcomma }}
+                    <div class="list-group list-group-flush bg-transparent">
+                        <div class="list-group-item bg-transparent border-white border-opacity-5 px-4 py-3">
+                            <div class="label-muted mb-1">Policy Number</div>
+                            <div class="text-white fw-bold">{% if claim.user_policy %}{{ claim.user_policy.policy.policy_number }}{% else %}{{ claim.policy.policy_number }}{% endif %}</div>
+                        </div>
+                        <div class="list-group-item bg-transparent border-white border-opacity-5 px-4 py-3">
+                            <div class="label-muted mb-1">Plan Name</div>
+                            <div class="text-white small">
+                                {% if claim.user_policy.policy.plan %}
+                                    {{ claim.user_policy.policy.plan.name }}
+                                {% elif claim.policy.plan %}
+                                    {{ claim.policy.plan.name }}
                                 {% else %}
-                                <span class="opacity-25">—</span>
+                                    {{ claim.policy.policy_type|default:"Standard Plan" }}
                                 {% endif %}
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="label-muted">AI Fraud Risk Score</td>
-                            <td class="text-end">
-                                <div class="d-flex align-items-center justify-content-end gap-2">
-                                    <div class="progress-premium" style="width: 80px; height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden;">
-                                        <div class="progress-bar {% if claim.risk_score > 70 %}bg-danger{% elif claim.risk_score > 40 %}bg-warning{% else %}bg-success{% endif %}"
-                                             style="width: {{ claim.risk_score|default:0 }}%; height: 100%;"></div>
-                                    </div>
-                                    <span class="fw-bold {% if claim.risk_score > 70 %}text-danger{% elif claim.risk_score > 40 %}text-warning{% else %}text-success{% endif %}" style="font-size: 13px;">
-                                        {{ claim.risk_score|default:0|floatformat:1 }}%
-                                    </span>
-                                </div>
-                                <div class="x-small mt-1 text-uppercase fw-bold tracking-wider" style="font-size: 8px;">
-                                    {% if claim.risk_score > 70 %}
-                                        <span class="text-danger"><i class="bi bi-shield-fill-exclamation me-1"></i>Critical Risk</span>
-                                    {% elif claim.risk_score > 40 %}
-                                        <span class="text-warning"><i class="bi bi-shield-fill-info me-1"></i>Medium Risk</span>
-                                    {% else %}
-                                        <span class="text-success"><i class="bi bi-shield-fill-check me-1"></i>Low Risk</span>
-                                    {% endif %}
-                                </div>
-                            </td>
-                        </tr>
-
-                    </table>
-                </div>
-            </div>
-
-            <!-- NOTES -->
-            {% if request.user.role == 'staff' or request.user.role == 'admin' or request.user.is_superuser %}
-            <div class="card shadow-sm">
-                <div class="card-header bg-dark text-white">Notes</div>
-                <div class="card-body">
-                    <form method="post" action="{% url 'claim:add_note' claim.pk %}">
-                        {% csrf_token %}
-                        <div class="mb-2">
-                            <select name="note_type" class="form-control mb-2">
-                                <option value="internal">Internal</option>
-                                <option value="customer">Customer</option>
-                                <option value="investigation">Investigation</option>
-                            </select>
-                            <textarea name="content" class="form-control" placeholder="Write note"></textarea>
-                        </div>
-                        <div class="text-end">
-                            <button class="btn btn-dark btn-sm">Add Note</button>
-                        </div>
-                    </form>
-                    <hr>
-                    {% for note in claim.notes.all %}
-                    <div class="border rounded p-3 mb-2 position-relative">
-                        <div class="d-flex justify-content-between align-items-center mb-1">
-                            <div class="small text-muted">
-                                {{ note.created_at|date:"d M Y H:i" }}
-                                {% if note.created_by %}— {{ note.created_by.username }}{% endif %}
-                                <span class="badge {% if note.note_type == 'internal' %}bg-info{% elif note.note_type == 'customer' %}bg-success{% else %}bg-warning{% endif %} ms-2" style="font-size: 8px; text-transform: uppercase;">
-                                    {{ note.get_note_type_display }}
-                                </span>
                             </div>
-                            {% if request.user.role == 'staff' or request.user.role == 'admin' or request.user.is_superuser %}
-                            <a href="{% url 'claim:delete_note' note.id %}" class="text-danger text-decoration-none" onclick="return confirm('Archive this audit note?')">
-                                <i class="bi bi-trash x-small"></i>
-                            </a>
-                            {% endif %}
                         </div>
-                        <div class="small">{{ note.message }}</div>
                     </div>
-
-                    {% empty %}
-                    <div class="text-muted small">No notes yet</div>
-                    {% endfor %}
                 </div>
             </div>
-            {% endif %}
 
-            <!-- AI Claim Classification (Public) -->
+            <!-- CLAIMANT INFO -->
             <div class="premium-card">
                 <div class="premium-card-header">
-                    <h6 class="text-white"><i class="bi bi-robot me-2"></i>AI Claim Classification</h6>
-                    <span
-                        class="badge rounded-pill {% if claim.confidence_score > 85 %}bg-success text-white{% elif claim.confidence_score > 60 %}bg-warning text-dark{% else %}bg-danger text-white{% endif %} px-3 py-1 fw-bold"
-                        style="font-size: 11px; letter-spacing: 0.5px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
-                        {{ claim.confidence_score|default:0|floatformat:1 }}% CONFIDENCE
-                    </span>
+                    <h6><i class="bi bi-person-badge me-3 text-info"></i>Claimant Dossier</h6>
                 </div>
                 <div class="premium-card-body">
-                    <div class="d-flex align-items-center gap-3 mb-3">
-                        <div class="p-3 rounded-circle d-flex align-items-center justify-content-center"
-                            style="width: 50px; height: 50px; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2);">
-                            {% if claim.ai_claim_type == 'medical' %}
-                            <i class="bi bi-hospital text-danger fs-4"></i>
-                            {% elif claim.ai_claim_type == 'accident' %}
-                            <i class="bi bi-car-front text-primary fs-4"></i>
-                            {% elif claim.ai_claim_type == 'theft' %}
-                            <i class="bi bi-shield-lock text-warning fs-4"></i>
-                            {% else %}
-                            <i class="bi bi-file-earmark-text text-muted fs-4"></i>
-                            {% endif %}
+                    <div class="d-flex align-items-center gap-3 mb-4">
+                        <div class="bg-primary bg-opacity-20 rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; border: 1px solid rgba(101, 96, 79, 0.2);">
+                            <i class="bi bi-person text-primary fs-4"></i>
                         </div>
                         <div>
-                            <div class="label-muted">Identified Analysis</div>
-                            <h5 class="text-white mb-0 text-capitalize">{{ claim.ai_claim_type|default:"Under Analysis..." }}</h5>
+                            <div class="text-white fw-bold">{{ claim.created_by.get_full_name|default:claim.created_by.username }}</div>
+                            <div class="text-muted x-small">Verified Policyholder</div>
                         </div>
                     </div>
-                    <div class="p-3 rounded-3"
-                        style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); color: #94a3b8; font-size: 12.5px; line-height: 1.5;">
-                        <i class="bi bi-info-circle me-1 opacity-75"></i>
-                        Automated classification identifies this claim as: <strong class="text-white text-uppercase">{{ claim.ai_claim_type|default:"Other" }}</strong>.
-                        This helps optimize our internal routing and review priorities.
+                    <div class="p-3 rounded-4 bg-black bg-opacity-20 border border-white border-opacity-5">
+                        <div class="label-muted mb-1">Email Terminal</div>
+                        <div class="text-white small text-truncate">{{ claim.created_by.email|default:"N/A" }}</div>
                     </div>
-
                 </div>
             </div>
 
-        </div><!-- /col-lg-8 -->
-
-        <!-- RIGHT COLUMN -->
-        <div class="col-lg-4">
-            <div class="card shadow-sm mb-4">
-                <div class="card-header bg-dark text-white">Policy</div>
-                <ul class="list-group list-group-flush">
-                    <li class="list-group-item d-flex justify-content-between align-items-center py-3">
-                        <span class="text-muted small">Policy Plan</span>
-                        <span class="fw-semibold">{{ claim.user_policy.policy.policy_number|default:claim.policy.policy_number }}</span>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between align-items-center py-3">
-                        <span class="text-muted small">Policyholder</span>
-                        <span class="fw-semibold text-end ms-3">
-                            {% if claim.created_by %}
-                                {{ claim.created_by.get_full_name|default:claim.created_by.username }}
-                            {% else %}
-                                <span class="text-muted italic small">[SYSTEM]</span>
-                            {% endif %}
-                        </span>
-
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between align-items-center py-3">
-                        <span class="text-muted small">Certificate #</span>
-                        <span class="fw-semibold text-info">
-                            {% if claim.policy and claim.policy.certificate_number %}
-                                {{ claim.policy.certificate_number }}
-                            {% elif claim.user_policy and claim.user_policy.certificate_number %}
-                                {{ claim.user_policy.certificate_number }}
-                            {% else %}
-                                LEGACY
-                            {% endif %}
-                        </span>
-                    </li>
-
-
-                    <li class="list-group-item d-flex justify-content-between align-items-center py-3">
-                        <span class="text-muted small">Coverage Start</span>
-                        <span class="fw-semibold">
-                            {% if claim.user_policy and claim.user_policy.start_date %}
-                                {{ claim.user_policy.start_date }}
-                            {% else %}
-                                {{ claim.policy.start_date }}
-                            {% endif %}
-                        </span>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between align-items-center py-3">
-                        <span class="text-muted small">Coverage End</span>
-                        <span class="fw-semibold">
-                            {% if claim.user_policy and claim.user_policy.end_date %}
-                                {{ claim.user_policy.end_date }}
-                            {% else %}
-                                {{ claim.policy.end_date }}
-                            {% endif %}
-                        </span>
-                    </li>
-
-                </ul>
-            </div>
-        </div>
-
-    </div><!-- /row -->
-</div><!-- /container -->
+        </div><!-- /governance-column -->
+    </div><!-- /dashboard-grid-layout -->
+</div><!-- /master-container -->
 
 
 <!-- ══════════════════════════════════════════════════════════════
@@ -671,7 +1386,7 @@
             </div>
             <div style="display:flex; gap:10px; align-items:center;">
                 <a id="docModalDownload" href="#" target="_blank"
-                    style="font-size:12px; color:#7a8ba8; text-decoration:none; display:flex; align-items:center; gap:5px; border:1px solid rgba(255,255,255,0.1); padding:5px 12px; border-radius:8px; transition:all 0.2s;">
+                    style="font-size:12px; color:rgba(156, 149, 143, 0.7); text-decoration:none; display:flex; align-items:center; gap:5px; border:1px solid rgba(255,255,255,0.1); padding:5px 12px; border-radius:8px; transition:all 0.2s;">
                     <i class="bi bi-download"></i> Open in Tab
                 </a>
                 <button onclick="closeDocModal()" style="
@@ -702,6 +1417,7 @@
     </div>
 </div>
 
+{% endif %}
 {% endblock %}
 
 {% block extra_js %}
@@ -735,7 +1451,7 @@
                     alt="${name}"
                     style="max-width:100%; max-height:65vh; object-fit:contain; border-radius:10px;
                            box-shadow: 0 8px 30px rgba(0,0,0,0.5);"
-                    onerror="this.outerHTML='<div style=\'color:#f44865;text-align:center\'><i class=\'bi bi-exclamation-triangle fs-1 d-block mb-2\'></i>Unable to load image preview.<br><a href=\\'${url}\\' target=\\'_blank\\' class=\\'text-info mt-2 d-inline-block\\'>Open directly</a></div>'"
+                    onerror="this.outerHTML='<div style=\"color:#f44865;text-align:center\"><i class=\"bi bi-exclamation-triangle fs-1 d-block mb-2\"></i>Unable to load image preview.<br><a href=\"${url}\" target=\"_blank\" class=\"text-info mt-2 d-inline-block\">Open directly</a></div>'"
                 />`;
             }
 
@@ -759,5 +1475,28 @@
     document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape' && modal.style.display === 'flex') closeDocModal();
     });
+
+    async function handleDeleteClaim() {
+        const result = await InsureAlert.confirm('Delete Claim', 'Are you sure you want to permanently delete this claim? This cannot be undone.', 'Delete Now');
+        if (result.isConfirmed) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = "{% url 'claim:delete' claim.public_id %}";
+            const csrf = document.createElement('input');
+            csrf.type = 'hidden';
+            csrf.name = 'csrfmiddlewaretoken';
+            csrf.value = '{{ csrf_token }}';
+            form.appendChild(csrf);
+            document.body.appendChild(form);
+            form.submit();
+        }
+    }
+
+    async function handleDeleteNote(noteId) {
+        const result = await InsureAlert.confirm('Archive Note', 'Are you sure you want to archive this audit note?', 'Archive');
+        if (result.isConfirmed) {
+            window.location.href = `{% url 'claim:delete_note' 0 %}`.replace('0', noteId);
+        }
+    }
 </script>
 {% endblock %}

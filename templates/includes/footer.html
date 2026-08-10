@@ -4,8 +4,8 @@
         <div class="row g-4">
             <!-- Brand & Mission -->
             <div class="col-lg-4 col-md-12 mb-4 mb-lg-0">
-                <div class="footer-brand h2 fw-bold text-white mb-3">ClaimIQ</div>
-                <p class="text-muted small pe-lg-5 mb-4" style="line-height: 1.8;">
+                <div class="footer-brand h2 fw-bold mb-3" style="font-size: 1.25rem;">Online Insurance Claim Processing and Tracking System using AI</div>
+                <p class="small pe-lg-5 mb-4" style="line-height: 1.8; color: #5F5A52; font-weight: 500;">
                     Reimagining the future of insurance claims with autonomous AI and extreme transparency. 
                     Simplified processing, zero bureaucracy, and rapid settlements for the modern era.
                 </p>
@@ -53,12 +53,39 @@
                 </ul>
             </div>
 
-            <!-- Contact/Location -->
-            <div class="col-lg-2 col-md-12">
-                <h6 class="footer-heading">Connect</h6>
-                <div class="contact-info small text-muted">
+            <!-- Contact/Location & AI Robot -->
+            <div class="col-lg-3 col-md-12">
+                <div class="d-flex align-items-center gap-5 mb-4">
+                    <!-- High-Fidelity Neural Bot (Home Page Version) -->
+                    <div class="neural-bot-wrapper" style="transform: scale(0.6); transform-origin: left center; width: 80px;">
+                        <div class="neural-bot">
+                            <div class="bot-antenna left"></div>
+                            <div class="bot-antenna right"></div>
+                            <div class="bot-head">
+                                <div class="bot-ear left"></div>
+                                <div class="bot-ear right"></div>
+                                <div class="bot-visor">
+                                    <div class="bot-eye left"></div>
+                                    <div class="bot-eye right"></div>
+                                </div>
+                            </div>
+                            <div class="bot-body">
+                                <div class="bot-arm left"></div>
+                                <div class="bot-arm right"></div>
+                                <div class="bot-chest"></div>
+                            </div>
+                            <div class="bot-shadow"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="contact-me-bubble" style="padding: 6px 16px; border-radius: 12px; animation-delay: 0.5s;">
+                            <span class="text-xs font-black tracking-[0.2em] uppercase" style="color: #3F3A32;">Connect</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="contact-info small" style="color: #5F5A52; font-weight: 500;">
                     <p class="mb-2"><i class="bi bi-geo-alt me-2"></i> Cyber City Hub, Tower 8, Hyderabad, IN</p>
-                    <p class="mb-2"><i class="bi bi-envelope me-2"></i> protocol@claimiq.gov</p>
+                    <p class="mb-2"><i class="bi bi-envelope me-2"></i> protocol@aisystem.gov</p>
                     <p class="mb-0"><i class="bi bi-telephone me-2"></i> +91 40-CLAIM-00</p>
                 </div>
             </div>
@@ -69,12 +96,12 @@
     <div class="footer-bottom py-3">
         <div class="container">
             <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
-                <div class="copyright x-small text-muted">
-                    &copy; {% now "Y" %} ClaimIQ Insurance Infrastructure. All rights reserved.
+                <div class="copyright x-small" style="color: #5F5A52; font-weight: 600;">
+                    &copy; {% now "Y" %} Online Insurance Claim Processing and Tracking System using AI Infrastructure. All rights reserved.
                 </div>
-                <div class="d-flex gap-4 x-small text-muted">
+                <div class="d-flex gap-4 x-small" style="color: #5F5A52; font-weight: 600;">
                     <span class="d-flex align-items-center gap-1"><i class="bi bi-clock"></i> 24/7 Monitoring Active</span>
-                    <span class="d-flex align-items-center gap-1"><i class="bi bi-patch-check-fill text-info"></i> IRDAI Certified</span>
+                    <span class="d-flex align-items-center gap-1"><i class="bi bi-patch-check-fill" style="color: #2D5A32;"></i> IRDAI Certified</span>
                 </div>
             </div>
         </div>
@@ -83,13 +110,16 @@
 
 <style>
     .main-footer {
-        background: radial-gradient(circle at top right, rgba(26, 110, 245, 0.05), transparent 40%),
-                    linear-gradient(to bottom, #0f1b33 0%, #0a1122 100%);
-        border-top: 1px solid rgba(255, 255, 255, 0.05);
-        color: #94a3b8;
+        background: radial-gradient(circle at top right, rgba(101, 96, 79, 0.02), transparent 40%),
+                    linear-gradient(to bottom, #FCFBF8 0%, #F4EEE2 100%);
+        border-top: 1px solid rgba(170, 135, 88, 0.1);
+        color: #5F5A52;
         position: relative;
         z-index: 10;
         overflow: hidden;
+        width: 100%;
+        max-width: 100%;
+        margin-top: auto;
     }
 
     .main-footer::before {
@@ -99,12 +129,12 @@
         left: 0;
         right: 0;
         height: 1px;
-        background: linear-gradient(90deg, transparent, rgba(26, 110, 245, 0.3), transparent);
+        background: linear-gradient(90deg, transparent, rgba(170, 135, 88, 0.15), transparent);
     }
 
     .footer-heading {
-        color: white;
-        font-size: 11px;
+        color: #3F3A32;
+        font-size: 11.5px;
         font-weight: 800;
         text-transform: uppercase;
         letter-spacing: 1.5px;
@@ -120,7 +150,7 @@
         left: 0;
         width: 25px;
         height: 2px;
-        background: #1a6ef5;
+        background: #65604F;
     }
 
     .footer-links li {
@@ -128,7 +158,8 @@
     }
 
     .footer-links a {
-        color: #64748b;
+        color: #5F5A52;
+        font-weight: 500;
         text-decoration: none;
         font-size: 13.5px;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -136,44 +167,220 @@
     }
 
     .footer-links a:hover {
-        color: white;
+        color: #3F3A32;
+        font-weight: 600;
         transform: translateX(6px);
     }
 
     .social-icon {
         width: 38px;
         height: 38px;
-        background: rgba(255, 255, 255, 0.03);
-        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(170, 135, 88, 0.05);
+        border: 1px solid rgba(170, 135, 88, 0.15);
         border-radius: 10px;
         display: flex;
         align-items: center;
         justify-content: center;
-        color: #94a3b8;
+        color: #4A443B;
         text-decoration: none;
         transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
     .social-icon:hover {
-        background: #1a6ef5;
-        color: white;
-        border-color: #1a6ef5;
+        background: #4A443B;
+        color: #FCFBF8;
+        border-color: #4A443B;
         transform: translateY(-5px) rotate(8deg);
     }
 
     .footer-bottom {
-        border-top: 1px solid rgba(255, 255, 255, 0.04);
-        background: rgba(0, 0, 0, 0.1);
+        border-top: 1px solid rgba(170, 135, 88, 0.1);
+        background: rgba(170, 135, 88, 0.03);
     }
 
     .footer-brand {
         letter-spacing: -0.5px;
-        background: linear-gradient(45deg, #fff 0%, #94a3b8 100%);
+        background: linear-gradient(45deg, #3F3A32 0%, #5F5A52 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
     }
 
     .x-small {
         font-size: 11px;
+    }
+    /* 🤖 HIGH-FIDELITY NEURAL BOT STYLES (Home Page Sync) */
+    .neural-bot {
+        position: relative;
+        width: 120px;
+        height: 140px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        animation: botFloat 4s infinite ease-in-out;
+        perspective: 1000px;
+    }
+
+    .bot-head {
+        width: 90px;
+        height: 70px;
+        background: linear-gradient(135deg, #605E5B, #e2e8f0);
+        border-radius: 40px 40px 30px 30px;
+        position: relative;
+        z-index: 10;
+        box-shadow: inset -5px -5px 15px rgba(0,0,0,0.1), 0 10px 20px rgba(0,0,0,0.2);
+        border: 1px solid rgba(255,255,255,0.8);
+    }
+
+    .bot-antenna {
+        position: absolute;
+        top: -20px;
+        width: 4px;
+        height: 30px;
+        background: #cbd5e1;
+        z-index: 5;
+    }
+    .bot-antenna.left { left: 25px; transform: rotate(-15deg); }
+    .bot-antenna.right { right: 25px; transform: rotate(15deg); }
+    
+    .bot-antenna::after {
+        content: '';
+        position: absolute;
+        top: -8px;
+        left: -4px;
+        width: 12px;
+        height: 12px;
+        background: #65604F; /* Premium Teal */
+        border-radius: 50%;
+        box-shadow: 0 0 15px #65604F;
+        animation: glowPulse 2s infinite;
+    }
+
+    .bot-ear {
+        position: absolute;
+        top: 25px;
+        width: 15px;
+        height: 25px;
+        background: #e2e8f0;
+        border-radius: 5px;
+        border: 1px solid rgba(0,0,0,0.1);
+    }
+    .bot-ear.left { left: -8px; }
+    .bot-ear.right { right: -8px; }
+
+    .bot-visor {
+        position: absolute;
+        top: 20px;
+        left: 10px;
+        right: 10px;
+        height: 35px;
+        background: #FFFFFF;
+        border-radius: 15px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 15px;
+        border: 2px solid rgba(255,255,255,0.05);
+        box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+    }
+
+    .bot-eye {
+        width: 12px;
+        height: 18px;
+        background: #65604F; /* Premium Teal */
+        border-radius: 4px;
+        box-shadow: 0 0 15px #65604F;
+        animation: botBlink 4s infinite;
+    }
+
+    .bot-body {
+        width: 70px;
+        height: 60px;
+        background: linear-gradient(135deg, #605E5B, #cbd5e1);
+        border-radius: 15px 15px 40px 40px;
+        margin-top: -15px;
+        position: relative;
+        z-index: 5;
+        box-shadow: inset -5px -5px 15px rgba(0,0,0,0.1);
+    }
+
+    .bot-arm {
+        position: absolute;
+        top: 5px;
+        width: 25px;
+        height: 45px;
+        background: #f1f5f9;
+        border-radius: 10px;
+        z-index: 4;
+        transform-origin: top center;
+    }
+    .bot-arm.left { left: -15px; transform: rotate(20deg); animation: waveLeft 4s infinite ease-in-out; }
+    .bot-arm.right { right: -15px; transform: rotate(-20deg); animation: waveRight 4s infinite ease-in-out; }
+
+    .bot-shadow {
+        width: 80px;
+        height: 10px;
+        background: rgba(0, 0, 0, 0.4);
+        border-radius: 50%;
+        position: absolute;
+        bottom: -30px;
+        filter: blur(5px);
+        animation: botShadow 4s infinite ease-in-out;
+    }
+
+    @keyframes botFloat {
+        0%, 100% { transform: translateY(0) rotate(0deg); }
+        50% { transform: translateY(-20px) rotate(2deg); }
+    }
+
+    @keyframes glowPulse {
+        0%, 100% { filter: brightness(1); box-shadow: 0 0 10px #65604F; }
+        50% { filter: brightness(1.5); box-shadow: 0 0 25px #65604F; }
+    }
+
+    /* 💬 CONTACT ME BUBBLE */
+    .contact-me-bubble {
+        background: rgba(101, 96, 79, 0.05);
+        padding: 12px 24px;
+        border-radius: 20px;
+        border: 1px solid rgba(101, 96, 79, 0.2);
+        backdrop-filter: blur(10px);
+        position: relative;
+        animation: bubbleFloat 4s infinite ease-in-out 1s;
+    }
+
+    .contact-me-bubble::before {
+        content: '';
+        position: absolute;
+        left: -10px;
+        top: 50%;
+        transform: translateY(-50%);
+        border-top: 10px solid transparent;
+        border-bottom: 10px solid transparent;
+        border-right: 10px solid rgba(101, 96, 79, 0.1);
+    }
+
+    @keyframes bubbleFloat {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+
+    @keyframes waveLeft {
+        0%, 100% { transform: rotate(20deg); }
+        50% { transform: rotate(45deg); }
+    }
+    
+    @keyframes waveRight {
+        0%, 100% { transform: rotate(-20deg); }
+        50% { transform: rotate(-45deg); }
+    }
+
+    @keyframes botShadow {
+        0%, 100% { transform: scale(1); opacity: 0.4; }
+        50% { transform: scale(0.8); opacity: 0.2; }
+    }
+
+    @keyframes botBlink {
+        0%, 95%, 100% { transform: scaleY(1); }
+        97.5% { transform: scaleY(0.1); }
     }
 </style>

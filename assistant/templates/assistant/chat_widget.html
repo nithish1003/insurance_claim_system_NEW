@@ -1,0 +1,86 @@
+{% load static %}
+
+<!-- 💎 Insurance AI System Launcher -->
+<div class="cl-launcher" id="assistantTrigger" title="Chat with Our AI System">
+    <i class="bi bi-robot"></i>
+</div>
+
+<!-- 📦 The Master Chat Panel -->
+<div class="cl-panel" id="assistantWindow">
+    
+    <!-- 1. Header (Static) -->
+    <header class="cl-header">
+        <div class="title-group">
+            <h6>Insurance AI System</h6>
+            <span>{% if request.user.role == "admin" %}Admin Support Assistant{% else %}Insurance Support Assistant{% endif %}</span>
+        </div>
+        <button class="cl-close" id="hideAssistant" title="Close Panel">
+            <i class="bi bi-x-lg"></i>
+        </button>
+    </header>
+
+    <!-- 2. Messages (Liquid Flex Area) -->
+    <main class="cl-messages" id="assistantChatBody">
+        <div class="cl-msg ai">
+            <div class="cl-bubble">
+                {% if request.user.role == "admin" %}
+                Hello Admin! I'm your AI System. How can I assist you today?
+                {% else %}
+                Hi! I'm your Insurance AI Assistant. How can I help you today?
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- 3. Quick Actions (Now inside the scrollable area) -->
+        <section class="cl-actions" id="quickActions">
+            {% if request.user.role == "admin" %}
+            <button class="cl-pill" onclick="sendQuickMsg('Reviewing recent insurance claims...')">Review Claims</button>
+            <button class="cl-pill" onclick="sendQuickMsg('Opening fraud detection dashboard...')">Fraud Alerts</button>
+            <button class="cl-pill" onclick="sendQuickMsg('Accessing user account management...')">User Accounts</button>
+            <button class="cl-pill" onclick="sendQuickMsg('Generating policy distribution reports...')">Policy Reports</button>
+            <button class="cl-pill" onclick="sendQuickMsg('Loading system-wide performance analytics...')">System Analytics</button>
+            <button class="cl-pill" onclick="sendQuickMsg('Showing pending approvals queue...')">Pending Approvals</button>
+            <button class="cl-pill" onclick="sendQuickMsg('Opening support ticket management...')">Support Tickets</button>
+            <button class="cl-pill" onclick="sendQuickMsg('Contacting the technical infrastructure team...')">Contact Technical Team</button>
+            {% else %}
+            <button class="cl-pill" onclick="sendQuickMsg('Check my claim status')">Claim Status</button>
+            <button class="cl-pill" onclick="sendQuickMsg('Download my policy PDF')">Policy PDF</button>
+            <button class="cl-pill" onclick="sendQuickMsg('Renew my policy')">Renew Policy</button>
+            <button class="cl-pill" onclick="sendQuickMsg('Show my coverage info')">Coverage Info</button>
+            <button class="cl-pill" onclick="sendQuickMsg('Talk to support')">Contact Support</button>
+            {% endif %}
+        </section>
+    </main>
+
+    <!-- 4. Composer (Horizontal Row) -->
+    <div class="cl-composer">
+        <!-- 🥥 Smart Autocomplete Overlay -->
+        <div id="smartAutocomplete" class="cl-autocomplete"></div>
+
+        <div class="cl-input-row" id="inputContainer">
+            <div class="cl-input-prefix">
+                <i class="bi bi-search" id="searchIcon"></i>
+            </div>
+            <textarea id="assistantInput" placeholder="Message AI Assistant..." rows="1"></textarea>
+            <button class="cl-send" id="assistantSendBtn" title="Send Query">
+                <i class="bi bi-send-fill"></i>
+            </button>
+            <button class="cl-clear-input" id="clearInputBtn" title="Clear Search">
+                <i class="bi bi-x-circle-fill"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- 5. Footer (Small Footnote) -->
+    <footer class="cl-footer">
+        <p class="cl-disclaimer">
+            The Online Insurance Claim Processing and Tracking System provides automated guidance. Verify finalized policy decisions with official official support.
+        </p>
+    </footer>
+
+</div>
+
+<!-- 🧰 Dependencies -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+<link rel="stylesheet" href="{% static 'assistant/chat.css' %}">
+<script src="{% static 'assistant/chat.js' %}"></script>

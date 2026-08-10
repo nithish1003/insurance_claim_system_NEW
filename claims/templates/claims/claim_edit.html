@@ -88,7 +88,7 @@ value="{{ claim.deductible_amount }}">
 <!-- Submit -->
 <div class="d-flex justify-content-between">
 
-<a href="{% url 'claim:detail' claim.id %}" class="btn btn-secondary">Cancel</a>
+<a href="{% url 'claim:detail' claim.public_id %}" class="btn btn-secondary">Cancel</a>
 
 <button type="submit" class="btn btn-primary">Update Claim</button>
 

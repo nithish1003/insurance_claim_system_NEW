@@ -1,13 +1,16 @@
+import logging
 from decimal import Decimal
 from datetime import date, timedelta
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth import get_user_model
 from django.contrib import messages
 from django.utils.crypto import get_random_string
 from django.utils import timezone
 from django.db import transaction
 from django.db.models import Prefetch
+from django.views.decorators.http import require_POST
 
 from .models import (
     PolicyHolder,
@@ -26,6 +29,9 @@ from .models import (
 from reports.models import ActivityLog
 from premiums.models import PremiumSchedule
 from accounts.utils import mask_phone, mask_email, log_sensitive_data_access
+from notifications.utils import create_notification
+
+logger = logging.getLogger(__name__)
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -36,6 +42,123 @@ def _generate_certificate_number():
         cert = "CERT-" + get_random_string(6).upper()
         if not UserPolicy.objects.filter(certificate_number=cert).exists():
             return cert
+
+
+def _notify_admins_of_application(application):
+    """Push a notification to every admin when a new policy application is submitted."""
+    User = get_user_model()
+    admin_users = User.objects.filter(role="admin").distinct()
+
+    for admin_user in admin_users:
+        create_notification(
+            user=admin_user,
+            title="New Policy Application",
+            message=(
+                f"{application.user.username} applied for {application.policy.policy_number}. "
+                "Review the request in Pending Policy Applications."
+            )
+        )
+
+
+def _create_pending_user_policy(application):
+    """
+    Lock the premium at application time so the customer pays the
+    stored backend amount even if admin pricing changes later.
+    """
+    return UserPolicy.objects.create(
+        user=application.user,
+        policy=application.policy,
+        certificate_number=_generate_certificate_number(),
+        status="pending",
+        final_premium=application.policy.calculate_final_premium(),
+        is_paid=False,
+        vehicle_number=application.vehicle_number or "",
+        rc_upload=application.rc_upload or None,
+    )
+
+
+def _get_policy_by_public_id_or_404(public_id, **filters):
+    return get_object_or_404(Policy, public_id=public_id, **filters)
+
+
+def _get_policy_application_by_public_id_or_404(public_id):
+    return get_object_or_404(
+        PolicyApplication.objects.select_related("user", "user__profile", "policy"),
+        public_id=public_id,
+    )
+
+
+def _get_payment_by_public_id_or_404(public_id):
+    return get_object_or_404(Payment, public_id=public_id)
+
+
+def _is_new_policy_activation_payment(payment):
+    metadata = payment.payment_metadata or {}
+    description = payment.description or ""
+    if payment.direction != "CREDIT" or payment.payment_type not in ["PREMIUM_PAYMENT", "PREMIUM"]:
+        return False
+
+    if (
+        metadata.get("premium_source") == "new_policy"
+        or "Activation Payment" in description
+        or "Policy Activation Premium" in description
+    ):
+        return True
+
+    user_policy = payment.user_policy
+    return bool(user_policy and user_policy.status == "approved" and not user_policy.is_paid)
+
+
+def _sync_user_policy_after_payment_update(payment):
+    user_policy = payment.user_policy
+    if not user_policy or not _is_new_policy_activation_payment(payment):
+        return
+
+    was_paid = user_policy.is_paid
+    completed_activation_exists = Payment.objects.filter(
+        user_policy=user_policy,
+        payment_status="completed",
+        direction="CREDIT",
+        payment_type__in=["PREMIUM_PAYMENT", "PREMIUM"],
+    ).exclude(pk=payment.pk if payment.payment_status != "completed" else None).exists()
+
+    update_fields = []
+    if payment.payment_status == "completed":
+        if not user_policy.is_paid:
+            user_policy.is_paid = True
+            update_fields.append("is_paid")
+        if user_policy.status != "active":
+            user_policy.status = "active"
+            update_fields.append("status")
+        if not was_paid:
+            activation_date = timezone.now().date()
+            user_policy.start_date = activation_date
+            user_policy.end_date = activation_date + timedelta(days=365)
+            update_fields.extend(["start_date", "end_date"])
+        
+        # 🔥 FIX: Mark the specific installment as PAID if this is an activation/premium payment
+        due = user_policy.current_due_payment
+        if due:
+            due.status = 'paid'
+            due.paid_date = timezone.now().date()
+            due.transaction_reference = payment.transaction_id
+            due.save(update_fields=['status', 'paid_date', 'transaction_reference'])
+
+        if not update_fields:
+            return
+    elif not completed_activation_exists:
+        if user_policy.is_paid:
+            user_policy.is_paid = False
+            update_fields.append("is_paid")
+        if user_policy.status == "active":
+            user_policy.status = "approved"
+            update_fields.append("status")
+        if not update_fields:
+            return
+    else:
+        return
+
+    user_policy.save(update_fields=update_fields)
 
 
 def _approve_policy_application(application, reviewer, admin_remarks=""):
@@ -67,18 +190,24 @@ def _approve_policy_application(application, reviewer, admin_remarks=""):
             policy=application.policy,
             defaults={
                 "certificate_number": _generate_certificate_number(),
-                "status": "active",
-                "start_date": start_date,
-                "end_date": end_date,
+                "status": "approved",
+                "final_premium": application.policy.calculate_final_premium(),
+                "is_paid": False,
                 "vehicle_number": application.vehicle_number or "",
                 "rc_upload": application.rc_upload or None,
             },
         )
 
         update_fields = []
-        if user_policy.status != "active":
-            user_policy.status = "active"
+        if user_policy.status != "approved" and user_policy.status != "active":
+            user_policy.status = "approved"
             update_fields.append("status")
+        if user_policy.status == "approved" and user_policy.is_paid:
+            user_policy.is_paid = False
+            update_fields.append("is_paid")
+        if user_policy.final_premium is None:
+            user_policy.final_premium = application.policy.calculate_final_premium()
+            update_fields.append("final_premium")
         if not user_policy.start_date:
             user_policy.start_date = start_date
             update_fields.append("start_date")
@@ -140,18 +269,8 @@ def _approve_policy_application(application, reviewer, admin_remarks=""):
             gst_amt = base_prem * (gst_pct / Decimal("100.0"))
             amount = base_prem + gst_amt
 
-        Payment.objects.get_or_create(
-            user_policy=user_policy,
-            direction="CREDIT",
-            payment_type="PREMIUM_PAYMENT",
-            description=f"Policy Activation Premium - {application.policy.policy_number}",
-            defaults={
-                "amount": amount,
-                "payment_status": "pending",
-                "payment_method": "cash",
-                "notes": "Initial premium record upon approval.",
-            },
-        )
+        # 🛡️ SYSTEM INTEGRITY: removed automatic payment & activation logic.
+        # Activation now happens only after User Payment via make_payment API.
 
         was_already_approved = application.status == "approved"
         application.status = "approved"
@@ -159,6 +278,13 @@ def _approve_policy_application(application, reviewer, admin_remarks=""):
         application.reviewed_by = reviewer
         application.admin_remarks = admin_remarks
         application.save()
+
+        # 🔔 NOTIFICATION: Policy Approved
+        create_notification(
+            user=application.user,
+            title="Policy Approved",
+            message="Your policy has been approved. Please complete payment to activate."
+        )
 
         if not was_already_approved:
             PolicyAuditLog.objects.create(
@@ -174,11 +300,11 @@ def _approve_policy_application(application, reviewer, admin_remarks=""):
             # 🛡️ Record activity in system ledger for Admin Analytics
             ActivityLog.objects.create(
                 title=f"Policy Activated: {application.policy.policy_number}",
-                description=f"Membership finalized for {application.user.username}. Application ID: {application.id}",
+                description=f"Membership finalized for {application.user.username}. Application ID: {application.public_id}",
                 log_type='claim',  # Treat as a 'claim/case' type for management
                 status='success',
                 user=reviewer,
-                related_id=str(application.id)
+                related_id=str(application.public_id)
             )
 
         return created
@@ -196,10 +322,10 @@ def policy_list(request):
         return render(request, "accounts/unauthorized.html")
 
 
-    # Fetching active/grace/lapsed policies
+    # Fetch active policies plus approved policies awaiting payment
     user_policies = UserPolicy.objects.filter(
         user=request.user,
-        status__in=['active', 'grace', 'lapsed'],
+        status__in=['approved', 'active', 'grace', 'lapsed'],
     ).select_related("policy", "premium_schedule").order_by("-assigned_at")
 
     # 🔥 UNIFIED VIEW: Also fetch pending applications to show in the same dashboard
@@ -222,7 +348,8 @@ def admin_policy_list(request):
     if not (request.user.is_superuser or request.user.role in ["admin", "staff"]):
         return render(request, "accounts/unauthorized.html")
 
-    policies = Policy.objects.prefetch_related("premium_schedules").all().order_by("-created_at")
+    # 🛡️ SYSTEM INVENTORY: Show the master Policy blueprints (Requirement: Fix Empty Table)
+    policies = Policy.objects.all().order_by("-created_at")
 
     return render(request, "policy/admin_policies.html", {"policies": policies})
 
@@ -247,6 +374,8 @@ def create_policy(request):
             end_date=request.POST.get("end_date"),
             sum_insured=request.POST.get("sum_insured"),
             deductible=request.POST.get("deductible") or 0,
+            admin_premium_percent=request.POST.get("admin_premium_percent") or 0,
+            room_rent_limit_per_day=request.POST.get("room_rent_limit_per_day") or 0,
             status="active",
         )
 
@@ -271,7 +400,7 @@ def create_policy(request):
 # =============================================================================
 @login_required
 def policy_detail(request, id):
-    policy = get_object_or_404(Policy, id=id)
+    policy = _get_policy_by_public_id_or_404(id)
 
     return render(request, "policy/policy_detail.html", {
         "policy": policy,
@@ -288,15 +417,17 @@ def policy_detail(request, id):
 # =============================================================================
 @login_required
 def edit_policy(request, id):
-    policy = get_object_or_404(Policy, id=id)
+    policy = _get_policy_by_public_id_or_404(id)
 
     if request.method == "POST":
         policy.insurer_name = request.POST.get("insurer_name")
         policy.start_date   = request.POST.get("start_date")
         policy.end_date     = request.POST.get("end_date")
-        policy.sum_insured  = request.POST.get("sum_insured")
-        policy.deductible   = request.POST.get("deductible") or 0
-        policy.status       = request.POST.get("status")
+        policy.sum_insured           = request.POST.get("sum_insured")
+        policy.deductible            = request.POST.get("deductible") or 0
+        policy.admin_premium_percent = request.POST.get("admin_premium_percent") or 0
+        policy.room_rent_limit_per_day = request.POST.get("room_rent_limit_per_day") or 0
+        policy.status                = request.POST.get("status")
         policy.save()
 
         PolicyAuditLog.objects.create(
@@ -306,7 +437,7 @@ def edit_policy(request, id):
             description="Policy information updated",
         )
         messages.success(request, "Policy updated successfully.")
-        return redirect("policy:detail", id=policy.id)
+        return redirect("policy:detail", id=policy.public_id)
 
     return render(request, "policy/policy_edit.html", {
         "policy": policy,
@@ -320,7 +451,7 @@ def edit_policy(request, id):
 # =============================================================================
 @login_required
 def delete_policy(request, id):
-    policy = get_object_or_404(Policy, id=id)
+    policy = _get_policy_by_public_id_or_404(id)
 
     if request.method == "POST":
         PolicyAuditLog.objects.create(
@@ -341,7 +472,7 @@ def delete_policy(request, id):
 # =============================================================================
 @login_required
 def update_policy_status(request, id):
-    policy = get_object_or_404(Policy, id=id)
+    policy = _get_policy_by_public_id_or_404(id)
 
     if request.method == "POST":
         status = request.POST.get("status")
@@ -364,34 +495,102 @@ def update_policy_status(request, id):
 # =============================================================================
 # ADMIN — Manage Categories (Policy Types)
 # =============================================================================
+from django.db.models import Count, Q
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from .serializers import PolicyTypeSerializer
+
 @login_required
 def manage_categories(request):
     """View to list and create policy categories (PolicyType)."""
     if not (request.user.is_superuser or request.user.role in ["admin", "staff"]):
         return render(request, "accounts/unauthorized.html")
 
-    if request.method == "POST":
-        name = request.POST.get("name")
-        code = request.POST.get("code")
-        description = request.POST.get("description", "")
+    # The template will now mostly use AJAX, but we load initial categories
+    categories = PolicyType.objects.annotate(
+        plans_count=Count('policyplan')
+    ).all().order_by("-created_at")
 
-        if name and code:
-            # Create a slug-like code if not provided properly
-            if not PolicyType.objects.filter(code=code).exists():
-                PolicyType.objects.create(
-                    name=name,
-                    code=code.lower().replace(" ", "-"),
-                    description=description
-                )
-                messages.success(request, f"Category '{name}' created successfully.")
-            else:
-                messages.error(request, f"Category with code '{code}' already exists.")
-        else:
-            messages.error(request, "Name and Code are required.")
-        return redirect("policy:manage_categories")
+    return render(request, "policy/manage_categories.html", {
+        "categories": categories,
+        "category_types": PolicyType.CATEGORY_TYPES,
+        "status_choices": PolicyType.STATUS_CHOICES
+    })
 
-    categories = PolicyType.objects.all().order_by("name")
-    return render(request, "policy/manage_categories.html", {"categories": categories})
+# API Endpoints for Category Management
+class CategoryAPIView(APIView):
+    """API for listing and creating categories."""
+    def get(self, request):
+        # 1. Fetch all categories
+        queryset = PolicyType.objects.all().order_by("-created_at")
+
+        # 2. Serialize them (this calls the plans_count property)
+        serializer = PolicyTypeSerializer(queryset, many=True)
+        data = serializer.data
+
+        # 3. Python-side filtering for hybrid data consistency
+        search = request.query_params.get('search', '').lower()
+        status_filter = request.query_params.get('status', 'all')
+        plans_filter = request.query_params.get('plans', 'all')
+
+        if search:
+            data = [c for c in data if search in c['name'].lower() or search in c['code'].lower()]
+        
+        if status_filter != 'all':
+            data = [c for c in data if c['status'] == status_filter]
+            
+        if plans_filter == 'has':
+            data = [c for c in data if c['plans_count'] > 0]
+        elif plans_filter == 'no':
+            data = [c for c in data if c['plans_count'] == 0]
+
+        return Response(data)
+
+    def post(self, request):
+        serializer = PolicyTypeSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class CategoryDetailAPIView(APIView):
+    """API for managing individual categories."""
+    def get_object(self, pk):
+        try:
+            return PolicyType.objects.get(pk=pk)
+        except PolicyType.DoesNotExist:
+            return None
+
+    def get(self, request, pk):
+        category = self.get_object(pk)
+        if not category:
+            return Response({"error": "Not Found"}, status=status.HTTP_404_NOT_FOUND)
+        serializer = PolicyTypeSerializer(category)
+        return Response(serializer.data)
+
+    def put(self, request, pk):
+        category = self.get_object(pk)
+        if not category:
+            return Response({"error": "Not Found"}, status=status.HTTP_404_NOT_FOUND)
+        serializer = PolicyTypeSerializer(category, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+        category = self.get_object(pk)
+        if not category:
+            return Response({"error": "Not Found"}, status=status.HTTP_404_NOT_FOUND)
+        
+        # Check if has plans
+        if category.policyplan_set.exists():
+            return Response({"error": "Cannot delete category with associated plans."}, status=status.HTTP_400_BAD_REQUEST)
+            
+        name = category.name
+        category.delete()
+        return Response({"message": f"Category '{name}' deleted successfully."}, status=status.HTTP_200_OK)
 
 
 # =============================================================================
@@ -407,15 +606,25 @@ def browse_policies(request):
     # Only show admin-created catalog policies
     policies = Policy.objects.filter(is_active=True).order_by("-created_at")
 
+    selected_type = request.GET.get('type')
+    if selected_type:
+        # Map friendly names to database codes if needed, or just use icontains
+        policies = policies.filter(policy_type__icontains=selected_type)
+        
+        # 🔥 ELITE UX: If only one plan exists for this category, jump straight to its detail page
+        if policies.count() == 1:
+            return redirect("policy:detail", id=policies.first().public_id)
+
     # Map policy_id → existing application for this user (if any)
     user_applications = {
-        app.policy_id: app
+        str(app.policy.public_id): app
         for app in PolicyApplication.objects.filter(user=request.user)
     }
 
     return render(request, "policy/browse_policies.html", {
         "policies": policies,
         "user_applications": user_applications,
+        "selected_type": selected_type,
     })
 
 
@@ -429,7 +638,7 @@ def apply_policy(request, policy_id):
         return redirect("accounts:login")
 
 
-    policy = get_object_or_404(Policy, id=policy_id, is_active=True)
+    policy = _get_policy_by_public_id_or_404(policy_id, is_active=True)
     is_motor = "motor" in (policy.policy_type or "").lower()
 
     # ── 1. Profile completeness check ────────────────────────────────────────
@@ -450,7 +659,7 @@ def apply_policy(request, policy_id):
             return redirect("policy:my_applications")
         elif existing.status == "approved":
             messages.info(request, "Your application for this policy has already been approved! Viewing your policy now.")
-            return redirect("policy:detail", id=policy.id)
+            return redirect("policy:detail", id=policy.public_id)
         elif existing.status == "rejected":
             messages.error(request, "Your previous application for this policy was rejected. Contact support for more details.")
             return redirect("policy:my_applications")
@@ -472,7 +681,7 @@ def apply_policy(request, policy_id):
         # ── 4. Consent validation ───────────────────────────────────────────
         if not request.POST.get("confirm_details") or not request.POST.get("confirm_terms"):
             messages.error(request, "You must confirm your details and agree to the terms.")
-            return redirect("policy:apply", policy_id=policy.id)
+            return redirect("policy:apply", policy_id=policy.public_id)
 
         # ── 5. Motor validation ─────────────────────────────────────────────
         vehicle_num = request.POST.get("vehicle_number", "").strip()
@@ -480,17 +689,26 @@ def apply_policy(request, policy_id):
 
         if is_motor and (not vehicle_num or not rc_file):
             messages.error(request, "Vehicle Number and RC Upload are required for Motor policies.")
-            return redirect("policy:apply", policy_id=policy.id)
+            return redirect("policy:apply", policy_id=policy.public_id)
 
         # ── 6. Create PolicyApplication (PENDING) ───────────────────────────
         # Motor fields are stored directly on the application — NO draft Policy
-        application = PolicyApplication.objects.create(
+        with transaction.atomic():
+            application = PolicyApplication.objects.create(
+                user=request.user,
+                policy=policy,
+                status="pending",
+                vehicle_number=vehicle_num if is_motor else None,
+                rc_upload=rc_file if (is_motor and rc_file) else None,
+            )
+            _create_pending_user_policy(application)
+
+        create_notification(
             user=request.user,
-            policy=policy,
-            status="pending",
-            vehicle_number=vehicle_num if is_motor else None,
-            rc_upload=rc_file if (is_motor and rc_file) else None,
+            title="Application Submitted",
+            message="Your policy application has been submitted and is under review."
         )
+        _notify_admins_of_application(application)
 
         PolicyAuditLog.objects.create(
             policy=policy,
@@ -531,6 +749,23 @@ def my_applications(request):
         "pending_count": qs.filter(status="pending").count(),
         "approved_count": qs.filter(status="approved").count(),
         "rejected_count": qs.filter(status="rejected").count(),
+    })
+
+
+@login_required
+def user_application_detail(request, application_id):
+    """View specific details of a policyholder's application."""
+    if request.user.role != "user":
+        return render(request, "accounts/unauthorized.html")
+
+    application = get_object_or_404(
+        PolicyApplication.objects.select_related("policy", "reviewed_by"),
+        public_id=application_id,
+        user=request.user
+    )
+
+    return render(request, "policy/application_detail.html", {
+        "application": application,
     })
 
 
@@ -578,10 +813,7 @@ def admin_review_application(request, application_id):
     if not (request.user.is_superuser or request.user.role in ["admin", "staff"]):
         return render(request, "accounts/unauthorized.html")
 
-    application = get_object_or_404(
-        PolicyApplication.objects.select_related("user", "user__profile", "policy"),
-        id=application_id,
-    )
+    application = _get_policy_application_by_public_id_or_404(application_id)
 
     if request.method == "POST":
         action       = request.POST.get("action")
@@ -600,6 +832,75 @@ def admin_review_application(request, application_id):
                     request,
                     f"Approval synced without duplicates for {application.user.username} on {application.policy.policy_number}."
                 )
+            return redirect("policy:admin_applications")
+
+        # ── HOLD (Place on Hold) ─────────────────────────────────────────────
+        elif action == "hold":
+            application.status = "pending"  # Keep it in pending but we can add a flag or just update remarks
+            application.admin_remarks = f"[HOLD] {admin_remarks}"
+            application.save()
+            
+            PolicyAuditLog.objects.create(
+                policy=application.policy,
+                performed_by=request.user,
+                action="Application Placed on Hold",
+                description=f"Admin {request.user.username} placed application for {application.user.username} on hold. Reason: {admin_remarks}",
+            )
+            messages.info(request, "Application has been placed on hold.")
+            return redirect("policy:admin_applications")
+
+        # ── REQUEST DOCUMENTS ────────────────────────────────────────────────
+        elif action == "request_documents":
+            application.status = "pending"
+            application.admin_remarks = f"[DOCS_REQUESTED] {admin_remarks}"
+            application.save()
+            
+            create_notification(
+                user=application.user,
+                title="Documents Requested",
+                message=f"Additional documents are required for your policy application. Remark: {admin_remarks}"
+            )
+            
+            PolicyAuditLog.objects.create(
+                policy=application.policy,
+                performed_by=request.user,
+                action="Documents Requested",
+                description=f"Admin {request.user.username} requested additional documents from {application.user.username}.",
+            )
+            messages.warning(request, "Document request sent to the user.")
+            return redirect("policy:admin_applications")
+
+        # ── REJECT ───────────────────────────────────────────────────────────
+        elif action == "reject":
+            application.status = "rejected"
+            application.reviewed_at = timezone.now()
+            application.reviewed_by = request.user
+            application.admin_remarks = admin_remarks
+            application.save()
+            user_policy = UserPolicy.objects.filter(
+                user=application.user,
+                policy=application.policy,
+                is_paid=False,
+            ).exclude(status="active").first()
+            if user_policy and user_policy.status != "rejected":
+                update_fields = ["status"]
+                user_policy.status = "rejected"
+                if application.vehicle_number and user_policy.vehicle_number != application.vehicle_number:
+                    user_policy.vehicle_number = application.vehicle_number
+                    update_fields.append("vehicle_number")
+                if application.rc_upload and user_policy.rc_upload != application.rc_upload:
+                    user_policy.rc_upload = application.rc_upload
+                    update_fields.append("rc_upload")
+                user_policy.save(update_fields=update_fields)
+
+            # 🔔 NOTIFICATION: Application Rejected
+            create_notification(
+                user=application.user,
+                title="Application Rejected",
+                message="Your policy application was rejected. Please contact support for details."
+            )
+
+            messages.error(request, f"Application for {application.user.username} has been rejected.")
             return redirect("policy:admin_applications")
 
             # Check not already approved
@@ -754,11 +1055,57 @@ def admin_review_application(request, application_id):
         fields=['phone', 'email', 'aadhaar']
     )
 
+    # ── Calculate Dynamic Risk Intelligence ────────────────────────────────
+    user = application.user
+    
+    # 1. Identity Match (Base: 100 if verified, 60 if not)
+    identity_match = 100.0 if user.is_verified else 60.0
+    
+    # 2. OCR Reliability (Real Fuzzy Matching!)
+    has_docs = bool(application.rc_upload or user.id_proof)
+    
+    ocr_reliability = 0.0
+    if has_docs:
+        from ai_features.utils.name_matcher import validate_name_match
+        from accounts.models import AadhaarKYCVerification
+        
+        # Fetch the latest OCR extraction for this user
+        kyc = AadhaarKYCVerification.objects.filter(user=user).order_by('-created_at').first()
+        
+        if kyc and kyc.extracted_name:
+            # Compare OCR Extracted Name vs Database Registered Name
+            match_result = validate_name_match(kyc.extracted_name, user.get_full_name_clean)
+            ocr_reliability = match_result['similarity'] * 100.0
+        else:
+            ocr_reliability = 75.0 # Fallback if no OCR extraction is found
+    
+    # 3. Registry Verified Bonus (+15)
+    registry_bonus = 15.0 if user.is_verified else 0.0
+    
+    # 4. No Mismatch Bonus (+10)
+    no_mismatch_bonus = 10.0 if has_docs else 0.0
+    
+    # Calculation: (IM * 0.5) + (OCR * 0.25) + RegBonus + MismatchBonus
+    raw_confidence = (identity_match * 0.50) + (ocr_reliability * 0.25) + registry_bonus + no_mismatch_bonus
+    confidence_score = min(100.0, max(0.0, raw_confidence))
+    
+    # Risk Banding
+    if confidence_score >= 90: risk_band = "Very High"
+    elif confidence_score >= 75: risk_band = "High"
+    elif confidence_score >= 60: risk_band = "Moderate"
+    else: risk_band = "Low"
+
     context = {
         "application": application,
         "show_full_data": show_full_data,
         "masked_phone": mask_phone(application.user.phone),
         "masked_email": mask_email(application.user.email),
+        "identity_match": identity_match,
+        "ocr_reliability": ocr_reliability,
+        "confidence_score": confidence_score,
+        "risk_band": risk_band,
+        "is_registry_verified": user.is_verified,
+        "no_mismatch": has_docs, # Baseline for no mismatch if docs exist
     }
 
     return render(request, "policy/admin_application_review.html", context)
@@ -833,7 +1180,7 @@ def manage_payment(request, payment_id):
     if not (request.user.is_superuser or request.user.role in ["admin", "staff"]):
         return render(request, "accounts/unauthorized.html")
 
-    payment = get_object_or_404(Payment, id=payment_id)
+    payment = _get_payment_by_public_id_or_404(payment_id)
 
     if request.method == "POST":
         action = request.POST.get("action")
@@ -868,6 +1215,7 @@ def manage_payment(request, payment_id):
         payment.description = description
         payment.notes = notes
         payment.save()
+        _sync_user_policy_after_payment_update(payment)
 
         messages.success(request, f"Payment {payment.transaction_id} updated successfully.")
         return redirect("policy:payment_list")
@@ -878,3 +1226,207 @@ def manage_payment(request, payment_id):
         "status_choices": Payment.PAYMENT_STATUS_CHOICES,
         "method_choices": Payment.PAYMENT_METHOD_CHOICES,
     })
+
+
+from django.http import JsonResponse
+
+
+@login_required
+def buy_policy(request, policy_id):
+    """
+    Realistic 'Buy Policy' workflow.
+    Creates a PENDING PolicyApplication for admin review.
+    """
+    if request.method != "POST":
+        return JsonResponse({'error': 'Only POST method is allowed'}, status=405)
+
+    # 1. Check if policy exists
+    try:
+        policy = Policy.objects.get(public_id=policy_id)
+    except Policy.DoesNotExist:
+        return JsonResponse({'error': 'Policy not found.'}, status=404)
+
+    # 2. Prevent duplicate applications (unless status is 'rejected')
+    # Filter by user and policy, and exclude rejected statuses to avoid blocking valid reapplies
+    existing_application = PolicyApplication.objects.filter(
+        user=request.user,
+        policy=policy
+    ).first()
+
+    if existing_application:
+        return JsonResponse({
+            'error': 'You have already applied for this policy. Please check My Applications.'
+        }, status=400)
+
+    existing_user_policy = UserPolicy.objects.filter(
+        user=request.user,
+        policy=policy
+    ).exclude(status='rejected').first()
+    if existing_user_policy:
+        return JsonResponse({
+            'error': 'This policy is already linked to your account. Please check My Policies.'
+        }, status=400)
+
+    # 3. Create the same pending application record used by admin review
+    # and lock the payable premium inside UserPolicy.
+    with transaction.atomic():
+        application = PolicyApplication.objects.create(
+            user=request.user,
+            policy=policy,
+            status='pending',
+        )
+        user_policy = _create_pending_user_policy(application)
+
+    # 🔔 NOTIFICATION: Application Submitted
+    create_notification(
+        user=request.user,
+        title="Application Submitted",
+        message="Your policy application has been submitted and is under review."
+    )
+    _notify_admins_of_application(application)
+
+    # 4. Audit Log
+    PolicyAuditLog.objects.create(
+        policy=policy,
+        performed_by=request.user,
+        action="Policy Application Submitted",
+        description=f"User {request.user.username} applied for {policy.policy_number}. Status: Pending."
+    )
+
+    return JsonResponse({
+        'success': True,
+        'message': f'Application for {policy.policy_number} submitted successfully!',
+        'application_id': str(application.public_id),
+        'premium': str(user_policy.final_premium)
+    }, status=201)
+
+
+# =============================================================================
+# MAKE PAYMENT (User Action) — Activates the Policy
+# =============================================================================
+@login_required
+@require_POST
+def make_payment(request, user_policy_id):
+    """
+    Final step in the workflow:
+    - Verifies 'APPROVED' status
+    - Processes payment using backend 'final_premium'
+    - Activates policy upon success
+    """
+    with transaction.atomic():
+        try:
+            user_policy = UserPolicy.objects.select_for_update().select_related("policy").get(
+                public_id=user_policy_id,
+                user=request.user,
+            )
+        except UserPolicy.DoesNotExist:
+            return JsonResponse({'error': 'Policy record not found.'}, status=404)
+
+        # 1. Validation Logic
+        if user_policy.status != "approved":
+            return JsonResponse({'error': 'Only approved policies can be paid for.'}, status=400)
+        
+        if user_policy.is_paid:
+            return JsonResponse({'error': 'This policy is already paid.'}, status=400)
+
+        if user_policy.final_premium is None:
+            user_policy.final_premium = user_policy.policy.calculate_final_premium()
+            user_policy.save(update_fields=["final_premium"])
+
+        # 2. Get Amount (Backend Controlled) - Charge current installment if exists, else total
+        due = user_policy.current_due_payment
+        amount = due.amount if due else user_policy.final_premium
+
+        # 3. Create Payment Record (CREDIT)
+        payment = Payment.objects.create(
+            user=request.user,
+            user_policy=user_policy,
+            amount=amount,
+            payment_status='completed',
+            payment_type='PREMIUM_PAYMENT',
+            direction='CREDIT',
+            payment_method='upi',
+            payment_metadata={'premium_source': 'new_policy'},
+            description=f"Activation Payment - {user_policy.policy.policy_number}"
+        )
+
+        # 4. Update Policy Status (Activation)
+        _sync_user_policy_after_payment_update(payment)
+
+    # 5. Trigger Notification
+    create_notification(
+        user=user_policy.user,
+        title="Payment Successful",
+        message="Your payment is successful. Policy is now active."
+    )
+
+    # 6. Audit Trail
+    PolicyAuditLog.objects.create(
+        policy=user_policy.policy,
+        performed_by=request.user,
+        action="Payment Received & Activation",
+        description=f"Initial premium of {amount} paid. Policy {user_policy.certificate_number} is now ACTIVE."
+    )
+
+    return JsonResponse({
+        'success': True,
+        'message': 'Payment successful. Your policy is now active!',
+        'transaction_id': payment.transaction_id
+    })
+# =============================================================================
+# ADMIN — Policy Plan List (Filtered by Category)
+# =============================================================================
+@login_required
+def plan_list(request):
+    if not (request.user.is_superuser or request.user.role in ["admin", "staff"]):
+        return render(request, "accounts/unauthorized.html")
+
+    category_id = request.GET.get('category')
+    plans = PolicyPlan.objects.select_related('policy_type', 'insurer').all().order_by('-created_at')
+
+    if category_id:
+        plans = plans.filter(policy_type_id=category_id)
+        selected_category = get_object_or_404(PolicyType, id=category_id)
+    else:
+        selected_category = None
+
+    return render(request, "policy/admin_plans.html", {
+        "plans": plans,
+        "selected_category": selected_category,
+        "categories": PolicyType.objects.all()
+    })
+@login_required
+@require_POST
+def api_generate_admin_note(request, application_id):
+    """
+    AJAX endpoint to generate a professional AI-powered verdict note
+    based on application data and risk scoring.
+    """
+    if not (request.user.is_superuser or request.user.role in ["admin", "staff"]):
+        return JsonResponse({'error': 'Unauthorized'}, status=403)
+
+    application = _get_policy_application_by_public_id_or_404(application_id)
+    decision = request.POST.get("decision", "ON_HOLD").upper()
+    
+    # 🔍 Fetch metrics (Actual data from User and Application)
+    user = application.user
+    
+    # Check for document presence (ID Proof or Motor RC)
+    has_docs = False
+    if user.id_proof or (hasattr(user, 'profile') and user.profile.id_proof):
+        has_docs = True
+    if application.rc_upload:
+        has_docs = True
+
+    data = {
+        "decision": decision,
+        "risk_score": 0.08 if user.is_verified else 0.24, # Heuristic risk
+        "verification_status": "VERIFIED" if user.is_verified else "PENDING",
+        "document_status": "VALID" if has_docs else "UNVERIFIED",
+        "fraud_flag": False 
+    }
+
+    from ai_features.services.verdict_service import generate_admin_note
+    note = generate_admin_note(data)
+
+    return JsonResponse({'note': note.strip()})

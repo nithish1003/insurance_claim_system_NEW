@@ -8,3 +8,5 @@ class AiFeaturesConfig(AppConfig):
     
     def ready(self):
         import ai_features.signals  # noqa
+        # 🚀 Startup Warm Load removed to prevent PaddleOCR connectivity checks during boot
+        # Engines will now lazy-load on first use (KYC/Claims)

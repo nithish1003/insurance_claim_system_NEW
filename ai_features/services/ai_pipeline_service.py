@@ -1,160 +1,176 @@
 import logging
-from django.utils import timezone
+import json
 from decimal import Decimal
-from typing import Tuple, List
+from django.utils import timezone
+from typing import Dict, Any
 
-from claims.models import Claim, ClaimAIHistory
-from .ocr_service import perform_ocr, extract_details
-from .ai_claim_service import predict_claim_type
-from .ml_training_service import FraudMLService, trigger_retraining_if_needed
+from claims.models import Claim, ClaimDocument, ClaimAIHistory
+
+from .fraud_service import FraudDetectionService
+from claims.ai_calculation_engine import AICalculationEngine
+from claims.utils import safe_money
 
 logger = logging.getLogger(__name__)
 
-def run_ai_pipeline(claim: Claim):
+class AIClaimIntelligencePipeline:
     """
-    Regulator-Grade AI Pipeline (Version: v3.3)
-    Full Governance State: XGBoost + SHAP Audit + Shadow Dep + Platt Calibration
+    Enterprise-Grade AI Claim Intelligence Pipeline v4
+    Implements 5 layers of governance (Phase 4):
+    1. OCR Identity Validation
+    2. Versioned Risk Scoring (Phase 1 & 2)
+    3. Explainable AI & Narrative (Phase 3)
+    4. Decision Orchestration Rules (Phase 4)
+    5. Immutable Audit Ledger (Phase 9)
     """
-    try:
-        logger.info(f"🚀 AI Pipeline v3.3 started for Claim: {claim.claim_number}")
+
+    def __init__(self, claim: Claim):
+        self.claim = claim
+        self.engine = AICalculationEngine(claim)
+        self.results = {}
+
+    def execute(self) -> Dict[str, Any]:
+        """Runs the full enterprise decision pipeline."""
+        try:
+            logger.info(f"🚀 Initializing Enterprise Intelligence Pipeline for {self.claim.claim_number}")
+
+            # ── LAYER 1: IDENTITY & DOSSIER GATING ──
+            # (Now handled inside get_full_decision via OCR and VerifyIdentity)
+            audit_trail = self.engine.get_audit_trail()
+            
+            # ── LAYER 2, 3 & 4: RISK, EXPLAINABILITY & ORCHESTRATION ──
+            # (Logic split across ClaimAIService and DecisionOrchestrator)
+            # The get_audit_trail() call already executed the full decision cycle.
+            
+            self.results = audit_trail
+            
+            # Use version from audit_trail or engine default
+            model_info = audit_trail.get('model_info', {})
+            self.results['model_version'] = model_info.get('version', 'v3.6-Certified-Ratios')
+            
+            # ── LAYER 5: IMMUTABLE AUDIT LEDGERING (Phase 9) ──
+            self._persist_results(self.results)
+            
+            logger.info(f"✅ Enterprise Intelligence successful for {self.claim.claim_number}")
+            return self.results
+
+        except Exception as e:
+            logger.error(f"🛑 Critical Pipeline Failure: {str(e)}", exc_info=True)
+            return {"error": "SYSTEM_CRASH", "message": str(e)}
+
+    def _persist_results(self, res: dict):
+        """
+        Hardened persistence with Immutable Ledger support (Phase 9).
+        """
+        from claims.models import ImmutableAuditLedger, ClaimModelVersion
         
-        # ── 1. AGGREGATED OCR INVOICE PROCESSING ────────────────────
-        # Handle multiple documents for consolidated billing
-        relevant_docs = claim.documents.filter(
-            document_type__in=['medical_bill', 'hospital_bill', 'repair_bill', 'rc_document']
+        previous = self.claim.final_ai_recommendation
+        
+        # 1. Update Claim with AI Data
+        self.claim.risk_score = res['risk_analysis']['risk_score'] * 100
+        self.claim.fraud_probability = res['risk_analysis']['multi_risk']['fraud_risk']
+        
+        # Phase 1: Multi-Risk
+        multi = res['risk_analysis']['multi_risk']
+        self.claim.fraud_risk_score = multi['fraud_risk']
+        self.claim.leakage_risk_score = multi['leakage_risk']
+        self.claim.documentation_risk_score = multi['doc_risk']
+        self.claim.payout_uncertainty_score = multi['uncertainty']
+        
+        # Phase 3: Explainability
+        self.claim.shap_narrative = res['explainability']['narrative']
+        self.claim.top_features = res['risk_analysis']['feature_contributions']
+        
+        # Phase 2: Registry
+        model_ver = ClaimModelVersion.objects.filter(version_id=res['model_version']).first()
+        self.claim.model_version = model_ver
+        
+        # 2. Financial Update
+        from claims.services import ClaimPayoutService
+        
+        # Calculate the authoritative risk amount for this probability
+        # Prob (0.0801) * Baseline (32,200) = 2579.22 (if 8.01%)
+        # The user's example: ₹4.76
+        # We'll calculate it based on the baseline.
+        basis = float(safe_money(self.claim.payout_basis_amount or self.claim.claimed_amount))
+        room_excess = float(ClaimPayoutService.calculate_room_excess(self.claim))
+        deductible = float(safe_money(self.claim.deductible_amount or 0))
+        baseline = max(0, basis - room_excess - deductible)
+        
+        # Set the monetary risk reserve
+        self.claim.risk_amount = Decimal(str(baseline * float(res['risk_analysis']['risk_score']))).quantize(Decimal('0.01'))
+        
+        # Single Source of Truth Update via Authoritative Payload
+        payout_payload = ClaimPayoutService.compute_authoritative_payout(self.claim)
+        
+        ClaimPayoutService.record_pipeline_result(
+            self.claim, 
+            payout_payload, 
+            res['model_version']
         )
-        total_billed = 0.0
-        processed_docs = 0
         
-        for doc in relevant_docs:
-            try:
-                ocr_text = perform_ocr(doc.file.path)
-                extracted = extract_details(ocr_text)
-                doc_amount = float(extracted.get('total_amount', 0.0))
-                if doc_amount > 0:
-                    total_billed += doc_amount
-                    processed_docs += 1
-                    logger.info(f"📄 Aggregator: Added ₹{doc_amount} from {doc.get_document_type_display()}")
-            except Exception as e:
-                logger.warning(f"⚠️ Failed to process individual document {doc.id}: {e}")
+        # 3. Decision Orchestration Results
+        # (Already set status and priorities via DecisionOrchestrator called in Service)
         
-        if total_billed > 0:
-            claim.bill_amount = Decimal(str(round(total_billed, 2)))
-        else:
-            # Fallback to claimed amount if no OCR data could be harvested
-            claim.bill_amount = claim.claimed_amount
-            logger.info("ℹ️ No valid bill amounts harvested. Using claimed amount base.")
+        # 4. ⚖️ IMMUTABLE LEDGERING (Phase 9)
+        prev_amt = previous
+        final_amt = self.claim.final_ai_recommendation
+        
+        ImmutableAuditLedger.objects.create(
+            claim=self.claim,
+            event_type="AI_PIPELINE_FINALIZATION",
+            previous_value=str(prev_amt),
+            new_value=str(final_amt),
+            change_reason=f"Enterprise Pipeline v4 Decision: {self.claim.ai_decision}",
+            model_version=model_ver,
+            shap_snapshot=self.claim.top_features,
+            risk_snapshot=multi
+        )
 
-
-        # ── 2. DYNAMIC RATIO-BASED PENALTY (Inflation Detection) ──────
-        billed = float(claim.bill_amount)
-        claimed = float(claim.claimed_amount)
-        
-        # v3 uses a smart inflation ratio instead of a static 20% penalty.
-        # Tolerance: 10%. Anything beyond triggers progressive dampening.
-        inflation_penalty_ratio = 0.0
-        if claimed > (billed * 1.1):
-            # Dynamic calculation: The more you inflate, the harder the penalty
-            # Ratio = 1.0 - (True_Bill / Claimed_Request)
-            inflation_ratio = 1.0 - (billed / claimed)
-            # Progressive curve (Squared) to deter high inflation
-            inflation_penalty_ratio = min(0.6, inflation_ratio ** 1.3)
-            logger.info(f"⚖️ Dynamic Penalty Triggered: Inflation Ratio {inflation_ratio:.2f} -> Penalty {inflation_penalty_ratio:.2f}")
-
-
-        # ── 3. ENTERPRISE FRAUD DISCOVERY (XGBoost v3.7 + Adaptive Audit) ─────
-        from .ml_training_service import UnifiedMLGovernance
-        gov = UnifiedMLGovernance()
-        
-        # v3.7: Enterprise audit with readable narrative + shadow lift tracking
-        risk_score, fraud_flag, readable_audit, gov_meta = gov.predict_fraud(claim)
-        
-        claim.risk_score = risk_score
-        claim.fraud_flag = fraud_flag
-        claim.fraud_explanation = readable_audit
-        claim.ml_model_version = "v3.7_Enterprise"
-
-        # ── 4. ENTERPRISE NLP CLASSIFICATION ──────────────
-        pred_type, type_conf = gov.predict_type(claim.description)
-        claim.ai_claim_type = pred_type
-        
-        # ── 5. ENTERPRISE PAYOUT ENGINE (Regression + Business Constraints) ─────
-        ai_recommended, amount_meta = gov.predict_amount(claim)
-        claim.ai_predicted_amount = Decimal(str(round(ai_recommended, 2)))
-        
-        if claimed > 0:
-            claim.ai_adjustment_factor = float(ai_recommended) / claimed
-        else:
-            claim.ai_adjustment_factor = 1.0
-
-        # ── 6. COMPOSITE CONFIDENCE SCORING ─────────────────────
-        confidence = type_conf * 0.5
-        if processed_docs > 0: confidence += 0.3
-        if billed > 0: confidence += 0.2
-        
-        claim.confidence_score = min(100.0, confidence * 100)
-
-        # ── 7. ADAPTIVE DECISION ENGINE (v3.7 Enterprise Thresholds) ───────────────────
-        # Decision logic enhanced with Anomaly & Drift Awareness
-        is_anomaly = gov_meta.get('is_anomaly', False)
-        
-        if (risk_score > 72 or 
-            is_anomaly or
-            processed_docs == 0 or 
-            confidence < 0.60): # Stricter for Enterprise
-            claim.ai_decision = "manual_review"
-        elif ai_recommended <= 0:
-            claim.ai_decision = "reject"
-        else:
-            claim.ai_decision = "auto_process"
-
-        # ── 8. ENTERPRISE REGULATOR LOGGING ──────────────────────────────
-        shadow_results = gov_meta.get('shadow', {})
-        feature_vector = {
-            "claimed_amount": claimed,
-            "bill_amount": billed,
-            "risk_score": risk_score,
-            "is_anomaly": is_anomaly,
-            "model_version": "v3.7_Hardened",
-            "ts": timezone.now().isoformat()
-        }
-        
-        # Store for Regulator Audit v3.7
+        # ── LAYER 6: AI HISTORY LEDGER (Phase 3) ──
+        # Create a historical record for model retraining and audit
         ClaimAIHistory.objects.create(
-            claim=claim,
-            version="v3.7",
-            ai_claim_type=claim.ai_claim_type,
-            ai_predicted_amount=claim.ai_predicted_amount,
-            ai_risk_score=risk_score,
-            ai_decision=claim.ai_decision,
-            ai_confidence=claim.confidence_score,
-            feature_vector=feature_vector,
-            # Regulator Audit Trail
-            shap_values=gov_meta.get('shap_values'),
-            shadow_decision="reject" if shadow_results.get('fallback_val') else "auto_process",
-            shadow_predicted_amount=Decimal(str(amount_meta.get('shadow', {}).get('fallback_val', 0)))
+            claim=self.claim,
+            version=res['model_version'],
+            ai_claim_type=self.claim.ai_claim_type or "unknown",
+            ai_recommendation=final_amt,
+            ai_risk_score=float(res['risk_analysis']['risk_score']),
+            ai_decision=self.claim.ai_decision or "REVIEW",
+            ai_confidence=float(self.claim.confidence_score or 0),
+            shap_values=self.claim.top_features,
+            feature_vector=res.get('risk_analysis', {}).get('feature_contributions', {}),
+            shadow_decision=res.get('decision_engine', {}).get('shadow_verdict'),
+            shadow_predicted_amount=final_amt # Simplified for now
         )
 
-        # ── 9. DRIFT & BASLINE MONITORING ──────────────────────────
-        # Baselines tracked for institutional drift analysis
-        baseline_conf = 82.5 
-        claim.ai_drift_score = abs(confidence * 100 - baseline_conf)
-        
-        # Final Metadata
-        claim.ai_version = "v3.7"
-        claim.ai_updated_at = timezone.now()
-        
-        reasoning = f"v3.7 Enterprise Hub. Lift: {shadow_results.get('v3_lift', 'neutral')}. "
-        reasoning += f"Narrative: {readable_audit}. "
-        reasoning += f"Decision: {claim.get_ai_decision_display()}."
-        
-        claim.ai_calculation_logic = reasoning
-        claim.save()
-        
-        logger.info(f"✅ Enterprise AI v3.7 SUCCESS: {claim.claim_number} -> {claim.ai_decision}")
-        return True
-        return True
+        self.claim.save()
 
-    except Exception as e:
-        logger.error(f"🛑 CRITICAL PIPELINE v3 FAILURE: {str(e)}", exc_info=True)
-        return False
+        # 🔔 Notify Auditors
+        try:
+            from notifications.utils import create_notification
+            from django.contrib.auth import get_user_model
+            User = get_user_model()
+            auditor_users = User.objects.filter(role__in=['admin', 'staff'])
+            
+            for auditor in auditor_users:
+                verdict_str = (self.claim.decision_engine_verdict or "PENDING").upper()
+                create_notification(
+                    user=auditor,
+                    title="Enterprise AI Audit: SUCCESS",
+                    message=f"Dossier {self.claim.claim_number} audit complete. Risk: {(self.claim.risk_score or 0):.1f}%, Verdict: {verdict_str}",
+                    notification_type='warning' if (self.claim.risk_score or 0) > 30 else 'info',
+                    related_entity_id=self.claim.public_id
+                )
+        except Exception as e:
+            logger.error(f"Failed to send AI audit notification: {str(e)}")
+
+    def _exit_with_error(self, code: str, meta: dict) -> dict:
+        return {
+            "error": code,
+            "metadata": meta,
+            "status": "REJECTED_BY_AI_GOVERNANCE"
+        }
+
+def run_intelligence_pipeline(claim: Claim) -> Dict[str, Any]:
+    """Entry point for the 5-layer AI Intelligence Pipeline"""
+    pipeline = AIClaimIntelligencePipeline(claim)
+    return pipeline.execute()

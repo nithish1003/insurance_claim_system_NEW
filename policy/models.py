@@ -1,7 +1,8 @@
 from decimal import Decimal
+import uuid as uuid_lib
 from django.db import models
 from django.conf import settings
-from django.core.validators import RegexValidator
+from django.core.validators import RegexValidator, MinValueValidator, MaxValueValidator
 
 # 🛡️ AI GOVERNANCE: Input Validation Standards
 VEHICLE_NUMBER_VALIDATOR = RegexValidator(
@@ -16,6 +17,7 @@ VEHICLE_NUMBER_VALIDATOR = RegexValidator(
 
 
 class UserProfile(models.Model):
+    public_id = models.UUIDField(default=uuid_lib.uuid4, unique=True, editable=False, db_index=True)
 
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
@@ -86,6 +88,7 @@ class UserPolicy(models.Model):
     NO new Policy record is created — only this join record.
     """
 
+    public_id = models.UUIDField(default=uuid_lib.uuid4, unique=True, editable=False, db_index=True)
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -107,14 +110,30 @@ class UserPolicy(models.Model):
 
     status = models.CharField(
         max_length=20,
-        default='active',
+        default='pending',
         choices=[
+            ('pending',   'Pending Review'),
+            ('approved',  'Approved (Awaiting Payment)'),
+            ('rejected',  'Rejected'),
             ('active',    'Active'),
             ('grace',     'Grace Period'),
             ('lapsed',    'Lapsed'),
             ('expired',   'Expired'),
             ('cancelled', 'Cancelled'),
         ]
+    )
+
+    is_paid = models.BooleanField(
+        default=False,
+        help_text="Whether the policy premium has been paid"
+    )
+
+    final_premium = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="The locked premium amount at the time of purchase"
     )
 
     assigned_at = models.DateTimeField(auto_now_add=True)
@@ -143,72 +162,160 @@ class UserPolicy(models.Model):
     )
     rc_upload      = models.FileField(upload_to='userpolicy_rc/', blank=True, null=True)
 
+    # 🧬 LIFE INSURANCE: Beneficiary Mapping
+    nominee_name = models.CharField(
+        max_length=150,
+        blank=True,
+        null=True,
+        help_text="Registered Nominee for Life/Death benefits."
+    )
+    nominee_relationship = models.CharField(
+        max_length=50,
+        blank=True,
+        null=True,
+        help_text="Relationship of the nominee to the policyholder."
+    )
+
     def sync_status_with_premiums(self):
         """
         Synchronizes policy status based on premium payment history and coverage exhaustion.
         Returns the new status.
         """
-        # 🔥 CRITICAL SYNC: Ensure the persistent sum_insured_remaining is UPDATED
-        # before we check for status or exhaustion.
-        total_payouts = self.total_settled_amount
-        self.sum_insured_remaining = max(Decimal('0.00'), (self.policy.sum_insured or Decimal('0.00')) - total_payouts)
+        old_status = self.status
+        old_sum = self.sum_insured_remaining
+        
+        completed_premium_exists = self.payments.filter(
+            payment_status='completed',
+            direction='CREDIT',
+            payment_type__in=['PREMIUM_PAYMENT', 'PREMIUM'],
+        ).exists()
 
-        # 🛡️ Coverage Exhaustion Priority Check:
-        # If the sum insured is 100% used, the policy is essentially dead for claims.
-        if self.sum_insured_remaining <= 0:
-            self.status = 'expired'
-            self.save(update_fields=['status', 'sum_insured_remaining'])
+        if self.status == 'approved' and not self.is_paid and completed_premium_exists:
+            self.is_paid = True
+            self.status = 'active'
+            self.save(update_fields=['is_paid', 'status'])
             return self.status
+
+        if self.status == 'approved' and not self.is_paid:
+            return self.status
+            
+        # 🔥 CRITICAL SYNC: Ensure the persistent sum_insured_remaining is UPDATED
+        total_payouts = self.total_settled_amount
+        self.sum_insured_remaining = max(
+            Decimal('0.00'),
+            (self.policy.sum_insured or Decimal('0.00')) - total_payouts
+        )
 
         # Access the linked schedule
         schedule = getattr(self, 'premium_schedule', None)
         if not schedule:
-            self.save(update_fields=['sum_insured_remaining'])
+            if self.sum_insured_remaining != old_sum:
+                self.save(update_fields=['sum_insured_remaining'])
             return self.status
 
-        from django.utils import timezone
-        from datetime import timedelta
-        
-        today = timezone.now().date()
-        grace_period = getattr(schedule, 'grace_period_days', 30)
-        
-        # Get all outstanding installments
-        overdue_payments = schedule.payments.exclude(status='paid').filter(due_date__lt=today)
-        
-        # 🟥 Lapsed Check: Any payment past due + grace period
-        if any(p.due_date + timedelta(days=grace_period) < today for p in overdue_payments):
-            self.status = 'lapsed'
-        # 🟨 Grace Period Check: Any payment past due but within grace
-        elif overdue_payments.exists():
-            self.status = 'grace'
-        # 🟩 Active Check
+        # 🛡️ Coverage Exhaustion Priority Check:
+        if self.sum_insured_remaining <= 0:
+            self.status = 'expired'
         else:
-            self.status = 'active'
+            from django.utils import timezone
+            from datetime import timedelta
+            
+            today = timezone.now().date()
+            grace_period = getattr(schedule, 'grace_period_days', 30)
+            
+            # Get all outstanding installments
+            overdue_payments = schedule.payments.exclude(status='paid').filter(due_date__lt=today)
+            
+            # 🟥 Lapsed Check
+            if any(p.due_date + timedelta(days=grace_period) < today for p in overdue_payments):
+                self.status = 'lapsed'
+            # 🟨 Grace Period Check
+            elif overdue_payments.exists():
+                self.status = 'grace'
+            # 🟩 Active Check
+            else:
+                self.status = 'active'
         
-        self.save(update_fields=['status', 'sum_insured_remaining'])
+        # 🚀 OPTIMIZED SAVE: Only commit if something actually changed
+        if self.status != old_status or self.sum_insured_remaining != old_sum:
+            self.save(update_fields=['status', 'sum_insured_remaining'])
+            
         return self.status
 
     @property
+    def payment_status(self):
+        return "Paid" if self.is_paid else "Pending"
+
+    @property
+    def current_due_payment(self):
+        """
+        Retrieves the next unpaid installment for this policy.
+        Ordered by due date (Overdue first, then Upcoming).
+        """
+        from premiums.models import PremiumPayment
+        schedule = getattr(self, 'premium_schedule', None)
+        if not schedule:
+            return None
+        return schedule.payments.exclude(status='paid').order_by('due_date').first()
+
+    @property
+    def admin_status_label(self):
+        if self.status == 'approved' and self.payment_status == 'Pending':
+            return "Approved (Awaiting Payment)"
+        return self.get_status_display()
+
+    @property
+    def admin_status_tone(self):
+        if self.status == 'active':
+            return 'status-active'
+        if self.status == 'approved' and self.payment_status == 'Pending':
+            return 'status-awaiting-payment'
+        if self.status == 'rejected':
+            return 'status-rejected'
+        return 'status-default'
+
+    @property
     def total_settled_amount(self):
-        """Returns total amount paid out for claims under this user's policy instantiation."""
+        """Returns total amount paid out for claims under this specific user-owned policy instance."""
         from claims.models import Claim
-        from django.db.models import Sum, Q
         from decimal import Decimal
-        
-        # Heuristic to find claims belonging to this specific user instantiation
-        claims_qs = Claim.objects.filter(policy=self.policy, status='settled')
-        
-        if self.vehicle_number:
-            # For motor, must match vehicle OR be created by user
-            claims_qs = claims_qs.filter(
-                Q(vehicle_number=self.vehicle_number) | Q(created_by=self.user)
+        from django.db.models import Q, Sum, Value, DecimalField
+        from django.db.models.functions import Coalesce
+
+        # 🎯 DIRECT LINK: Use the related_name='claims' from Claim.user_policy
+        # This is more accurate than heuristics based on Policy plan or User.
+        claims_qs = Claim.objects.filter(
+            status__in=['approved', 'settled']
+        ).filter(
+            Q(user_policy=self) |
+            Q(
+                user_policy__isnull=True,
+                policy=self.policy,
+                created_by=self.user,
             )
-        else:
-            # Fallback for non-motor: assume it's this user if they are the owner
-            # (In a multi-user plan, this remains a challenge without a direct FK)
-            claims_qs = claims_qs.filter(created_by=self.user)
-            
-        result = claims_qs.aggregate(total=Sum('settled_amount'))
+        )
+
+        if self.vehicle_number:
+            claims_qs = claims_qs.filter(
+                Q(user_policy=self) |
+                Q(
+                    user_policy__isnull=True,
+                    policy=self.policy,
+                    created_by=self.user,
+                    vehicle_number=self.vehicle_number,
+                )
+            )
+
+        result = claims_qs.distinct().aggregate(
+            total=Sum(
+                Coalesce(
+                    'settled_amount',
+                    'approved_amount',
+                    Value(0, output_field=DecimalField(max_digits=12, decimal_places=2))
+                )
+            )
+        )
+
         return result['total'] or Decimal('0.00')
 
     def save(self, *args, **kwargs):
@@ -219,15 +326,19 @@ class UserPolicy(models.Model):
 
     @property
     def remaining_sum_insured(self):
-        """Returns how much money is left for future claims (using the persistent field)."""
-        return self.sum_insured_remaining or Decimal('0.00')
+        """Returns how much money is left for future claims."""
+        from decimal import Decimal
+
+        base = self.policy.sum_insured or Decimal('0.00')
+        return max(Decimal('0.00'), base - self.total_settled_amount)
 
     @property
     def coverage_usage_percentage(self):
         """Returns what percentage of the sum insured has been exhausted."""
-        if not self.policy.sum_insured or self.policy.sum_insured == 0:
+        base = self.policy.sum_insured or Decimal('0.00')
+        if not base or base == 0:
             return 0
-        usage = (self.total_settled_amount / self.policy.sum_insured) * 100
+        usage = (self.total_settled_amount / base) * 100
         return float(usage)
 
     def __str__(self):
@@ -257,6 +368,7 @@ class Payment(models.Model):
     Links to UserPolicy for tracking payments against specific user policies.
     """
     
+    public_id = models.UUIDField(default=uuid_lib.uuid4, unique=True, editable=False, db_index=True)
     PAYMENT_STATUS_CHOICES = [
         ('pending', 'Pending'),
         ('completed', 'Completed'),
@@ -328,8 +440,8 @@ class Payment(models.Model):
 
     # 💰 NEW: Transaction categorization
     PAYMENT_TYPE_CHOICES = [
-        ('PREMIUM', 'Premium Payment'),
-        ('SETTLEMENT', 'Claim Settlement'),
+        ('PREMIUM_PAYMENT', 'Premium Payment'),
+        ('CLAIM_SETTLEMENT', 'Claim Settlement'),
     ]
 
     payment_type = models.CharField(
@@ -396,6 +508,12 @@ class Payment(models.Model):
         ]
 
     def save(self, *args, **kwargs):
+        # Normalize any legacy shorthand values before persistence.
+        if self.payment_type == 'PREMIUM':
+            self.payment_type = 'PREMIUM_PAYMENT'
+        elif self.payment_type == 'SETTLEMENT':
+            self.payment_type = 'CLAIM_SETTLEMENT'
+
         # Generate transaction ID if not provided
         if not self.transaction_id:
             self.transaction_id = self._generate_transaction_id()
@@ -408,6 +526,25 @@ class Payment(models.Model):
         if self.payment_status == 'completed' and not self.completed_at:
             from django.utils import timezone
             self.completed_at = timezone.now()
+            try:
+                from notifications.utils import create_notification
+                from notifications.models import Notification
+                if self.user:
+                    create_notification(
+                        user=self.user, 
+                        title='Payment Successful', 
+                        message=f'Your payment of ₹{self.amount} for policy {self.user_policy.certificate_number} was successful. Coverage is active.', 
+                        notification_type='success', 
+                        priority='low'
+                    )
+                    # 🧹 Auto-Archive Overdue Notifications for this policyholder
+                    Notification.objects.filter(
+                        user=self.user,
+                        type='warning',  # Mapping 'overdue' to 'warning'
+                        is_read=False
+                    ).update(is_read=True)
+            except:
+                pass
         
         super().save(*args, **kwargs)
 
@@ -434,12 +571,74 @@ class Payment(models.Model):
 
 
 class PolicyType(models.Model):
+    CATEGORY_TYPES = [
+        ('medical', 'Medical / Health'),
+        ('vehicle', 'Vehicle / Motor'),
+        ('life', 'Life Insurance'),
+        ('general', 'General / Other'),
+    ]
+
+    STATUS_CHOICES = [
+        ('active', 'Active'),
+        ('inactive', 'Inactive'),
+    ]
+
     name = models.CharField(max_length=100)
     code = models.SlugField(max_length=50, unique=True)
     description = models.TextField(blank=True)
+    category_type = models.CharField(
+        max_length=20, 
+        choices=CATEGORY_TYPES, 
+        default='general',
+        help_text="AI Context: helps classify this category for automated processing."
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='active'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.name
+
+    class Meta:
+        verbose_name = "Policy Category"
+        verbose_name_plural = "Policy Categories"
+        ordering = ["-created_at"]
+
+    @property
+    def plans_count(self):
+        """
+        Dynamic count of plans in this category.
+        Handles both standardized PolicyPlan and legacy string-based Policy types.
+        """
+        from .models import Policy, PolicyPlan
+        from django.db.models import Q
+        
+        # 1. Direct model links (PolicyPlan)
+        catalog_count = self.policyplan_set.count()
+
+        # 2. Legacy string mapping (Policy.policy_type)
+        # We search for exact code OR fuzzy/truncated matches
+        # e.g., 'health-ins' -> 'health', 'life-ins' -> 'life', 'vehicle-ins' -> 'motor'
+        code_variants = [self.code.lower()]
+        
+        # Strip suffix '-ins' or '-insurance' for truncated variants
+        if self.code.endswith("-ins"):
+            code_variants.append(self.code.replace("-ins", ""))
+        elif self.code.endswith("-insurance"):
+            code_variants.append(self.code.replace("-insurance", ""))
+            
+        # Hard mappings for special legacy keywords
+        if 'vehicle' in self.code.lower() or 'motor' in self.code.lower():
+            code_variants.extend(['vehicle', 'motor', 'car', 'bike'])
+        if 'health' in self.code.lower() or 'medical' in self.code.lower():
+            code_variants.extend(['health', 'medical'])
+            
+        legacy_count = Policy.objects.filter(policy_type__in=list(set(code_variants))).count()
+
+        return catalog_count or legacy_count or 0
 
 
 class Insurer(models.Model):
@@ -528,6 +727,7 @@ class PolicyPlan(models.Model):
 
 
 class Policy(models.Model):
+    public_id = models.UUIDField(default=uuid_lib.uuid4, unique=True, editable=False, db_index=True)
 
     STATUS = [
         ('pending', 'Pending Review'),
@@ -591,6 +791,20 @@ class Policy(models.Model):
         help_text="Coverage percentage for claims (e.g., 80.00 for 80%)"
     )
 
+    # 🏥 Medical specific fields
+    room_rent_limit_per_day = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0,
+        validators=[MinValueValidator(0)],
+        help_text="Capped room rent per day. 0 means unlimited / no cap."
+    )
+    
+    room_penalty_enabled = models.BooleanField(
+        default=True,
+        help_text="Governance: Whether AI should calculate and apply room rent excess penalties for this policy plan."
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
 
     # Premium Fields
@@ -614,6 +828,42 @@ class Policy(models.Model):
         decimal_places=2,
         default=0.00
     )
+
+    premium_amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=0.00,
+        help_text="Standard premium amount override (Admins only)"
+    )
+
+    admin_premium_percent = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=Decimal('0.00'),
+        validators=[MinValueValidator(0), MaxValueValidator(100)],
+        help_text="Admin premium percentage (e.g. 6.00 for 6%). Applied on top of base_premium."
+    )
+
+    def calculate_final_premium(self):
+        """
+        Secured backend calculation logic:
+        final_premium = base_premium + (base_premium * admin_premium_percent / 100)
+        """
+        base = self.base_premium or Decimal('0.00')
+        percent = self.admin_premium_percent or Decimal('0.00')
+        
+        # Admin profit/adjustment amount
+        adjustment = base * (percent / Decimal('100.0'))
+        
+        return base + adjustment
+
+    def clean(self):
+        """
+        Validate room_rent_limit_per_day logic.
+        """
+        if self.room_rent_limit_per_day < 0:
+            from django.core.exceptions import ValidationError
+            raise ValidationError({'room_rent_limit_per_day': "Room rent limit cannot be negative."})
 
     def save(self, *args, **kwargs):
         # 🛡️ 1. AUTO-GENERATE CERTIFICATE NUMBER (Format: POL-YYYY-XXX)
@@ -660,6 +910,13 @@ class Policy(models.Model):
             self.gross_premium = self.base_premium + self.gst_amount
 
         super().save(*args, **kwargs)
+
+    @property
+    def formatted_room_rent_limit(self):
+        """Returns the room rent limit formatted with INR currency."""
+        if self.room_rent_limit_per_day == 0:
+            return "No Cap / Unlimited"
+        return f"₹{self.room_rent_limit_per_day:,.2f}"
 
     def __str__(self):
         return self.policy_number
@@ -778,6 +1035,7 @@ class Premium(models.Model):
 
 
 class PolicyDocument(models.Model):
+    public_id = models.UUIDField(default=uuid_lib.uuid4, unique=True, editable=False, db_index=True)
 
     policy = models.ForeignKey(
         Policy,
@@ -830,6 +1088,7 @@ class PolicyAuditLog(models.Model):
 
 
 class PolicyApplication(models.Model):
+    public_id = models.UUIDField(default=uuid_lib.uuid4, unique=True, editable=False, db_index=True)
 
     STATUS_CHOICES = [
         ('pending', 'Pending Review'),

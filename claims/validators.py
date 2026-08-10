@@ -26,7 +26,9 @@ def validate_positive_amount(value):
         raise ValidationError("Amount must be a positive value.")
 
 def validate_aadhaar_number(value):
-    if not value or not re.match(r'^\d{12}$', str(value)):
+    # 🛡️ UX Fix: Strip spaces and dashes before validation
+    clean_val = str(value).replace(" ", "").replace("-", "")
+    if not clean_val or not re.match(r'^\d{12}$', clean_val):
         raise ValidationError("Aadhaar must be exactly 12 numeric digits.")
 
 def validate_vehicle_number(value):

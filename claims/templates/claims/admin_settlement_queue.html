@@ -1,0 +1,281 @@
+{% extends "base.html" %}
+{% load static humanize %}
+
+{% block title %}Settlement Queue | Admin Console{% endblock %}
+{% block breadcrumb %}ClaimIQ / Settlement Queue{% endblock %}
+
+{% block extra_css %}
+<style>
+    .settlement-queue-container {
+        padding: 2rem 0;
+    }
+
+    .executive-header {
+        margin-bottom: 3rem;
+        border-left: 5px solid #10b981;
+        padding-left: 1.5rem;
+    }
+
+    .queue-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+    }
+
+    .q-stat-card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 20px;
+        padding: 1.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .q-stat-card:hover {
+        transform: translateY(-5px);
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(16, 185, 129, 0.3);
+    }
+
+    .q-stat-label {
+        font-size: 0.75rem;
+        color: rgba(156, 149, 143, 0.7);
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .q-stat-value {
+        font-size: 1.75rem;
+        font-weight: 800;
+        color: #605E5B;
+        display: block;
+    }
+
+    .premium-queue-table {
+        background: #FFFFFF;
+        border-radius: 24px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        overflow: hidden;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    }
+
+    .queue-table-header {
+        padding: 1.5rem 2rem;
+        background: rgba(255, 255, 255, 0.02);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .search-wrapper {
+        position: relative;
+        width: 300px;
+    }
+
+    .search-wrapper input {
+        background: rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 0.6rem 1rem 0.6rem 2.5rem;
+        color: white;
+        width: 100%;
+        font-size: 0.9rem;
+    }
+
+    .search-wrapper i {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: rgba(156, 149, 143, 0.6);
+    }
+
+    .table-modern-queue {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .table-modern-queue th {
+        text-align: left;
+        padding: 1.25rem 2rem;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: rgba(156, 149, 143, 0.6);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .table-modern-queue td {
+        padding: 1.5rem 2rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        vertical-align: middle;
+    }
+
+    .table-modern-queue tr:last-child td {
+        border-bottom: none;
+    }
+
+    .table-modern-queue tr:hover td {
+        background: rgba(255, 255, 255, 0.02);
+    }
+
+    .claim-id-pill {
+        background: rgba(59, 130, 246, 0.1);
+        color: #60a5fa;
+        padding: 0.4rem 0.8rem;
+        border-radius: 8px;
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 700;
+        font-size: 0.85rem;
+        border: 1px solid rgba(59, 130, 246, 0.2);
+    }
+
+    .payout-amount-text {
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: #10b981;
+    }
+
+    .btn-settle-now {
+        background: #10b981;
+        color: white;
+        border: none;
+        padding: 0.6rem 1.2rem;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 0.85rem;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-settle-now:hover {
+        background: #059669;
+        transform: scale(1.05);
+        color: white;
+        box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
+    }
+
+    .empty-queue-state {
+        padding: 5rem 2rem;
+        text-align: center;
+        color: rgba(156, 149, 143, 0.6);
+    }
+
+    .empty-queue-state i {
+        font-size: 4rem;
+        margin-bottom: 1.5rem;
+        opacity: 0.3;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="settlement-queue-container animate-fade-in">
+    <div class="container-fluid px-4">
+        
+        <header class="executive-header">
+            <h1 class="gradient-title mb-1">Financial Settlement Queue</h1>
+            <p class="text-muted mb-0">Authorized dossiers awaiting final capital disbursement.</p>
+        </header>
+
+        <div class="queue-stats-grid">
+            <div class="q-stat-card">
+                <span class="q-stat-label">Pending Payouts</span>
+                <span class="q-stat-value">{{ stats.total_pending }}</span>
+            </div>
+            <div class="q-stat-card">
+                <span class="q-stat-label">Total Value</span>
+                <span class="q-stat-value">₹{{ stats.total_value|intcomma }}</span>
+            </div>
+            <div class="q-stat-card">
+                <span class="q-stat-label">High Value Ops</span>
+                <span class="q-stat-value">{{ stats.high_value_count }}</span>
+            </div>
+            <div class="q-stat-card">
+                <span class="q-stat-label">Oldest in Queue</span>
+                <span class="q-stat-value text-warning">
+                    {% if stats.oldest_pending %}
+                        {{ stats.oldest_pending|timesince }}
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+
+        <div class="premium-queue-table">
+            <div class="queue-table-header">
+                <h3 class="fs-5 fw-bold mb-0 text-white">Active Disbursement Queue</h3>
+                <form method="GET" action="." class="search-wrapper">
+                    <i class="bi bi-search"></i>
+                    <input type="text" name="q" value="{{ query }}" placeholder="Search dossiers...">
+                </form>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table-modern-queue">
+                    <thead>
+                        <tr>
+                            <th>Dossier</th>
+                            <th>Participant</th>
+                            <th>Policy Reference</th>
+                            <th>Approved Amount</th>
+                            <th>Authorized Date</th>
+                            <th class="text-end">Command</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for claim in claims %}
+                        <tr>
+                            <td>
+                                <span class="claim-id-pill">{{ claim.claim_number }}</span>
+                                <div class="mt-2 text-muted x-small">{{ claim.get_claim_type_display|title }}</div>
+                            </td>
+                            <td>
+                                <div class="fw-bold text-white">{{ claim.created_by.get_full_name|default:claim.created_by.username }}</div>
+                                <div class="text-muted x-small">{{ claim.created_by.email }}</div>
+                            </td>
+                            <td>
+                                <div class="text-info fw-bold small">{{ claim.policy.policy_number }}</div>
+                                <div class="text-muted x-small">{{ claim.policy.name }}</div>
+                            </td>
+                            <td>
+                                <div class="payout-amount-text">₹{{ claim.approved_amount|default:0|intcomma }}</div>
+                                <div class="text-muted x-small">Net of Deductible</div>
+                            </td>
+                            <td>
+                                <div class="text-white small">{{ claim.updated_at|date:"d M Y" }}</div>
+                                <div class="text-muted x-small">{{ claim.updated_at|time }}</div>
+                            </td>
+                            <td class="text-end">
+                                <a href="{% url 'claim:settlement' claim.public_id %}" class="btn-settle-now">
+                                    <i class="bi bi-lightning-charge-fill"></i> Settle Now
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6">
+                                <div class="empty-queue-state">
+                                    <i class="bi bi-shield-check"></i>
+                                    <h3>Queue Cleared</h3>
+                                    <p>All approved dossiers have been settled. No pending disbursements.</p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
