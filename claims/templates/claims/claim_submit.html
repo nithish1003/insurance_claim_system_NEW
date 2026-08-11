@@ -40,8 +40,8 @@
 <style>
     /* Animated Back Button styling */
     .btn-back-animated {
-        background: rgba(255, 255, 255, 0.04);
-        color: #e2e8f0;
+        background: var(--bg-panel);
+        color: var(--text-muted);
         padding: 10px 16px;
         border-radius: 12px;
         position: relative;
@@ -51,7 +51,7 @@
         text-decoration: none;
         display: inline-flex;
         align-items: center;
-        border: 1px solid rgba(148, 163, 184, 0.16);
+        border: 1px solid var(--border-color);
         font-weight: 700;
         font-size: 0.72rem;
         text-transform: uppercase;
@@ -66,17 +66,17 @@
         left: -100%;
         width: 50%;
         height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+        background: linear-gradient(90deg, transparent, rgba(101, 96, 79, 0.15), transparent);
         transform: skewX(-20deg);
         transition: all 0.6s ease;
         z-index: -1;
     }
 
     .btn-back-animated:hover {
-        background: rgba(59, 130, 246, 0.14);
-        color: white;
-        border-color: rgba(59, 130, 246, 0.28);
-        box-shadow: 0 10px 20px rgba(101, 96, 79, 0.18);
+        background: rgba(101, 96, 79, 0.04);
+        color: var(--text-main);
+        border-color: rgba(101, 96, 79, 0.3);
+        box-shadow: 0 4px 15px rgba(101, 96, 79, 0.1);
         transform: translateY(-1px);
     }
 
@@ -94,15 +94,13 @@
         transform: translateX(-4px) scale(1.1);
     }
 
-    /* Dark Theme overrides for the form */
+    /* Premium Earthy Theme overrides for the form */
     .form-card {
-        background:
-            radial-gradient(circle at top right, rgba(255, 255, 255, 0.08), transparent 38%),
-            linear-gradient(160deg, rgba(15, 23, 42, 0.96) 0%, rgba(15, 23, 42, 0.82) 55%, rgba(30, 41, 59, 0.96) 100%);
-        border: 1px solid rgba(148, 163, 184, 0.16);
-        border-radius: 18px;
-        color: white;
-        box-shadow: 0 14px 32px rgba(2, 6, 23, 0.24);
+        background: var(--bg-panel);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        color: var(--text-main);
+        box-shadow: var(--card-shadow);
         overflow: hidden;
         position: relative;
     }
@@ -112,44 +110,46 @@
         position: absolute;
         inset: 0 0 auto 0;
         height: 3px;
-        background: linear-gradient(90deg, #3b82f6, rgba(255, 255, 255, 0));
+        background: linear-gradient(90deg, var(--accent), rgba(255, 255, 255, 0));
         opacity: 0.95;
     }
 
     .form-card .card-header {
-        background: linear-gradient(to right, rgba(255, 255, 255, 0.03), transparent);
-        border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+        background: linear-gradient(to right, rgba(101, 96, 79, 0.03), transparent);
+        border-bottom: 1px solid var(--border-color);
         font-size: 18px;
         font-weight: 700;
+        color: var(--text-main);
     }
 
     .form-label {
-        color: rgba(156, 149, 143, 0.7);
-        font-weight: 500;
+        color: var(--text-muted);
+        font-weight: 600;
+        font-size: 0.85rem;
     }
 
     .form-control {
-        background: rgba(255, 255, 255, 0.05) !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        color: white !important;
+        background: #FFFFFF !important;
+        border: 1px solid var(--border-subtle) !important;
+        color: var(--text-main) !important;
     }
 
     .form-control:focus {
-        background: rgba(255, 255, 255, 0.08) !important;
-        border-color: #65604F !important;
-        box-shadow: 0 0 0 0.25rem rgba(101, 96, 79, 0.25) !important;
+        background: #FFFFFF !important;
+        border-color: var(--accent) !important;
+        box-shadow: 0 0 0 0.25rem rgba(101, 96, 79, 0.15) !important;
     }
 
     select.form-control option {
         background: #FFFFFF;
-        color: white;
+        color: var(--text-main);
     }
 </style>
 {% endblock %}
 
 {% block content %}
-
-<div class="container-fluid px-4 py-3">
+<div class="dashboard-container">
+<div class="container-fluid px-0 pt-4 pb-5">
 
     <div class="d-flex justify-content-between align-items-center mb-4" data-aos="fade-down">
         <h3 class="m-0 fw-bold" style="font-family: 'DM Serif Display', serif;"><span class="gradient-title-cyan">Submit a New Claim</span></h3>
@@ -210,7 +210,7 @@
                         <div class="input-group">
                             <input type="number" name="claimed_amount" id="claim_amount" class="form-control"
                                 placeholder="e.g. 50000" required>
-                            <button type="button" class="btn btn-outline-info" id="btn-simulate" style="border-radius: 0 8px 8px 0; font-weight: 700;">
+                            <button type="button" class="btn" id="btn-simulate" style="border-radius: 0 8px 8px 0; font-weight: 700; background: var(--accent); color: white; border: 1px solid var(--accent);">
                                 <i class="bi bi-cpu me-1"></i> Check Prediction
                             </button>
                         </div>
@@ -218,14 +218,14 @@
                         <div id="claim-amount-error" class="text-danger small mt-1"></div>
 
                         <!-- 📊 Simulation Results -->
-                        <div id="simulation-box" class="mt-3 p-3 rounded" style="display: none; background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.2); transition: all 0.3s ease;">
-                            <h6 class="text-info mb-2 fw-bold"><i class="bi bi-bar-chart-line me-2"></i>📊 Claim Prediction</h6>
+                        <div id="simulation-box" class="mt-3 p-3 rounded" style="display: none; background: rgba(101, 96, 79, 0.04); border: 1px solid var(--border-color); transition: all 0.3s ease;">
+                            <h6 class="mb-2 fw-bold" style="color: var(--accent-light);"><i class="bi bi-bar-chart-line me-2"></i>📊 Claim Prediction</h6>
                             <div class="row g-2 small">
-                                <div class="col-6">Claim Type: <span id="sim-type" class="text-white fw-bold">-</span></div>
-                                <div class="col-6">Claim Amount: <span id="sim-amount" class="text-white fw-bold">-</span></div>
-                                <div class="col-6">Policy Balance: <span id="sim-balance" class="text-white fw-bold">-</span></div>
+                                <div class="col-6">Claim Type: <span id="sim-type" class="fw-bold" style="color: var(--text-main);">-</span></div>
+                                <div class="col-6">Claim Amount: <span id="sim-amount" class="fw-bold" style="color: var(--text-main);">-</span></div>
+                                <div class="col-6">Policy Balance: <span id="sim-balance" class="fw-bold" style="color: var(--text-main);">-</span></div>
                                 <div class="col-6">Estimated: <span id="sim-estimate" class="text-success fw-bold">-</span></div>
-                                <div class="col-6">Approval Chance: <span id="sim-chance" class="text-white fw-bold">-</span></div>
+                                <div class="col-6">Approval Chance: <span id="sim-chance" class="fw-bold" style="color: var(--text-main);">-</span></div>
                                 <div class="col-6">Risk Level: <span id="sim-risk" class="fw-bold">-</span></div>
                             </div>
                             
@@ -235,11 +235,11 @@
                                     <i class="bi bi-shield-exclamation me-1"></i> Fraud Alert: Amount Integrity Mismatch
                                 </div>
                                 <div class="row g-1 text-[10px]">
-                                    <div class="col-6 text-slate-400">Entered Amount:</div>
-                                    <div class="col-6 text-white text-end font-bold" id="warn-manual-amt">-</div>
-                                    <div class="col-6 text-slate-400">Verified Bill:</div>
-                                    <div class="col-6 text-sky-400 text-end font-bold" id="warn-ocr-amt">-</div>
-                                    <div class="col-12 mt-1 pt-1 border-t border-rose-500/20 text-rose-300 font-bold italic" id="warn-mismatch-msg">
+                                    <div class="col-6 text-slate-500">Entered Amount:</div>
+                                    <div class="col-6 text-end font-bold" id="warn-manual-amt" style="color: var(--text-main);">-</div>
+                                    <div class="col-6 text-slate-500">Verified Bill:</div>
+                                    <div class="col-6 text-sky-500 text-end font-bold" id="warn-ocr-amt">-</div>
+                                    <div class="col-12 mt-1 pt-1 border-t border-rose-500/20 text-rose-500 font-bold italic" id="warn-mismatch-msg">
                                         Mismatch may indicate unsupported charges or missing bills.
                                     </div>
                                 </div>
@@ -252,7 +252,7 @@
                     </div>
                 </div>
 
-                <hr style="border-color: rgba(255,255,255,0.1);">
+                <hr style="border-color: var(--border-color);">
 
                 <!-- 🚗 Motor Specific Fields -->
                 <div id="motor_fields" class="dynamic-field-group" style="display: none;">
@@ -370,7 +370,7 @@
     </div>
 
 </div>
-
+</div>
 {% endblock %}
 
 {% block extra_js %}

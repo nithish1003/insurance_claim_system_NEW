@@ -7,7 +7,7 @@
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb mb-0">
         <li class="breadcrumb-item"><a href="/" class="text-decoration-none text-muted">Dashboard</a></li>
-        <li class="breadcrumb-item active" aria-current="page text-white">Notifications</li>
+        <li class="breadcrumb-item active" aria-current="page text-dark">Notifications</li>
     </ol>
 </nav>
 {% endblock %}
@@ -19,7 +19,7 @@
             <!-- Header Section -->
             <div class="d-flex justify-content-between align-items-end mb-4 px-2">
                 <div>
-                    <h2 class="fw-bold mb-1 text-white">Notification Inbox</h2>
+                    <h2 class="fw-bold mb-1 text-dark">Notification Inbox</h2>
                     <p class="text-muted small mb-0">Manage your system activity and alerts.</p>
                 </div>
                 <div class="d-flex gap-2">
@@ -101,7 +101,7 @@
                         <div class="empty-icon-box mb-4 mx-auto">
                             <i class="bi bi-inbox-fill"></i>
                         </div>
-                        <h4 class="fw-bold text-white">Inbox Clean</h4>
+                        <h4 class="fw-bold text-dark">Inbox Clean</h4>
                         <p class="text-muted">You're all caught up! No notifications at this time.</p>
                         <a href="{% url 'accounts:home' %}" class="btn btn-primary-modern px-4 mt-2">Back to Dashboard</a>
                     </div>
@@ -114,8 +114,8 @@
 
 <style>
     :root {
-        --glass-bg: rgba(15, 23, 42, 0.6);
-        --glass-border: rgba(255, 255, 255, 0.08);
+        --glass-bg: var(--bg-panel);
+        --glass-border: var(--border-color);
         --accent-blue: #3b82f6;
         --accent-success: #10b981;
         --accent-danger: #c55a5a;
@@ -135,7 +135,7 @@
         max-height: calc(100vh - 250px);
         overflow-y: auto;
         scrollbar-width: thin;
-        scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+        scrollbar-color: rgba(101, 96, 79, 0.1) transparent;
     }
 
     .date-group {
@@ -143,8 +143,8 @@
     }
 
     .date-label {
-        background: rgba(255, 255, 255, 0.02);
-        color: rgba(156, 149, 143, 0.6);
+        background: rgba(101, 96, 79, 0.02);
+        color: var(--text-muted);
         font-size: 11px;
         letter-spacing: 0.1em;
         position: sticky;
@@ -156,12 +156,12 @@
     .notif-row-wrapper {
         position: relative;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        border-bottom: 1px solid var(--border-color);
         background: transparent;
     }
 
     .notif-row-wrapper:hover {
-        background: rgba(255, 255, 255, 0.02);
+        background: rgba(101, 96, 79, 0.02);
     }
 
     .notif-row-wrapper.is-unread {
@@ -202,7 +202,7 @@
     .bg-glow-warning { background: rgba(200, 138, 45, 0.1); color: #C88A2D; border: 1px solid rgba(200, 138, 45, 0.2); }
     .bg-glow-secondary { background: rgba(148, 163, 184, 0.1); color: rgba(156, 149, 143, 0.7); border: 1px solid rgba(148, 163, 184, 0.2); }
 
-    .notif-title { color: #f1f5f9; font-size: 15px; }
+    .notif-title { color: var(--text-main); font-size: 15px; }
     .notif-msg { font-size: 14px; line-height: 1.6; }
 
     .notif-type-tag {
@@ -233,9 +233,9 @@
     .mark-single-read:hover { text-decoration: underline; opacity: 0.8; }
 
     .archive-btn {
-        background: rgba(255, 255, 255, 0.05);
+        background: rgba(101, 96, 79, 0.05);
         border: 1px solid var(--glass-border);
-        color: rgba(156, 149, 143, 0.6);
+        color: var(--text-muted);
         width: 32px;
         height: 32px;
         border-radius: 10px;
@@ -277,22 +277,22 @@
     }
 
     .btn-glass {
-        background: rgba(255, 255, 255, 0.05);
+        background: rgba(101, 96, 79, 0.05);
         border: 1px solid var(--glass-border);
         color: #605E5B;
         transition: all 0.2s;
     }
 
     .btn-glass:hover:not(.disabled) {
-        background: rgba(255, 255, 255, 0.1);
-        border-color: rgba(255, 255, 255, 0.2);
-        color: white;
+        background: rgba(101, 96, 79, 0.1);
+        border-color: rgba(101, 96, 79, 0.2);
+        color: var(--text-main);
     }
 
     .empty-icon-box {
         width: 80px;
         height: 80px;
-        background: rgba(255, 255, 255, 0.02);
+        background: rgba(101, 96, 79, 0.02);
         border: 2px dashed var(--glass-border);
         border-radius: 20px;
         display: flex;

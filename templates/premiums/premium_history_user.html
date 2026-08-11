@@ -13,12 +13,20 @@
     }
     .billing-hero {
         padding: 28px;
-        border-radius: 22px;
-        border: 1px solid rgba(148, 163, 184, 0.18);
-        background:
-            radial-gradient(circle at top right, rgba(59, 130, 246, 0.18), transparent 34%),
-            linear-gradient(155deg, rgba(15, 23, 42, 0.98), rgba(15, 23, 42, 0.88) 55%, rgba(30, 41, 59, 0.98));
-        box-shadow: 0 18px 42px rgba(2, 6, 23, 0.24);
+        border-radius: var(--radius-lg);
+        background: var(--bg-panel);
+        border: 1px solid var(--border-color);
+        box-shadow: var(--card-shadow);
+        position: relative;
+        overflow: hidden;
+    }
+    .billing-hero::before {
+        content: "";
+        position: absolute;
+        inset: 0 0 auto 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--accent), rgba(255, 255, 255, 0));
+        opacity: 0.95;
     }
     .hero-grid {
         display: grid;
@@ -28,37 +36,52 @@
     }
     .hero-metric {
         padding: 16px 18px;
-        border-radius: 16px;
-        background: rgba(8, 15, 30, 0.56);
-        border: 1px solid rgba(148, 163, 184, 0.08);
+        border-radius: var(--radius-md);
+        background: rgba(101, 96, 79, 0.04);
+        border: 1px solid var(--border-color);
+        transition: all 0.3s ease;
+    }
+    .hero-metric:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--card-shadow);
+        background: #FFFFFF;
     }
     .hero-label {
-        color: #7f91ab;
+        color: var(--text-muted);
         font-size: 0.72rem;
         text-transform: uppercase;
         letter-spacing: 0.1em;
         margin-bottom: 6px;
+        font-weight: 600;
     }
     .hero-value {
-        color: #605E5B;
+        color: var(--text-main);
         font-size: 1.5rem;
         font-weight: 700;
     }
     .summary-card {
-        border-radius: 20px;
-        border: 1px solid rgba(148, 163, 184, 0.14);
-        background:
-            radial-gradient(circle at top right, rgba(59, 130, 246, 0.08), transparent 28%),
-            linear-gradient(160deg, rgba(15, 23, 42, 0.96), rgba(15, 23, 42, 0.86) 60%, rgba(30, 41, 59, 0.95));
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--border-color);
+        background: var(--bg-panel);
         overflow: hidden;
-        box-shadow: 0 14px 32px rgba(2, 6, 23, 0.22);
+        box-shadow: var(--card-shadow);
+        position: relative;
+    }
+    .summary-card::before {
+        content: "";
+        position: absolute;
+        inset: 0 0 auto 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--accent), rgba(255, 255, 255, 0));
+        opacity: 0.95;
     }
     .summary-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
         padding: 20px 22px;
-        border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+        background: linear-gradient(to right, rgba(101, 96, 79, 0.03), transparent);
+        border-bottom: 1px solid var(--border-color);
     }
     .summary-table {
         width: 100%;
@@ -66,24 +89,31 @@
         border-spacing: 0;
     }
     .summary-table thead th {
-        color: #7f91ab;
-        font-size: 0.72rem;
+        color: var(--text-muted);
+        font-weight: 600;
+        font-size: 0.68rem;
         text-transform: uppercase;
         letter-spacing: 0.1em;
         padding: 14px 20px;
-        border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+        border-bottom: 1px solid var(--border-color);
+        background: rgba(101, 96, 79, 0.02);
     }
     .summary-table tbody tr {
         cursor: pointer;
-        transition: background 0.2s ease;
+        transition: all 0.25s ease;
     }
-    .summary-table tbody tr:hover {
-        background: rgba(59, 130, 246, 0.06);
+    .summary-table tbody tr:hover td {
+        background: var(--hover-surface);
     }
     .summary-table tbody td {
         padding: 18px 20px;
-        color: #cbd5e1;
-        border-bottom: 1px solid rgba(148, 163, 184, 0.06);
+        color: var(--text-main);
+        font-size: 13px;
+        border-bottom: 1px solid var(--border-color);
+        background: #FFFFFF;
+    }
+    .summary-table tbody tr:last-child td {
+        border-bottom: none;
     }
     .status-pill {
         display: inline-flex;
@@ -95,31 +125,33 @@
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.08em;
+        border-width: 1px;
+        border-style: solid;
     }
     .status-pill.upcoming {
-        color: #60a5fa;
-        background: rgba(59, 130, 246, 0.12);
-        border: 1px solid rgba(59, 130, 246, 0.22);
+        background: rgba(78, 105, 135, 0.10);
+        color: var(--accent-blue);
+        border-color: rgba(78, 105, 135, 0.20);
     }
     .status-pill.overdue {
-        color: #f87171;
-        background: rgba(197, 90, 90, 0.12);
-        border: 1px solid rgba(197, 90, 90, 0.24);
+        background: rgba(176, 74, 74, 0.10);
+        color: var(--danger);
+        border-color: rgba(176, 74, 74, 0.20);
     }
     .status-pill.complete {
-        color: #34d399;
-        background: rgba(16, 185, 129, 0.12);
-        border: 1px solid rgba(16, 185, 129, 0.22);
+        background: rgba(62, 124, 69, 0.10);
+        color: var(--success);
+        border-color: rgba(62, 124, 69, 0.20);
     }
     .row-link {
-        color: #60a5fa;
+        color: var(--accent-blue);
         font-weight: 700;
         text-decoration: none;
     }
     .table-empty {
         padding: 48px 20px;
         text-align: center;
-        color: rgba(156, 149, 143, 0.7);
+        color: var(--text-muted);
     }
     @media (max-width: 768px) {
         .summary-table thead {
@@ -134,30 +166,33 @@
         }
         .summary-table tbody tr {
             padding: 16px 18px;
-            border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+            border-bottom: 1px solid var(--border-color);
         }
         .summary-table tbody td {
             padding: 6px 0;
             border: 0;
+            background: transparent;
         }
     }
 </style>
 {% endblock %}
 
 {% block content %}
+<div class="dashboard-container">
+<div class="container-fluid px-0 pt-4 pb-5">
 <div class="billing-shell">
     <section class="billing-hero">
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-4">
             <div class="flex-grow-1">
-                <h3 class="mb-1 fw-bold"><span class="gradient-title-cyan">Billing Console</span></h3>
+                <h3 class="mb-1 fw-bold"><span class="gradient-title">Billing Console</span></h3>
                 <p class="text-muted mb-0">Review your payment status and installment schedules.</p>
             </div>
             <div class="d-flex align-items-center gap-3">
                 <a href="{% url 'accounts:policyholder_dashboard' %}" class="btn btn-outline-secondary btn-sm px-4 rounded-pill">
                     <i class="bi bi-arrow-left me-2"></i>Back to Dashboard
                 </a>
-                <div class="bg-dark px-3 py-1 rounded-pill border border-secondary border-opacity-25">
-                    <span class="text-muted small">Endpoint: <span class="text-info-emphasis fw-semibold">{{ dues_summary_api_url }}</span></span>
+                <div class="px-3 py-1 rounded-pill" style="background: rgba(101, 96, 79, 0.08); border: 1px solid var(--border-color);">
+                    <span class="text-muted small">Endpoint: <span class="fw-semibold" style="color: var(--accent-blue);">{{ dues_summary_api_url }}</span></span>
                 </div>
             </div>
         </div>
@@ -177,7 +212,7 @@
             </div>
             <div class="hero-metric">
                 <div class="hero-label">Remaining Amount</div>
-                <div class="hero-value">₹{{ total_remaining_amount|floatformat:2|intcomma }}</div>
+                <div class="hero-value" style="color: var(--danger);">₹{{ total_remaining_amount|floatformat:2|intcomma }}</div>
             </div>
         </div>
     </section>
@@ -185,7 +220,7 @@
     <section class="summary-card">
         <div class="summary-header">
             <div>
-                <h5 class="mb-1"><span class="gradient-title-cyan">Policy Dues Dashboard</span></h5>
+                <h5 class="mb-1"><i class="bi bi-receipt me-2" style="color: var(--accent) !important;"></i><span class="gradient-title">Policy Dues Dashboard</span></h5>
                 <p class="text-muted mb-0 small">Each row is one policy only. Click a row to open the full installment schedule.</p>
             </div>
         </div>
@@ -194,25 +229,25 @@
             <table class="summary-table">
                 <thead>
                     <tr>
-                        <th>Policy</th>
+                        <th class="ps-4">Policy</th>
                         <th>Next Due Date</th>
                         <th>Next Due Amount</th>
                         <th>Pending Installments</th>
                         <th>Progress</th>
-                        <th class="text-end">Open</th>
+                        <th class="pe-4 text-end">Action</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for item in policy_summaries %}
                     <tr onclick="window.location.href='{% url 'premiums:policy_dues_detail' item.policy_id %}'">
-                        <td>
-                            <div class="fw-bold text-white">{{ item.policy_number }}</div>
+                        <td class="ps-4">
+                            <div class="fw-bold">{{ item.policy_number }}</div>
                             <div class="small text-muted">{{ item.policy_type|default:"General"|upper }}</div>
                         </td>
                         <td>
                             {% if item.next_due_date %}
-                                <div class="text-white">{{ item.next_due_date|date:"M d, Y" }}</div>
-                                <div class="small">
+                                <div class="fw-bold">{{ item.next_due_date|date:"M d, Y" }}</div>
+                                <div class="small mt-1">
                                     <span class="status-pill {% if item.next_due_status == 'overdue' %}overdue{% else %}upcoming{% endif %}">
                                         {{ item.next_due_status|default:"upcoming"|title }}
                                     </span>
@@ -221,7 +256,7 @@
                                 <span class="status-pill complete">No Pending Dues</span>
                             {% endif %}
                         </td>
-                        <td class="fw-bold text-white">
+                        <td class="fw-bold" style="color: var(--danger);">
                             {% if item.next_due_amount is not None %}
                                 ₹{{ item.next_due_amount|floatformat:2|intcomma }}
                             {% else %}
@@ -229,17 +264,17 @@
                             {% endif %}
                         </td>
                         <td>
-                            <div class="fw-bold text-white">{{ item.pending_count }}</div>
+                            <div class="fw-bold">{{ item.pending_count }}</div>
                             <div class="small text-muted">of {{ item.total_installments }} installments</div>
                         </td>
                         <td>
                             <div class="small text-muted mb-1">Paid {{ item.paid_count }} / {{ item.total_installments }}</div>
-                            <div class="progress" style="height: 8px; background: rgba(255,255,255,0.06);">
-                                <div class="progress-bar bg-success" style="width:{% widthratio item.paid_count item.total_installments 100 %}%"></div>
+                            <div class="progress" style="height: 6px; background: rgba(101, 96, 79, 0.1); border-radius: 10px;">
+                                <div class="progress-bar" style="background-color: var(--success); width:{% widthratio item.paid_count item.total_installments 100 %}%"></div>
                             </div>
                         </td>
-                        <td class="text-end">
-                            <a class="row-link" href="{% url 'premiums:policy_dues_detail' item.policy_id %}">View Schedule</a>
+                        <td class="pe-4 text-end">
+                            <a class="btn btn-outline-secondary btn-sm rounded-pill px-3 hover-scale" href="{% url 'premiums:policy_dues_detail' item.policy_id %}">View Schedule</a>
                         </td>
                     </tr>
                     {% empty %}
@@ -254,5 +289,7 @@
             </table>
         </div>
     </section>
+</div>
+</div>
 </div>
 {% endblock %}

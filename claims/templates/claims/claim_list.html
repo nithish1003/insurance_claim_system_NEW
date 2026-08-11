@@ -17,9 +17,9 @@
     /* Premium Table System (Standalone) */
     .premium-card {
         --section-accent: #65604F;
-        background: #FFFFFF;
+        background: rgba(101, 96, 79, 0.02);
         backdrop-filter: blur(12px);
-        border: 1px solid rgba(255, 255, 255, 0.08);
+        border: 1px solid var(--border-color);
         border-radius: 18px;
         box-shadow: 0 14px 32px rgba(2, 6, 23, 0.24);
         margin-bottom: 30px;
@@ -38,7 +38,7 @@
 
     .premium-card-header {
         padding: 20px 24px;
-        background: linear-gradient(to right, rgba(255, 255, 255, 0.03), transparent);
+        background: rgba(101, 96, 79, 0.02);
         border-bottom: 1px solid rgba(148, 163, 184, 0.1);
         display: flex;
         justify-content: space-between;
@@ -66,7 +66,7 @@
 
     .premium-table thead th {
         background: transparent;
-        color: rgba(156, 149, 143, 0.6);
+        color: var(--text-muted);
         font-weight: 700;
         font-size: 0.68rem;
         text-transform: uppercase;
@@ -78,20 +78,20 @@
     .premium-table tbody td {
         padding: 16px 18px;
         vertical-align: middle;
-        color: #cbd5e1;
+        color: var(--text-main);
         font-size: 13px;
-        background: #FFFFFF;
-        border-top: 1px solid rgba(255, 255, 255, 0.05);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        background: rgba(101, 96, 79, 0.02);
+        border-top: 1px solid rgba(101, 96, 79, 0.05);
+        border-bottom: 1px solid rgba(101, 96, 79, 0.05);
     }
 
     .premium-table tbody td:first-child {
-        border-left: 1px solid rgba(255, 255, 255, 0.05);
+        border-left: 1px solid rgba(101, 96, 79, 0.05);
         border-radius: 14px 0 0 14px;
     }
 
     .premium-table tbody td:last-child {
-        border-right: 1px solid rgba(255, 255, 255, 0.05);
+        border-right: 1px solid rgba(101, 96, 79, 0.05);
         border-radius: 0 14px 14px 0;
     }
 
@@ -180,29 +180,30 @@
     /* Form styling overrides */
     .form-control,
     .form-select {
-        background: #FFFFFF;
-        border-color: rgba(255, 255, 255, 0.08);
+        background: rgba(101, 96, 79, 0.02);
+        border-color: var(--border-color);
         color: #605E5B;
     }
 
     .form-control:focus,
     .form-select:focus {
-        background: rgba(255, 255, 255, 0.08);
+        background: var(--border-color);
         border-color: #3E7C45;
-        color: white;
+        color: #fff;
         box-shadow: none;
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid px-4 py-3">
+<div class="dashboard-container">
+<div class="container-fluid px-0 pt-4 pb-5">
 
     <!-- PAGE HEADER -->
     <div class="d-flex justify-content-between align-items-center mb-4" data-aos="fade-down">
 
         <div>
-            <h4 class="mb-0 fw-bold"><span class="gradient-title">Claims Management</span></h4>
+            <h4 class="mb-0 fw-bold" style="color: var(--text-main);""><span class="gradient-title">Claims Management</span></h4>
             <span class="text-muted small">
                 Manage and track your active insurance claims
             </span>
@@ -226,49 +227,49 @@
     <div class="row g-3 mb-4" data-aos="fade-up" data-aos-delay="100">
         <div class="col-4 col-md">
             <div class="premium-card p-2 text-center mb-0 hover-scale">
-                <div class="fs-5 fw-bold text-white">{{ summary.total|default:0 }}</div>
+                <div class="fs-5 fw-bold" style="color: var(--text-main);" ">{{ summary.total|default:0 }}</div>
                 <div class="x-small text-muted text-uppercase tracking-wider">Total</div>
             </div>
         </div>
         <div class="col-4 col-md">
             <div class="premium-card p-2 text-center mb-0 hover-scale" style="border-bottom: 2px solid #65604F;">
-                <div class="fs-5 fw-bold text-info">{{ summary.submitted|default:0 }}</div>
+                <div class="fs-5 fw-bold" style="color: var(--text-main);" text-primary">{{ summary.submitted|default:0 }}</div>
                 <div class="x-small text-muted text-uppercase tracking-wider">Subm.</div>
             </div>
         </div>
         <div class="col-4 col-md">
             <div class="premium-card p-2 text-center mb-0 hover-scale" style="border-bottom: 2px solid #C88A2D;">
-                <div class="fs-5 fw-bold text-warning">{{ summary.under_review|default:0 }}</div>
+                <div class="fs-5 fw-bold" style="color: var(--text-main);" ">{{ summary.under_review|default:0 }}</div>
                 <div class="x-small text-muted text-uppercase tracking-wider">Review</div>
             </div>
         </div>
         <div class="col-4 col-md">
             <div class="premium-card p-2 text-center mb-0 hover-scale" style="border-bottom: 2px solid #65604F;">
-                <div class="fs-5 fw-bold" style="color: #65604F;">{{ summary.waiting_approval|default:0 }}</div>
+                <div class="fs-5 fw-bold" style="color: var(--text-main);"" style="color: #65604F;">{{ summary.waiting_approval|default:0 }}</div>
                 <div class="x-small text-muted text-uppercase tracking-wider">Waiting Appr.</div>
             </div>
         </div>
         <div class="col-4 col-md">
             <div class="premium-card p-2 text-center mb-0 hover-scale" style="border-bottom: 2px solid #f43f5e;">
-                <div class="fs-5 fw-bold" style="color: #f43f5e;">{{ summary.investigation|default:0 }}</div>
+                <div class="fs-5 fw-bold" style="color: var(--text-main);"" style="color: #f43f5e;">{{ summary.investigation|default:0 }}</div>
                 <div class="x-small text-muted text-uppercase tracking-wider">Investig.</div>
             </div>
         </div>
         <div class="col-4 col-md">
             <div class="premium-card p-2 text-center mb-0 hover-scale" style="border-bottom: 2px solid #3E7C45;">
-                <div class="fs-5 fw-bold text-success">{{ summary.approved|default:0 }}</div>
+                <div class="fs-5 fw-bold" style="color: var(--text-main);" text-success">{{ summary.approved|default:0 }}</div>
                 <div class="x-small text-muted text-uppercase tracking-wider">Approved</div>
             </div>
         </div>
         <div class="col-4 col-md">
             <div class="premium-card p-2 text-center mb-0 hover-scale" style="border-bottom: 2px solid #B04A4A;">
-                <div class="fs-5 fw-bold text-danger">{{ summary.rejected|default:0 }}</div>
+                <div class="fs-5 fw-bold" style="color: var(--text-main);" text-danger">{{ summary.rejected|default:0 }}</div>
                 <div class="x-small text-muted text-uppercase tracking-wider">Rejected</div>
             </div>
         </div>
         <div class="col-4 col-md">
             <div class="premium-card p-2 text-center mb-0 hover-scale" style="border-bottom: 2px solid #65604F;">
-                <div class="fs-5 fw-bold text-white">{{ summary.settled|default:0 }}</div>
+                <div class="fs-5 fw-bold" style="color: var(--text-main);" ">{{ summary.settled|default:0 }}</div>
                 <div class="x-small text-muted text-uppercase tracking-wider" style="color: #65604F;">Settled</div>
             </div>
         </div>
@@ -319,7 +320,7 @@
     <!-- CLAIM TABLE -->
     <div class="premium-card" data-aos="fade-up" data-aos-delay="300">
         <div class="premium-card-header">
-            <h5><i class="bi bi-shield-exclamation me-2 text-warning"></i><span class="gradient-title-cyan">Active Claims Ledger</span></h5>
+            <h5><i class="bi bi-shield-exclamation me-2 "></i><span style="color: var(--text-main);">Active Claims Ledger</span></h5>
             <span class="text-muted small tracking-wider text-uppercase">{{ claims.count }} TOTAL RECORDS</span>
         </div>
 
@@ -344,15 +345,15 @@
                     {% for claim in claims %}
                     <tr>
                         <td class="ps-4">
-                            <div class="fw-bold text-white">{{ claim.claim_number }}</div>
-                            <div class="x-small text-muted opacity-50">{{ claim.public_id }}</div>
+                            <div class="fw-bold" style="color: var(--text-main);">{{ claim.claim_number }}</div>
+                            <div class="x-small text-muted ">{{ claim.public_id }}</div>
                         </td>
                         <td>
-                            <div class="fw-bold text-info small">{{ claim.policy.policy_number }}</div>
+                            <div class="fw-bold text-primary small">{{ claim.policy.policy_number }}</div>
                             <div class="x-small text-muted text-uppercase">{{ claim.get_claim_type_display }}</div>
                         </td>
-                        <td class="small">{{ claim.incident_date|date:"d M Y" }}</td>
-                        <td class="fw-bold text-white">₹{{ claim.claimed_amount|default:0|intcomma }}</td>
+                        <td class="small" style="color: var(--text-main);">{{ claim.incident_date|date:"d M Y" }}</td>
+                        <td class="fw-bold" style="color: var(--text-main);">₹{{ claim.claimed_amount|default:0|intcomma }}</td>
 
                         {% if request.user.role == 'admin' or request.user.is_superuser or request.user.role == 'staff' %}
                         {% with payload=claim.review_payload %}
@@ -361,7 +362,7 @@
                                 <span class="badge {% if payload.risk_label == 'HIGH' %}bg-danger{% elif payload.risk_label == 'MEDIUM' %}bg-warning text-dark{% else %}bg-success{% endif %}">
                                     {{ payload.risk_label }}
                                 </span>
-                                <span class="fw-bold small text-slate-300">{{ payload.risk_score|floatformat:1 }}%</span>
+                                <span class="fw-bold small text-muted">{{ payload.risk_score|floatformat:1 }}%</span>
                             </div>
                         </td>
                         <td>
@@ -369,7 +370,7 @@
                                 ₹{{ payload.final_amount|floatformat:2|intcomma }}
                                 <i class="bi bi-robot ms-1 small"></i>
                             </div>
-                            <div class="x-small text-muted opacity-50 text-uppercase" style="font-size: 8px;">{{ payload.payout_label }}</div>
+                            <div class="x-small text-muted  text-uppercase" style="font-size: 8px;">{{ payload.payout_label }}</div>
                         </td>
                         {% endwith %}
                         {% endif %}
@@ -383,12 +384,12 @@
                             {% if claim.assigned_to %}
                             <div class="d-flex align-items-center gap-2">
                                 <div class="bg-primary rounded-circle text-center"
-                                    style="width: 24px; height: 24px; font-size: 10px; line-height: 24px; color: white;">
+                                    style="width: 24px; height: 24px; font-size: 10px; line-height: 24px; color: #fff;">
                                     {{ claim.assigned_to.username|slice:":1"|upper }}</div>
                                 <span class="small">{{ claim.assigned_to.username }}</span>
                             </div>
                             {% else %}
-                            <span class="text-muted small italic opacity-50">UNASSIGNED</span>
+                            <span class="text-muted small italic ">UNASSIGNED</span>
                             {% endif %}
                         </td>
                         <td class="pe-4 text-end">
@@ -416,9 +417,9 @@
                     <tr class="table-empty-row">
                         <td colspan="9" class="text-center py-5">
                             <div class="mb-3">
-                                <i class="bi bi-shield-slash text-muted opacity-25" style="font-size: 3rem;"></i>
+                                <i class="bi bi-shield-slash text-muted opacity-75" style="font-size: 3rem;"></i>
                             </div>
-                            <div class="text-white fw-bold mb-1">
+                            <div class=" fw-bold" style="color: var(--text-main);" mb-1">
                                 {% if is_filtered %}
                                 No claims match current filters
                                 {% elif not has_claims_at_all %}
@@ -451,7 +452,7 @@
     </div>
 
 </div>
-
+</div>
 {% endblock %}
 
 {% block extra_js %}

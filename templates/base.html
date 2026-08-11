@@ -121,6 +121,7 @@
             background: transparent;
             position: relative;
             overflow: hidden;
+            box-sizing: border-box !important;
         }
 
         .sidebar-brand::after {
@@ -134,19 +135,26 @@
         }
 
         .sidebar-brand h3 {
-            margin: 0;
-            font-weight: 700;
-            letter-spacing: 1px;
-            color: #F4EEE2;
+            margin: 0 !important;
+            padding: 0 !important;
+            font-weight: 800 !important;
+            letter-spacing: 1.5px;
+            background: linear-gradient(135deg, #FFFFFF 0%, var(--accent-light) 50%, #F4EEE2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
             display: flex;
             align-items: center;
             gap: 10px;
-            font-size: 1.2rem;
+            font-size: 21px !important;
+            line-height: 1.5 !important;
+            filter: drop-shadow(0 2px 8px rgba(170, 135, 88, 0.25));
         }
 
         .sidebar-brand h3 i {
             color: var(--accent-light);
-            font-size: 24px;
+            font-size: 24px !important;
+            line-height: 1 !important;
         }
 
         /* Sidebar Section Label */
@@ -708,12 +716,16 @@
         /* Dashboard Card Enhancements */
         .dashboard-card {
             transition: all 0.3s ease;
-            border: 1px solid var(--border-subtle);
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            box-shadow: 0 4px 15px rgba(101, 96, 79, 0.05);
         }
 
         .dashboard-card:hover {
-            border-color: rgba(101, 96, 79, 0.25);
-            box-shadow: var(--card-shadow-hover);
+            border-color: var(--accent);
+            box-shadow: 0 10px 25px -10px rgba(0, 0, 0, 0.1);
+            background: var(--bg-deep);
         }
 
         /* ============================================================
@@ -1235,8 +1247,8 @@
     <div id="sidebar" class="{{ request.user.role }}-sidebar">
 
         <div class="sidebar-brand">
-            <h3 style="margin: 0; font-weight: 900; letter-spacing: 2px; background: linear-gradient(135deg, #413F3D, #697184); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 10px rgba(105, 113, 132, 0.4)); display: flex; align-items: center; gap: 8px;">
-                <i class="bi bi-shield-check" style="color: #697184; -webkit-text-fill-color: initial; font-size: 24px;"></i> ClaimIQ
+            <h3 style="margin: 0; font-weight: 900; letter-spacing: 2px; background: linear-gradient(135deg, #FFFFFF, #E4DACB); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 10px rgba(228, 218, 203, 0.2)); display: flex; align-items: center; gap: 8px;">
+                <i class="bi bi-shield-check" style="color: #E4DACB; -webkit-text-fill-color: initial; font-size: 24px;"></i> ClaimIQ
             </h3>
         </div>
 
@@ -1323,11 +1335,14 @@
                 <div class="mobile-menu-btn" onclick="document.getElementById('sidebar').classList.toggle('show')">
                     <i class="bi bi-list"></i>
                 </div>
-                <b>
+                <div style="font-weight: 800; color: var(--text-main); font-size: 1.05rem; letter-spacing: 0.5px; display: flex; align-items: center; gap: 8px;">
                     {% block breadcrumb %}
-                    Dashboard
+                    <span style="background: rgba(200, 138, 45, 0.1); padding: 6px 16px; border-radius: 20px; border: 1px solid rgba(200, 138, 45, 0.2); color: #C88A2D; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(200, 138, 45, 0.05);">
+                        <i class="bi bi-grid-1x2-fill"></i>
+                        Dashboard
+                    </span>
                     {% endblock %}
-                </b>
+                </div>
             </div>
 
             <div style="flex: 2; display: flex; justify-content: center; align-items: center;">

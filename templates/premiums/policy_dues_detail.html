@@ -7,14 +7,6 @@
 
 {% block extra_css %}
 <style>
-    :root {
-        --accent-blue: #3b82f6;
-        --accent-blue-glow: rgba(59, 130, 246, 0.4);
-        --glass-bg: rgba(30, 41, 59, 0.45);
-        --glass-border: rgba(255, 255, 255, 0.08);
-        --text-dim: rgba(156, 149, 143, 0.7);
-    }
-
     .detail-shell {
         animation: fadeIn 0.6s ease-out;
     }
@@ -24,44 +16,27 @@
         to { opacity: 1; transform: translateY(0); }
     }
 
-    /* Premium Header */
-    .premium-header {
-        background: linear-gradient(90deg, rgba(30, 41, 59, 0.8), transparent);
-        border-left: 4px solid var(--accent-blue);
-        padding: 1.5rem 2rem;
-        border-radius: 0 16px 16px 0;
-        margin-bottom: 2rem;
-        backdrop-filter: blur(10px);
-    }
-
-    /* Glass Cards */
+    /* Glass Cards / Panel */
     .glass-card {
-        background: var(--glass-bg);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        border: 1px solid var(--glass-border);
-        border-radius: 24px;
+        background: var(--bg-panel);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
         overflow: hidden;
         margin-bottom: 1.5rem;
-        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+        box-shadow: var(--card-shadow);
+        position: relative;
     }
 
     /* Hero Section */
     .dues-hero {
-        position: relative;
-        padding: 1.25rem 1.75rem;
-        background: 
-            radial-gradient(circle at top right, rgba(59, 130, 246, 0.12), transparent 35%),
-            var(--glass-bg);
+        padding: 1.5rem 1.75rem;
     }
 
     .dues-hero::before {
         content: '';
         position: absolute;
-        top: 0; left: 0; width: 100%; height: 100%;
-        background: url('https://www.transparenttextures.com/patterns/carbon-fibre.png');
-        opacity: 0.03;
-        pointer-events: none;
+        top: 0; left: 0; width: 100%; height: 3px;
+        background: linear-gradient(90deg, var(--accent), rgba(255, 255, 255, 0));
     }
 
     /* Modern Progress */
@@ -73,18 +48,17 @@
         justify-content: space-between;
         font-size: 0.85rem;
         margin-bottom: 0.5rem;
-        color: var(--text-dim);
+        color: var(--text-muted);
     }
     .progress-outer {
         height: 8px;
-        background: rgba(255,255,255,0.05);
+        background: rgba(101, 96, 79, 0.1);
         border-radius: 4px;
         overflow: hidden;
     }
     .progress-inner {
         height: 100%;
-        background: linear-gradient(90deg, #3b82f6, #60a5fa);
-        box-shadow: 0 0 15px var(--accent-blue-glow);
+        background: var(--success);
         transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
@@ -95,28 +69,30 @@
         gap: 0.75rem;
     }
     .metric-item {
-        background: rgba(15, 23, 42, 0.4);
-        padding: 0.85rem 1.25rem;
-        border-radius: 16px;
-        border: 1px solid rgba(255,255,255,0.04);
+        background: rgba(101, 96, 79, 0.04);
+        padding: 1rem 1.25rem;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border-color);
         transition: all 0.3s ease;
     }
     .metric-item:hover {
-        border-color: rgba(59, 130, 246, 0.3);
-        background: rgba(15, 23, 42, 0.6);
+        border-color: rgba(101, 96, 79, 0.2);
+        background: #FFFFFF;
         transform: translateY(-2px);
+        box-shadow: var(--card-shadow);
     }
     .metric-label {
         font-size: 0.7rem;
         text-transform: uppercase;
         letter-spacing: 0.12em;
-        color: var(--text-dim);
+        color: var(--text-muted);
         margin-bottom: 0.5rem;
+        font-weight: 600;
     }
     .metric-value {
         font-size: 1.1rem;
         font-weight: 800;
-        color: white;
+        color: var(--text-main);
     }
 
     /* Table Styling */
@@ -125,25 +101,27 @@
         width: 100%;
     }
     .timeline-table th {
-        background: rgba(15, 23, 42, 0.3);
+        background: rgba(101, 96, 79, 0.02);
         padding: 1.25rem 1.5rem;
         font-size: 0.75rem;
         text-transform: uppercase;
         letter-spacing: 0.1em;
-        color: var(--text-dim);
-        border-bottom: 1px solid var(--glass-border);
+        color: var(--text-muted);
+        font-weight: 600;
+        border-bottom: 1px solid var(--border-color);
     }
     .timeline-table td {
         padding: 1.25rem 1.5rem;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        border-bottom: 1px solid var(--border-color);
         vertical-align: middle;
-        color: #e2e8f0;
+        color: var(--text-main);
     }
     .timeline-table tr {
         transition: background 0.2s ease;
+        background: #FFFFFF;
     }
     .timeline-table tr:hover {
-        background: rgba(255, 255, 255, 0.02);
+        background: var(--hover-surface);
     }
 
     /* Action Buttons */
@@ -159,14 +137,13 @@
         gap: 0.5rem;
     }
     .btn-pay {
-        background: linear-gradient(135deg, #65604F, #3b82f6);
+        background: var(--accent);
         color: white;
-        box-shadow: 0 4px 12px rgba(101, 96, 79, 0.3);
     }
     .btn-pay:hover {
         transform: scale(1.05);
-        box-shadow: 0 6px 20px rgba(101, 96, 79, 0.5);
         color: white;
+        background: var(--accent-light);
     }
 
     /* Status Badges */
@@ -177,18 +154,21 @@
         font-weight: 800;
         text-transform: uppercase;
         letter-spacing: 0.05em;
+        border-width: 1px;
+        border-style: solid;
     }
-    .badge-upcoming { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
-    .badge-paid { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
-    .badge-overdue { background: rgba(197, 90, 90, 0.15); color: #f87171; border: 1px solid rgba(197, 90, 90, 0.3); }
+    .badge-upcoming { background: rgba(78, 105, 135, 0.10); color: var(--accent-blue); border-color: rgba(78, 105, 135, 0.20); }
+    .badge-paid { background: rgba(62, 124, 69, 0.10); color: var(--success); border-color: rgba(62, 124, 69, 0.20); }
+    .badge-overdue { background: rgba(176, 74, 74, 0.10); color: var(--danger); border-color: rgba(176, 74, 74, 0.20); }
 
     /* Filter Pills */
     .pills-container {
         display: flex;
         gap: 0.5rem;
-        background: rgba(15, 23, 42, 0.3);
+        background: rgba(101, 96, 79, 0.04);
         padding: 0.4rem;
         border-radius: 14px;
+        border: 1px solid var(--border-color);
         width: fit-content;
     }
     .pill-link {
@@ -196,14 +176,17 @@
         border-radius: 10px;
         font-size: 0.75rem;
         font-weight: 700;
-        color: var(--text-dim);
+        color: var(--text-muted);
         text-decoration: none;
         transition: all 0.2s ease;
     }
+    .pill-link:hover {
+        background: rgba(101, 96, 79, 0.08);
+    }
     .pill-link.active {
-        background: var(--accent-blue);
+        background: var(--accent);
         color: white;
-        box-shadow: 0 4px 12px var(--accent-blue-glow);
+        box-shadow: 0 4px 12px rgba(101, 96, 79, 0.15);
     }
 
     @media (max-width: 768px) {
@@ -219,6 +202,8 @@
 {% endblock %}
 
 {% block content %}
+<div class="dashboard-container">
+<div class="container-fluid px-0 pt-4 pb-5">
 <div class="detail-shell">
     
     <!-- Navigation & Title -->
@@ -226,17 +211,17 @@
         <div>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-1" style="background:transparent; padding:0;">
-                    <li class="breadcrumb-item"><a href="{% url 'premiums:history' %}" class="text-dim">Billing</a></li>
-                    <li class="breadcrumb-item active text-white" aria-current="page">Details</li>
+                    <li class="breadcrumb-item"><a href="{% url 'premiums:history' %}" class="text-muted text-decoration-none hover-scale d-inline-block">Billing</a></li>
+                    <li class="breadcrumb-item active text-muted fw-bold" aria-current="page">Details</li>
                 </ol>
             </nav>
-            <h2 class="text-white fw-bold mb-0" style="letter-spacing: -0.5px;">Installment Schedule</h2>
+            <h2 class="fw-bold mb-0" style="letter-spacing: -0.5px; color: var(--text-main);">Installment Schedule</h2>
         </div>
         <div class="d-flex gap-2">
-            <a href="{% url 'premiums:history' %}" class="btn btn-sm btn-outline-secondary px-3" style="border-radius: 10px;">
+            <a href="{% url 'premiums:history' %}" class="btn btn-sm btn-outline-secondary px-3 hover-scale" style="border-radius: 10px;">
                 <i class="bi bi-arrow-left me-1"></i> Back
             </a>
-            <a href="{% url 'accounts:policyholder_dashboard' %}" class="btn btn-sm btn-outline-primary px-3" style="border-radius: 10px;">
+            <a href="{% url 'accounts:policyholder_dashboard' %}" class="btn btn-sm px-3 hover-scale" style="border-radius: 10px; background: rgba(101, 96, 79, 0.08); border: 1px solid var(--border-color); color: var(--text-main);">
                 <i class="bi bi-house me-1"></i> Dashboard
             </a>
         </div>
@@ -247,21 +232,21 @@
         <div class="row align-items-center g-3">
             <div class="col-lg-6">
                 <div class="d-flex align-items-center gap-3">
-                    <div class="rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 40px; background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 4px 10px rgba(16, 185, 129, 0.25);">
-                        <i class="bi bi-credit-card-2-front text-white fs-5"></i>
+                    <div class="rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 40px; background: rgba(101, 96, 79, 0.1); border: 1px solid var(--border-color);">
+                        <i class="bi bi-credit-card-2-front fs-5" style="color: var(--accent);"></i>
                     </div>
                     <div>
-                        <h5 class="text-white mb-0 fw-bold">{{ schedule.policy.policy_number }}</h5>
-                        <span class="x-small text-primary fw-bold text-uppercase" style="letter-spacing: 1px; font-size: 0.65rem;">{{ schedule.policy.policy_type }} Insurance</span>
+                        <h5 class="mb-0 fw-bold" style="color: var(--text-main);">{{ schedule.policy.policy_number }}</h5>
+                        <span class="fw-bold text-uppercase" style="letter-spacing: 1px; font-size: 0.65rem; color: var(--accent-light);">{{ schedule.policy.policy_type }} Insurance</span>
                     </div>
                 </div>
                 
                 <div class="progress-wrapper">
                     <div class="progress-label" style="font-size: 0.75rem;">
-                        <span class="fw-bold text-white">Payment Progress</span>
-                        <span class="text-white-50">{{ paid_count }} / {{ total_installments }} Paid</span>
+                        <span class="fw-bold" style="color: var(--text-main);">Payment Progress</span>
+                        <span class="text-muted">{{ paid_count }} / {{ total_installments }} Paid</span>
                     </div>
-                    <div class="progress-outer" style="height: 6px;">
+                    <div class="progress-outer">
                         <div class="progress-inner" style="width: {{ paid_percentage }}%;"></div>
                     </div>
                 </div>
@@ -269,13 +254,13 @@
             
             <div class="col-lg-6">
                 <div class="metric-grid">
-                    <div class="metric-item">
+                    <div class="metric-item hover-scale">
                         <div class="metric-label">Next Payment Due</div>
                         <div class="metric-value">{% if next_due %}{{ next_due.due_date|date:"d M, Y" }}{% else %}None{% endif %}</div>
                     </div>
-                    <div class="metric-item">
+                    <div class="metric-item hover-scale">
                         <div class="metric-label">Payable Amount</div>
-                        <div class="metric-value">{% if next_due %}₹{{ next_due.amount|floatformat:2|intcomma }}{% else %}₹0.00{% endif %}</div>
+                        <div class="metric-value" style="color: var(--danger);">{% if next_due %}₹{{ next_due.amount|floatformat:2|intcomma }}{% else %}₹0.00{% endif %}</div>
                     </div>
                 </div>
             </div>
@@ -285,31 +270,31 @@
     <!-- Stats Row -->
     <div class="row g-3 mb-4">
         <div class="col-md-4">
-            <div class="glass-card p-3 text-center">
-                <div class="text-dim x-small text-uppercase mb-1 fw-bold" style="font-size: 0.6rem;">Pending Count</div>
-                <div class="h5 text-warning mb-0 fw-bold">{{ pending_count }} Installments</div>
+            <div class="glass-card p-3 text-center hover-scale">
+                <div class="text-muted x-small text-uppercase mb-1 fw-bold" style="font-size: 0.65rem; letter-spacing: 0.1em;">Pending Count</div>
+                <div class="h5 mb-0 fw-bold" style="color: var(--warning);">{{ pending_count }} Installments</div>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="glass-card p-3 text-center">
-                <div class="text-dim x-small text-uppercase mb-1 fw-bold" style="font-size: 0.6rem;">Remaining Balance</div>
-                <div class="h5 text-white mb-0 fw-bold">₹{{ total_remaining_amount|floatformat:2|intcomma }}</div>
+            <div class="glass-card p-3 text-center hover-scale">
+                <div class="text-muted x-small text-uppercase mb-1 fw-bold" style="font-size: 0.65rem; letter-spacing: 0.1em;">Remaining Balance</div>
+                <div class="h5 mb-0 fw-bold" style="color: var(--text-main);">₹{{ total_remaining_amount|floatformat:2|intcomma }}</div>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="glass-card p-3 text-center">
-                <div class="text-dim x-small text-uppercase mb-1 fw-bold" style="font-size: 0.6rem;">Frequency</div>
-                <div class="h5 text-info mb-0 fw-bold">{{ schedule.get_payment_frequency_display }}</div>
+            <div class="glass-card p-3 text-center hover-scale">
+                <div class="text-muted x-small text-uppercase mb-1 fw-bold" style="font-size: 0.65rem; letter-spacing: 0.1em;">Frequency</div>
+                <div class="h5 mb-0 fw-bold" style="color: var(--accent-light);">{{ schedule.get_payment_frequency_display }}</div>
             </div>
         </div>
     </div>
 
     <!-- Timeline List -->
     <div class="glass-card">
-        <div class="p-4 border-bottom border-white border-opacity-10 d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div class="p-4 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-3" style="border-color: var(--border-color) !important;">
             <div>
-                <h5 class="text-white mb-0">Timeline Distribution</h5>
-                <p class="text-dim small mb-0">Chronological history of your policy installments</p>
+                <h5 class="mb-0 fw-bold" style="color: var(--text-main);">Timeline Distribution</h5>
+                <p class="text-muted small mb-0">Chronological history of your policy installments</p>
             </div>
             
             <div class="pills-container">
@@ -321,29 +306,29 @@
         </div>
 
         <div class="table-responsive">
-            <table class="table timeline-table text-nowrap">
+            <table class="table timeline-table text-nowrap mb-0">
                 <thead>
                     <tr>
-                        <th>#</th>
+                        <th class="ps-4">#</th>
                         <th>Due Date</th>
                         <th>Installment Amount</th>
                         <th>Status</th>
                         <th>Settled On</th>
                         <th>Txn Reference</th>
-                        <th class="text-end">Action</th>
+                        <th class="pe-4 text-end">Action</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for payment in payments %}
                     <tr class="align-middle">
-                        <td><span class="text-white-50 small">#</span><span class="fw-bold">{{ payment.installment_number }}</span></td>
+                        <td class="ps-4"><span class="text-muted small">#</span><span class="fw-bold">{{ payment.installment_number }}</span></td>
                         <td>
                             <div class="d-flex align-items-center gap-2">
-                                <i class="bi bi-calendar-event text-dim"></i>
+                                <i class="bi bi-calendar-event" style="color: var(--accent-light);"></i>
                                 <span class="fw-semibold">{{ payment.due_date|date:"d M, Y" }}</span>
                             </div>
                         </td>
-                        <td><span class="text-white fw-bold">₹{{ payment.amount|floatformat:2|intcomma }}</span></td>
+                        <td><span class="fw-bold">₹{{ payment.amount|floatformat:2|intcomma }}</span></td>
                         <td>
                             <span class="badge-modern badge-{{ payment.display_status }}">
                                 {{ payment.display_status_label }}
@@ -353,30 +338,30 @@
                             {% if payment.paid_date %}
                                 <span class="small">{{ payment.paid_date|date:"d M, Y" }}</span>
                             {% else %}
-                                <span class="text-dim small">--</span>
+                                <span class="text-muted small">--</span>
                             {% endif %}
                         </td>
                         <td>
-                            <span class="font-monospace small text-dim">{{ payment.transaction_reference|default:"REC-XXXXX" }}</span>
+                            <span class="font-monospace small text-muted">{{ payment.transaction_reference|default:"REC-XXXXX" }}</span>
                         </td>
-                        <td class="text-end">
+                        <td class="pe-4 text-end">
                             {% if payment.show_pay_now %}
                                 <a class="btn-action btn-pay" href="{% url 'premiums:pay' payment.public_id %}">
                                     <i class="bi bi-wallet2"></i> Pay Securely
                                 </a>
                             {% else %}
-                                <div class="text-success small fw-bold"><i class="bi bi-shield-check me-1"></i> Completed</div>
+                                <div class="small fw-bold" style="color: var(--success);"><i class="bi bi-shield-check me-1"></i> Completed</div>
                             {% endif %}
                         </td>
                     </tr>
                     {% empty %}
                     <tr>
                         <td colspan="7" class="text-center py-5">
-                            <div class="text-dim opacity-40 mb-3">
+                            <div class="text-muted opacity-50 mb-3">
                                 <i class="bi bi-clipboard2-x fs-1"></i>
                             </div>
-                            <h6 class="text-white-50">No data found</h6>
-                            <p class="text-dim small">No installments match your current selection.</p>
+                            <h6 class="text-muted">No data found</h6>
+                            <p class="text-muted small">No installments match your current selection.</p>
                         </td>
                     </tr>
                     {% endfor %}
@@ -384,5 +369,7 @@
             </table>
         </div>
     </div>
+</div>
+</div>
 </div>
 {% endblock %}

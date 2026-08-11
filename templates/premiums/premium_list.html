@@ -11,44 +11,43 @@
     
     /* Premium Table System (Standalone) */
     .premium-card {
-        background: rgba(17, 28, 53, 0.4);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: var(--bg-panel);
+        border: 1px solid var(--border-color);
         border-radius: 16px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
         margin-bottom: 30px;
         overflow: hidden;
     }
     .premium-card-header {
         padding: 20px 24px;
-        background: rgba(255, 255, 255, 0.02);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        background: rgba(101, 96, 79, 0.02);
+        border-bottom: 1px solid var(--border-color);
         display: flex;
         justify-content: space-between;
         align-items: center;
     }
-    .premium-card-header h5 { margin-bottom: 0; color: #f1f5f9; font-weight: 700; font-size: 1rem; }
+    .premium-card-header h5 { margin-bottom: 0; color: var(--text-main); font-weight: 700; font-size: 1rem; }
     
     .premium-table-container { overflow-x: auto; }
     .premium-table { width: 100%; border-collapse: separate; border-spacing: 0; }
     .premium-table thead th {
-        background: rgba(0, 0, 0, 0.3);
-        color: rgba(156, 149, 143, 0.7);
+        background: rgba(101, 96, 79, 0.03);
+        color: var(--text-muted);
         font-weight: 700;
         font-size: 11px;
         text-transform: uppercase;
         letter-spacing: 1px;
         padding: 16px 20px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        border-bottom: 1px solid var(--border-color);
     }
     .premium-table tbody td {
         padding: 16px 20px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        border-bottom: 1px solid rgba(101, 96, 79, 0.05);
         vertical-align: middle;
-        color: #cbd5e1;
+        color: var(--text-main);
         font-size: 13px;
     }
-    .premium-table tbody tr:hover td { background: rgba(101, 96, 79, 0.04); }
+    .premium-table tbody tr:hover td { background: rgba(101, 96, 79, 0.02); }
     .premium-table tbody tr:last-child td { border-bottom: none; }
 
     /* Badges */
@@ -128,7 +127,7 @@
     {% endif %}
     <div class="d-flex justify-content-between align-items-center mb-4" data-aos="fade-down">
         <div>
-            <h3 class="mb-1 fw-bold"><span class="gradient-title-cyan">Premium Management</span></h3>
+            <h3 class="mb-1 fw-bold"><span style="color: var(--text-main);">Premium Management</span></h3>
             <p class="text-muted mb-0">Monitor and configure revenue schedules for all active policies.</p>
         </div>
         {% if request.user.is_superuser or request.user.role == "admin" %}
@@ -157,7 +156,7 @@
         <div class="tab-pane fade show active" id="user-content" role="tabpanel">
             <div class="premium-card" data-aos="fade-up" data-aos-delay="100">
                 <div class="premium-card-header">
-                    <h5><i class="bi bi-receipt-cutoff me-2 text-primary"></i><span class="gradient-title-cyan">Revenue Streams — Subscriptions</span></h5>
+                    <h5><i class="bi bi-receipt-cutoff me-2" style="color: var(--accent);"></i><span style="color: var(--text-main);">Revenue Streams — Subscriptions</span></h5>
                     <span class="text-muted small tracking-wider text-uppercase">AUDITING USER ACCOUNTS</span>
                 </div>
                 <div class="premium-table-container">
@@ -180,19 +179,19 @@
                             {% for schedule in schedules %}
                             {% if schedule.user_policy %}
                             <tr>
-                                <td class="ps-4 fw-bold text-white">{{ schedule.policy.policy_number }}</td>
+                                <td class="ps-4 fw-bold ">{{ schedule.policy.policy_number }}</td>
                                 <td class="fw-semibold">₹{{ schedule.base_premium|default:0|intcomma }}</td>
-                                <td class="small opacity-75">
-                                    <span class="text-info">₹{{ schedule.gst_amount|default:0|intcomma }}</span>
+                                <td class="small ">
+                                    <span class="text-primary">₹{{ schedule.gst_amount|default:0|intcomma }}</span>
                                     <div class="text-muted" style="font-size: 0.65rem;">({{ schedule.gst_percentage }}% GST)</div>
                                 </td>
-                                <td class="text-info fw-bold">₹{{ schedule.gross_premium|default:0|intcomma }}</td>
-                                <td><span class="badge bg-secondary opacity-75">{{ schedule.get_payment_frequency_display }}</span></td>
+                                <td class="text-primary fw-bold">₹{{ schedule.gross_premium|default:0|intcomma }}</td>
+                                <td><span class="badge bg-secondary ">{{ schedule.get_payment_frequency_display }}</span></td>
                                 <td class="small">
-                                    <div class="text-white fw-bold"><i class="bi bi-person-check me-1 text-success"></i>{{ schedule.user_policy.user.username }}</div>
+                                    <div class=" fw-bold"><i class="bi bi-person-check me-1 text-success"></i>{{ schedule.user_policy.user.username }}</div>
                                     <div class="text-muted" style="font-size: 0.65rem;">Certificate: {{ schedule.user_policy.certificate_number }}</div>
                                 </td>
-                                <td><span class="px-2 py-1 rounded bg-dark border border-secondary small">{{ schedule.total_installments }}</span></td>
+                                <td><span class="px-2 py-1 rounded bg-light border border-secondary small">{{ schedule.total_installments }}</span></td>
                                 <td class="fw-bold">₹{{ schedule.installment_amount|default:0|intcomma }}</td>
                                 <td class="small text-muted">
                                     {{ schedule.start_date|date:"M d, Y" }} <i class="bi bi-arrow-right mx-1 opacity-25"></i> {{ schedule.end_date|date:"M d, Y" }}
@@ -220,7 +219,7 @@
         <div class="tab-pane fade" id="master-content" role="tabpanel">
             <div class="premium-card" data-aos="fade-up" data-aos-delay="100">
                 <div class="premium-card-header">
-                    <h5><i class="bi bi-gear-wide-connected me-2 text-primary"></i><span class="gradient-title">Global Pricing Templates</span></h5>
+                    <h5><i class="bi bi-gear-wide-connected me-2" style="color: var(--accent);"></i><span style="color: var(--text-main);">Global Pricing Templates</span></h5>
                     <span class="text-muted small tracking-wider text-uppercase">MASTER CONFIGURATION</span>
                 </div>
                 <div class="premium-table-container">
@@ -243,15 +242,15 @@
                             {% for schedule in schedules %}
                             {% if not schedule.user_policy %}
                             <tr>
-                                <td class="ps-4 fw-bold text-white">{{ schedule.policy.policy_number }}</td>
+                                <td class="ps-4 fw-bold ">{{ schedule.policy.policy_number }}</td>
                                 <td class="fw-semibold">₹{{ schedule.base_premium|default:0|intcomma }}</td>
-                                <td class="small opacity-75">
-                                    <span class="text-info">₹{{ schedule.gst_amount|default:0|intcomma }}</span>
+                                <td class="small ">
+                                    <span class="text-primary">₹{{ schedule.gst_amount|default:0|intcomma }}</span>
                                     <div class="text-muted" style="font-size: 0.65rem;">({{ schedule.gst_percentage }}% GST)</div>
                                 </td>
-                                <td class="text-info fw-bold">₹{{ schedule.gross_premium|default:0|intcomma }}</td>
-                                <td><span class="badge bg-secondary opacity-75">{{ schedule.get_payment_frequency_display }}</span></td>
-                                <td><span class="px-2 py-1 rounded bg-dark border border-secondary small">{{ schedule.total_installments }}</span></td>
+                                <td class="text-primary fw-bold">₹{{ schedule.gross_premium|default:0|intcomma }}</td>
+                                <td><span class="badge bg-secondary ">{{ schedule.get_payment_frequency_display }}</span></td>
+                                <td><span class="px-2 py-1 rounded bg-light border border-secondary small">{{ schedule.total_installments }}</span></td>
                                 <td class="fw-bold">₹{{ schedule.installment_amount|default:0|intcomma }}</td>
                                 <td class="small text-muted">
                                     {{ schedule.start_date|date:"M d, Y" }} <i class="bi bi-arrow-right mx-1 opacity-25"></i> {{ schedule.end_date|date:"M d, Y" }}

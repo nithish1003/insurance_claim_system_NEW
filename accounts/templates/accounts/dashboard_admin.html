@@ -304,8 +304,8 @@
         }
 
         .policy-status-badge.status-default {
-            background: rgba(148, 163, 184, 0.12);
-            color: var(--text-muted);
+            background: rgba(101, 96, 79, 0.15);
+            color: var(--text-main);
             border-color: rgba(148, 163, 184, 0.18);
         }
 
@@ -732,7 +732,7 @@
             <div class="premium-table-card">
                 <div class="card-header border-0 pb-0 d-flex justify-content-between align-items-center p-4">
                     <div>
-                        <h5 class="mb-1 fw-bold"><i class="bi bi-shield-shaded me-2 text-primary"></i><span class="gradient-title-cyan">Executive Payout Integrity Analytics</span></h5>
+                        <h5 class="mb-1 fw-bold" style="color: var(--text-main);"><i class="bi bi-shield-shaded me-2" style="color: var(--accent);"></i>Executive Payout Integrity Analytics</h5>
                         <p class="text-muted small mb-0">Authoritative Amount Settlement & Leakage Recovery Control</p>
                     </div>
                     <div class="d-flex gap-2">
@@ -748,7 +748,7 @@
                             <div class="integrity-metric-card">
                                 <div class="text-muted small fw-bold text-uppercase mb-2">High Mismatch (>15%)</div>
                                 <div class="d-flex align-items-baseline gap-2">
-                                    <h2 class="mb-0 fw-bold text-white">{{ integrity_metrics.high_mismatch_count }}</h2>
+                                    <h2 class="mb-0 fw-bold text-dark">{{ integrity_metrics.high_mismatch_count }}</h2>
                                     <span class="text-danger small"><i class="bi bi-graph-up-arrow"></i> Critical</span>
                                 </div>
                                 <div class="progress mt-3" style="height: 4px; background: rgba(101, 96, 79, 0.02);">
@@ -762,7 +762,7 @@
                                 <div class="d-flex align-items-baseline gap-2">
                                     <h2 class="mb-0 fw-bold text-success">₹{{ integrity_metrics.recovered_leakage|intcomma }}</h2>
                                 </div>
-                                <div class="text-white-50 x-small mt-2">Saved via OCR Verification</div>
+                                <div class="text-dark-50 x-small mt-2">Saved via OCR Verification</div>
                             </div>
                         </div>
                         <div class="col-md-3">
@@ -771,7 +771,7 @@
                                 <div class="d-flex align-items-baseline gap-2">
                                     <h2 class="mb-0 fw-bold text-warning">{{ integrity_metrics.critical_monthly_count }}</h2>
                                 </div>
-                                <div class="text-white-50 x-small mt-2">Immediate Review Required</div>
+                                <div class="text-dark-50 x-small mt-2">Immediate Review Required</div>
                             </div>
                         </div>
                         <div class="col-md-3">
@@ -805,19 +805,19 @@
                                 {% for claim in integrity_claims %}
                                 <tr>
                                     <td>
-                                        <div class="fw-bold text-white">#{{ claim.claim_number }}</div>
+                                        <div class="fw-bold text-dark">#{{ claim.claim_number }}</div>
                                         <div class="text-muted x-small">{{ claim.created_at|date:"d M Y" }}</div>
                                     </td>
                                     <td>
                                         <div class="d-flex align-items-center gap-3">
                                             <div class="table-avatar" style="width: 32px; height: 32px; font-size: 10px;">{{ claim.created_by.username|slice:":1"|upper }}</div>
                                             <div>
-                                                <div class="fw-semibold text-white small">{{ claim.created_by.get_full_name|default:claim.created_by.username }}</div>
+                                                <div class="fw-semibold text-dark small">{{ claim.created_by.get_full_name|default:claim.created_by.username }}</div>
                                                 <div class="source-tag mt-1">{{ claim.policy.policy_number }}</div>
                                             </div>
                                         </div>
                                     </td>
-                                    <td class="text-white fw-medium">₹{{ claim.declared_claim_amount|default:claim.claimed_amount|intcomma }}</td>
+                                    <td class="text-dark fw-medium">₹{{ claim.declared_claim_amount|default:claim.claimed_amount|intcomma }}</td>
                                     <td>
                                         <div class="text-primary fw-bold">₹{{ claim.ocr_verified_bill_total|intcomma }}</div>
                                         <div class="x-small text-muted">Basis: <span class="text-info">{{ claim.payout_basis_source }}</span></div>
@@ -866,7 +866,7 @@
     <!-- Users Section -->
     <div id="section-users" class="premium-table-card data-section mt-2">
         <div class="card-header d-flex justify-content-between">
-            <h5><i class="bi bi-people-fill me-2 text-info"></i><span class="gradient-title-cyan">User Directory</span></h5>
+            <h5 fw-bold mb-0 style="color: var(--text-main);"><i class="bi bi-people-fill me-2" style="color: var(--accent);"></i>User Directory</h5>
             <button class="btn btn-sm btn-link text-muted" onclick="this.closest('.data-section').style.display='none'"><i class="bi bi-x-lg"></i></button>
         </div>
         <div class="table-responsive">
@@ -876,7 +876,7 @@
                     {% for u in users %}
                     <tr>
                         <td>#{{ u.id }}</td>
-                        <td class="text-white fw-bold">{{ u.username }}</td>
+                        <td class="text-dark fw-bold">{{ u.username }}</td>
                         <td>{{ u.email }}</td>
                         <td><span class="badge bg-secondary">{{ u.role|upper }}</span></td>
                         <td>
@@ -905,7 +905,7 @@
     <!-- Staff Section -->
     <div id="section-staff" class="premium-table-card data-section mt-2">
         <div class="card-header d-flex justify-content-between">
-            <h5><i class="bi bi-person-badge-fill me-2 text-purple"></i><span class="gradient-title-cyan">Staff Directory</span></h5>
+            <h5 fw-bold mb-0 style="color: var(--text-main);"><i class="bi bi-person-badge-fill me-2" style="color: var(--accent);"></i>Staff Directory</h5>
             <button class="btn btn-sm btn-link text-muted" onclick="this.closest('.data-section').style.display='none'"><i class="bi bi-x-lg"></i></button>
         </div>
         <div class="table-responsive">
@@ -915,7 +915,7 @@
                     {% for s in staff_list %}
                     <tr>
                         <td>#{{ s.id }}</td>
-                        <td class="text-white fw-bold">{{ s.username }}</td>
+                        <td class="text-dark fw-bold">{{ s.username }}</td>
                         <td>{{ s.email }}</td>
                         <td><span class="badge bg-primary">STAFF</span></td>
                         <td><span class="badge-soft-success">ACTIVE</span></td>
@@ -931,7 +931,7 @@
     <!-- Policies Section: Master Inventory -->
     <div id="section-policies" class="premium-table-card data-section mt-2">
         <div class="card-header d-flex justify-content-between">
-            <h5><i class="bi bi-building-fill-check me-2 text-primary"></i><span class="gradient-title-cyan">System Policy Inventory</span></h5>
+            <h5 fw-bold mb-0 style="color: var(--text-main);"><i class="bi bi-building-fill-check me-2" style="color: var(--accent);"></i>System Policy Inventory</h5>
             <button class="btn btn-sm btn-link text-muted" onclick="this.closest('.data-section').style.display='none'"><i class="bi bi-x-lg"></i></button>
         </div>
         <div class="table-responsive">
@@ -961,7 +961,7 @@
     <!-- Claims Section -->
     <div id="section-claims" class="premium-table-card data-section mt-2">
         <div class="card-header d-flex justify-content-between">
-            <h5><i class="bi bi-shield-fill-exclamation me-2 text-warning"></i><span class="gradient-title-cyan">Claims Dossier</span></h5>
+            <h5 fw-bold mb-0 style="color: var(--text-main);"><i class="bi bi-shield-fill-exclamation me-2" style="color: var(--accent);"></i>Claims Dossier</h5>
             <button class="btn btn-sm btn-link text-muted" onclick="this.closest('.data-section').style.display='none'"><i class="bi bi-x-lg"></i></button>
         </div>
         <div class="table-responsive">
@@ -973,7 +973,7 @@
                         <td class="text-id fw-bold">{{ c.claim_number }}</td>
                         <td>{{ c.created_by.username }}</td>
                         <td>{{ c.reported_date|date:"M d, Y" }}</td>
-                        <td class="text-white">₹{{ c.claimed_amount|intcomma }}</td>
+                        <td class="text-dark">₹{{ c.claimed_amount|intcomma }}</td>
                         <td><span class="badge {{ c.status }}">{{ c.get_status_display }}</span></td>
                     </tr>
                     {% empty %}
@@ -989,7 +989,7 @@
     <!-- Premium Section -->
     <div id="section-premium" class="premium-table-card data-section mt-2">
         <div class="card-header d-flex justify-content-between">
-            <h5><i class="bi bi-coin me-2 text-success"></i><span class="gradient-title-cyan">Premium Schedules Overview</span></h5>
+            <h5 fw-bold mb-0 style="color: var(--text-main);"><i class="bi bi-coin me-2" style="color: var(--accent);"></i>Premium Schedules Overview</h5>
             <button class="btn btn-sm btn-link text-muted" onclick="this.closest('.data-section').style.display='none'"><i class="bi bi-x-lg"></i></button>
         </div>
         <div class="table-responsive">
@@ -998,7 +998,7 @@
                 <tbody>
                     {% for s in premium_schedules_list %}
                     <tr>
-                        <td class="text-white fw-bold">#{{ s.policy.policy_number }}</td>
+                        <td class="text-dark fw-bold">#{{ s.policy.policy_number }}</td>
                         <td>₹{{ s.base_premium|intcomma }}</td>
                         <td class="text-success-premium">₹{{ s.gross_premium|intcomma }}</td>
                         <td><span class="badge bg-dark">{{ s.payment_frequency|upper }}</span></td>
@@ -1015,7 +1015,7 @@
     <!-- Submitted Section -->
     <div id="section-submitted" class="premium-table-card data-section mt-2">
         <div class="card-header d-flex justify-content-between">
-            <h5><i class="bi bi-plus-circle-fill me-2 text-warning"></i><span class="gradient-title-cyan">New Submissions</span></h5>
+            <h5 fw-bold mb-0 style="color: var(--text-main);"><i class="bi bi-plus-circle-fill me-2" style="color: var(--accent);"></i>New Submissions</h5>
             <button class="btn btn-sm btn-link text-muted" onclick="this.closest('.data-section').style.display='none'"><i class="bi bi-x-lg"></i></button>
         </div>
         <div class="table-responsive">
@@ -1026,7 +1026,7 @@
                     <tr>
                         <td class="text-id fw-bold">{{ c.claim_number }}</td>
                         <td>{{ c.policy.policy_number }}</td>
-                        <td class="text-white">₹{{ c.claimed_amount|intcomma }}</td>
+                        <td class="text-dark">₹{{ c.claimed_amount|intcomma }}</td>
                         <td>{{ c.created_at|date:"M d, Y" }}</td>
                     </tr>
                     {% endfor %}
@@ -1038,7 +1038,7 @@
     <!-- Review Section -->
     <div id="section-review" class="premium-table-card data-section mt-2">
         <div class="card-header d-flex justify-content-between">
-            <h5><i class="bi bi-search me-2 text-info"></i><span class="gradient-title-cyan">Under Review</span></h5>
+            <h5 fw-bold mb-0 style="color: var(--text-main);"><i class="bi bi-search me-2" style="color: var(--accent);"></i>Under Review</h5>
             <button class="btn btn-sm btn-link text-muted" onclick="this.closest('.data-section').style.display='none'"><i class="bi bi-x-lg"></i></button>
         </div>
         <div class="table-responsive">
@@ -1067,7 +1067,7 @@
     <!-- Waiting Approval Section -->
     <div id="section-waiting_approval" class="premium-table-card data-section mt-2">
         <div class="card-header d-flex justify-content-between">
-            <h5><i class="bi bi-clock-fill me-2 text-primary"></i><span class="gradient-title-cyan">Waiting Approval Queue</span></h5>
+            <h5 fw-bold mb-0 style="color: var(--text-main);"><i class="bi bi-clock-fill me-2" style="color: var(--accent);"></i>Waiting Approval Queue</h5>
             <button class="btn btn-sm btn-link text-muted" onclick="this.closest('.data-section').style.display='none'"><i class="bi bi-x-lg"></i></button>
         </div>
         <div class="table-responsive">
@@ -1096,7 +1096,7 @@
     <!-- Approved Section -->
     <div id="section-approved" class="premium-table-card data-section mt-2">
         <div class="card-header d-flex justify-content-between">
-            <h5><i class="bi bi-check-circle-fill me-2 text-success"></i><span class="gradient-title-cyan">Approved Claims</span></h5>
+            <h5 fw-bold mb-0 style="color: var(--text-main);"><i class="bi bi-check-circle-fill me-2" style="color: var(--accent);"></i>Approved Claims</h5>
             <button class="btn btn-sm btn-link text-muted" onclick="this.closest('.data-section').style.display='none'"><i class="bi bi-x-lg"></i></button>
         </div>
         <div class="table-responsive">
@@ -1119,7 +1119,7 @@
     <!-- Approved Total Section -->
     <div id="section-approved_total" class="premium-table-card data-section mt-2">
         <div class="card-header d-flex justify-content-between">
-            <h5><i class="bi bi-cash-stack me-2 text-primary"></i><span class="gradient-title-cyan">Certified Financial Liability</span></h5>
+            <h5 fw-bold mb-0 style="color: var(--text-main);"><i class="bi bi-cash-stack me-2" style="color: var(--accent);"></i>Certified Financial Liability</h5>
             <button class="btn btn-sm btn-link text-muted" onclick="this.closest('.data-section').style.display='none'"><i class="bi bi-x-lg"></i></button>
         </div>
         <div class="table-responsive">
@@ -1130,7 +1130,7 @@
                     <tr>
                         <td class="text-id fw-bold">{{ c.claim_number }}</td>
                         <td>{{ c.policy.policy_number }}</td>
-                        <td class="text-white fw-bold">₹{{ c.approved_amount|default:0|intcomma }}</td>
+                        <td class="text-dark fw-bold">₹{{ c.approved_amount|default:0|intcomma }}</td>
                         <td>{{ c.updated_at|date:"M d, Y" }}</td>
                     </tr>
                     {% endfor %}
@@ -1142,7 +1142,7 @@
     <!-- Rejected Section -->
     <div id="section-rejected" class="premium-table-card data-section mt-2">
         <div class="card-header d-flex justify-content-between">
-            <h5><i class="bi bi-x-circle-fill me-2 text-danger"></i><span class="gradient-title-cyan">Rejected Audits</span></h5>
+            <h5 fw-bold mb-0 style="color: var(--text-main);"><i class="bi bi-x-circle-fill me-2" style="color: var(--accent);"></i>Rejected Audits</h5>
             <button class="btn btn-sm btn-link text-muted" onclick="this.closest('.data-section').style.display='none'"><i class="bi bi-x-lg"></i></button>
         </div>
         <div class="table-responsive">
@@ -1165,7 +1165,7 @@
     <!-- Settled Section -->
     <div id="section-settled" class="premium-table-card data-section mt-2">
         <div class="card-header d-flex justify-content-between">
-            <h5><i class="bi bi-wallet2 me-2 text-purple"></i><span class="gradient-title-cyan">Settled Payouts</span></h5>
+            <h5 fw-bold mb-0 style="color: var(--text-main);"><i class="bi bi-wallet2 me-2" style="color: var(--accent);"></i>Settled Payouts</h5>
             <button class="btn btn-sm btn-link text-muted" onclick="this.closest('.data-section').style.display='none'"><i class="bi bi-x-lg"></i></button>
         </div>
         <div class="table-responsive">
@@ -1176,7 +1176,7 @@
                     <tr>
                         <td class="text-id fw-bold">{{ c.claim_number }}</td>
                         <td><span class="badge bg-dark">DIRECT BANK</span></td>
-                        <td class="text-white fw-bold">₹{{ c.approved_amount|intcomma }}</td>
+                        <td class="text-dark fw-bold">₹{{ c.approved_amount|intcomma }}</td>
                         <td>{{ c.updated_at|date:"M d, Y" }}</td>
                     </tr>
                     {% endfor %}
@@ -1188,7 +1188,7 @@
     <!-- Collected Section -->
     <div id="section-collected" class="premium-table-card data-section mt-2">
         <div class="card-header d-flex justify-content-between">
-            <h5><i class="bi bi-bank me-2 text-success"></i><span class="gradient-title-cyan">Revenue Collection Ledger</span></h5>
+            <h5 fw-bold mb-0 style="color: var(--text-main);"><i class="bi bi-bank me-2" style="color: var(--accent);"></i>Revenue Collection Ledger</h5>
             <button class="btn btn-sm btn-link text-muted" onclick="this.closest('.data-section').style.display='none'"><i class="bi bi-x-lg"></i></button>
         </div>
         <div class="table-responsive">
@@ -1211,7 +1211,7 @@
     <!-- Success Premium Section -->
     <div id="section-success_premium" class="premium-table-card data-section mt-2">
         <div class="card-header d-flex justify-content-between">
-            <h5><i class="bi bi-check-circle-fill me-2 text-success"></i><span class="gradient-title-cyan">Completed Credits</span></h5>
+            <h5 fw-bold mb-0 style="color: var(--text-main);"><i class="bi bi-check-circle-fill me-2" style="color: var(--accent);"></i>Completed Credits</h5>
             <button class="btn btn-sm btn-link text-muted" onclick="this.closest('.data-section').style.display='none'"><i class="bi bi-x-lg"></i></button>
         </div>
         <div class="table-responsive">
@@ -1222,7 +1222,7 @@
                     <tr>
                         <td class="text-muted small">#{{ p.public_id|truncatechars:8 }}</td>
                         <td><span class="text-success">CREDIT</span></td>
-                        <td class="text-white">₹{{ p.amount|intcomma }}</td>
+                        <td class="text-dark">₹{{ p.amount|intcomma }}</td>
                         <td><span class="badge bg-success">SUCCESS</span></td>
                     </tr>
                     {% endfor %}
@@ -1234,7 +1234,7 @@
     <!-- Failed Premium Section -->
     <div id="section-failed_premium" class="premium-table-card data-section mt-2">
         <div class="card-header d-flex justify-content-between">
-            <h5><i class="bi bi-bug-fill me-2 text-danger"></i><span class="gradient-title-cyan">Transaction Error Logs</span></h5>
+            <h5 fw-bold mb-0 style="color: var(--text-main);"><i class="bi bi-bug-fill me-2" style="color: var(--accent);"></i>Transaction Error Logs</h5>
             <button class="btn btn-sm btn-link text-muted" onclick="this.closest('.data-section').style.display='none'"><i class="bi bi-x-lg"></i></button>
         </div>
         <div class="table-responsive">
@@ -1257,7 +1257,7 @@
     <!-- AI Governance Section -->
     <div id="section-ai_governance" class="premium-table-card data-section mt-2">
         <div class="card-header d-flex justify-content-between">
-            <h5><i class="bi bi-cpu-fill me-2 text-purple"></i><span class="gradient-title-cyan">AI Governance Performance Log (v3.2)</span></h5>
+            <h5 fw-bold mb-0 style="color: var(--text-main);"><i class="bi bi-cpu-fill me-2" style="color: var(--accent);"></i>AI Governance Performance Log (v3.2)</h5>
             <button class="btn btn-sm btn-link text-muted" onclick="this.closest('.data-section').style.display='none'"><i class="bi bi-x-lg"></i></button>
         </div>
         <div class="table-responsive">
@@ -1266,7 +1266,7 @@
                 <tbody>
                     {% for m in ai_metrics_history %}
                     <tr>
-                        <td class="text-white small">{{ m.date|date:"M d, Y" }}</td>
+                        <td class="text-dark small">{{ m.date|date:"M d, Y" }}</td>
                         <td><span class="badge bg-dark">{{ m.model_version|default:"v3.2" }}</span></td>
                         <td class="fw-bold {% if m.health_score < 75 %}text-danger{% else %}text-success{% endif %}">
                             {{ m.health_score|floatformat:1 }}%
@@ -1294,7 +1294,7 @@
             <div class="row">
                 {% for action in ai_metrics.suggested_actions %}
                 <div class="col-md-6 mb-2">
-                    <div class="d-flex align-items-center gap-2 text-white-50 small">
+                    <div class="d-flex align-items-center gap-2 text-dark-50 small">
                         <i class="bi bi-arrow-right-circle text-warning"></i>
                         <span>{{ action }}</span>
                     </div>
@@ -1321,7 +1321,7 @@
                 </div>
                 <div class="ps-1">
                     {% for action in ai_metrics.suggested_actions %}
-                    <div class="bg-transparent border-0 p-0 mb-2 small d-flex align-items-start gap-2 text-white opacity-75" style="font-size: 0.78rem;">
+                    <div class="bg-transparent border-0 p-0 mb-2 small d-flex align-items-start gap-2 text-dark opacity-75" style="font-size: 0.78rem;">
                         <i class="bi bi-chevron-right text-warning mt-1" style="font-size: 0.7rem;"></i>
                         <span>{{ action }}</span>
                     </div>
@@ -1335,7 +1335,7 @@
     <!-- APPLICANT INFORMATION SECTION -->
     <div class="premium-table-card mb-4 admin-applicant-panel">
         <div class="card-header">
-            <h5><i class="bi bi-person-badge me-2"></i><span class="gradient-title-cyan">Applicant Information</span></h5>
+            <h5 fw-bold mb-0 style="color: var(--text-main);"><i class="bi bi-person-badge me-2" style="color: var(--accent);"></i>Applicant Information</h5>
         </div>
         <div class="card-body">
             <div class="row g-3">
@@ -1365,7 +1365,7 @@
     <!-- RECENT CLAIMS (Full Width) -->
     <div class="premium-table-card hover-scale" data-aos="fade-up" data-aos-delay="200">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <h5><i class="bi bi-table me-2"></i><span class="gradient-title-cyan">Recent Claims</span></h5>
+            <h5 fw-bold mb-0 style="color: var(--text-main);"><i class="bi bi-table me-2" style="color: var(--accent);"></i>Recent Claims</h5>
             <a href="{% url 'claim:list' %}" class="btn-premium hover-scale">View All</a>
         </div>
         <div class="table-responsive">
@@ -1390,10 +1390,10 @@
                         </td>
                         <td>
                             {% if claim.created_by %}
-                                <div class="fw-bold text-white">{{ claim.created_by.full_name|default:claim.created_by.username }}</div>
+                                <div class="fw-bold text-dark">{{ claim.created_by.full_name|default:claim.created_by.username }}</div>
                                 <div class="table-subtext">ID: {{ claim.created_by.id }}</div>
                             {% else %}
-                                <div class="fw-bold text-white italic">Internal / System</div>
+                                <div class="fw-bold text-dark italic">Internal / System</div>
                                 <div class="table-subtext">Automated Record</div>
                             {% endif %}
                         </td>
@@ -1407,7 +1407,7 @@
                                 {{ claim.priority_reason|default:"-" }}
                             </div>
                         </td>
-                        <td class="fw-bold text-white">₹{{ claim.total_settled_amount|intcomma }}</td>
+                        <td class="fw-bold text-dark">₹{{ claim.total_settled_amount|intcomma }}</td>
                         <td>
                             <span class="badge {{ claim.status }}">
                                 {{ claim.get_status_display }}
@@ -1431,7 +1431,7 @@
     <!-- NEW POLICIES (Full Width Horizontal Table) -->
     <div class="premium-table-card mt-4 hover-scale" data-aos="fade-up" data-aos-delay="250">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <h5><i class="bi bi-shield-check me-2"></i><span class="gradient-title-cyan">New Policies</span></h5>
+            <h5 fw-bold mb-0 style="color: var(--text-main);"><i class="bi bi-shield-check me-2" style="color: var(--accent);"></i>New Policies</h5>
             <a href="{% url 'policy:admin_list' %}" class="btn-premium hover-scale">Manage</a>
         </div>
         <div class="table-responsive">
@@ -1456,11 +1456,11 @@
                             </span>
                         </td>
                         <td>
-                            <span class="badge bg-dark bg-opacity-75" style="font-size: 0.68rem; letter-spacing: 0.5px;">
+                            <span class="badge text-dark bg-light border border-secondary" style="font-size: 0.68rem; letter-spacing: 0.5px;">
                                 {{ policy.policy_type|default:policy.policy.policy_type|default:"General"|upper }}
                             </span>
                         </td>
-                        <td class="text-white small">{{ policy.insurer_name|default:policy.policy.insurer_name|default:"—" }}</td>
+                        <td class="text-dark small">{{ policy.insurer_name|default:policy.policy.insurer_name|default:"—" }}</td>
                         <td>
                             <span class="policy-sum-value">₹{{ policy.sum_insured|default:policy.policy.sum_insured|intcomma }}</span>
                         </td>
@@ -1491,7 +1491,7 @@
     <!-- PAYMENT HISTORY SECTION -->
     <div class="premium-table-card mt-4 hover-scale" data-aos="fade-up" data-aos-delay="300">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <h5><i class="bi bi-credit-card me-2"></i><span class="gradient-title-cyan">Recent Financial Transactions</span></h5>
+            <h5 fw-bold mb-0 style="color: var(--text-main);"><i class="bi bi-credit-card me-2" style="color: var(--accent);"></i>Recent Financial Transactions</h5>
             <a href="{% url 'policy:payment_list' %}" class="btn-premium hover-scale">MANAGE PAYMENTS</a>
         </div>
         <div class="table-responsive">
@@ -1517,12 +1517,12 @@
                                 <div class="table-avatar">
                                     {{ txn.user|slice:":1"|upper }}
                                 </div>
-                                <div class="fw-bold text-white small">{{ txn.user }}</div>
+                                <div class="fw-bold text-dark small">{{ txn.user }}</div>
                             </div>
                         </td>
-                        <td><div class="text-white small fw-semibold">{{ txn.policy }}</div></td>
+                        <td><div class="text-dark small fw-semibold">{{ txn.policy }}</div></td>
                         <td>
-                            <div class="fw-bold text-white">₹{{ txn.amount|intcomma }}</div>
+                            <div class="fw-bold text-dark">₹{{ txn.amount|intcomma }}</div>
                             <div class="d-flex align-items-center gap-1">
                                 <span class="table-pill {% if txn.direction == 'CREDIT' %}table-pill-credit{% else %}table-pill-debit{% endif %}">
                                     {% if txn.direction == 'CREDIT' %}↑ CREDIT{% else %}↓ DEBIT{% endif %}
@@ -1538,7 +1538,7 @@
                             </span>
                         </td>
                         <td><div class="table-kicker">{{ txn.method }}</div></td>
-                        <td><div class="text-white small">{{ txn.date|date:"M d, Y" }}</div></td>
+                        <td><div class="text-dark small">{{ txn.date|date:"M d, Y" }}</div></td>
                         <td class="text-end">
                             <a href="{{ txn.audit_url }}" class="btn-premium py-1 px-3 fw-bold d-inline-flex align-items-center gap-1" style="font-size: 10px; border-radius: 6px;">
                                 <i class="bi bi-shield-check" style="font-size: 11px;"></i> AUDIT
@@ -1578,7 +1578,7 @@
                     {% for app in pending_policy_applications %}
                     <tr>
                         <td class="ps-4">
-                            <div class="fw-bold text-white fs-6">
+                            <div class="fw-bold text-dark fs-6">
                                 {% if app.user %}
                                     {{ app.user.full_name|default:app.user.username }}
                                 {% else %}

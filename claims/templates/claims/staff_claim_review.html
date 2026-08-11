@@ -13,15 +13,24 @@
     :root {
         --bg-audit: #F4EEE2;
         --surface-audit: #FFFFFF;
-        --border-audit: rgba(255, 255, 255, 0.08);
+        --border-audit: #DDD3C6;
         --text-audit-p: #605E5B;
-        --text-audit-s: rgba(156, 149, 143, 0.7);
+        --text-audit-s: #7A746E;
         --accent-audit-blue: #65604F;
         --accent-audit-teal: #3E7C45;
         --audit-success: #3E7C45;
         --audit-warning: #C88A2D;
         --audit-danger: #B04A4A;
     }
+
+    /* Force text visibility overrides */
+    .text-white { color: var(--text-audit-p) !important; }
+    .text-white-50 { color: var(--text-audit-s) !important; }
+    .text-white.opacity-60, .text-white.opacity-80 { color: var(--text-audit-s) !important; opacity: 1 !important; }
+    .bg-black { background-color: var(--surface-audit) !important; }
+    .border-white { border-color: var(--border-audit) !important; }
+    .border-opacity-5, .border-opacity-10 { border-color: var(--border-audit) !important; }
+    .bg-opacity-30 { background-color: var(--surface-audit) !important; }
 
     body {
         background-color: var(--bg-audit);
@@ -112,7 +121,7 @@
         top: 0;
         bottom: 0;
         width: 2px;
-        background: rgba(255,255,255,0.05);
+        background: var(--border-audit);
     }
     .timeline-node {
         position: relative;
@@ -633,7 +642,7 @@
 
         <!-- 6. FINANCIAL DECISION EVOLUTION & RECONCILIATION -->
         <div class="full-width-section">
-            <section class="audit-card mt-4 border-white border-opacity-10" style="background: rgba(13, 27, 42, 0.6); box-shadow: 0 8px 32px rgba(0,0,0,0.4);">
+            <section class="audit-card mt-4">
                 <div class="audit-label-group text-audit-teal">
                     <i class="bi bi-graph-up-arrow"></i> Financial Decision Evolution & Reconciliation
                 </div>
@@ -641,24 +650,24 @@
                 <!-- Evolution Stages -->
                 <div class="row g-3 mt-2">
                     <div class="col-md-4">
-                        <div class="p-3 rounded-4 h-100" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);">
-                            <div class="tiny uppercase font-bold text-white mb-2">Stage 1: User Simulation</div>
-                            <div class="fs-4 fw-black text-white-50">₹40,000</div>
-                            <p class="tiny text-white-50 mt-2 mb-0">Estimated based on user-provided inputs at claim submission.</p>
+                        <div class="p-3 rounded-4 h-100" style="background: rgba(101, 96, 79, 0.05); border: 1px solid var(--border-audit);">
+                            <div class="tiny uppercase font-bold text-audit-p mb-2">Stage 1: User Simulation</div>
+                            <div class="fs-4 fw-black text-audit-p">₹40,000</div>
+                            <p class="tiny text-audit-s mt-2 mb-0">Estimated based on user-provided inputs at claim submission.</p>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="p-3 rounded-4 h-100" style="background: rgba(200, 138, 45, 0.05); border: 1px solid rgba(200, 138, 45, 0.2);">
                             <div class="tiny uppercase font-bold text-warning mb-2">Stage 2: AI Initial Estimate (V2)</div>
                             <div class="fs-4 fw-black text-warning">₹32,196.50</div>
-                            <p class="tiny text-white-50 mt-2 mb-0">Calculated using partial data before OCR and full validation.</p>
+                            <p class="tiny text-audit-s mt-2 mb-0">Calculated using partial data before OCR and full validation.</p>
                         </div>
                     </div>
                     <div class="col-md-4">
-                        <div class="p-3 rounded-4 h-100" style="background: rgba(62, 124, 69, 0.1); border: 1px solid rgba(62, 124, 69, 0.3);">
+                        <div class="p-3 rounded-4 h-100" style="background: rgba(62, 124, 69, 0.08); border: 1px solid rgba(62, 124, 69, 0.2);">
                             <div class="tiny uppercase font-bold text-audit-teal mb-2">Stage 3: Final Determination (V3)</div>
-                            <div class="fs-4 fw-black text-white">₹{{ review_payload.final_amount|floatformat:0|intcomma }}</div>
-                            <p class="tiny text-white-50 mt-2 mb-0">Calculated using OCR-verified bills and policy rules.</p>
+                            <div class="fs-4 fw-black text-audit-p">₹{{ review_payload.final_amount|floatformat:0|intcomma }}</div>
+                            <p class="tiny text-audit-s mt-2 mb-0">Calculated using OCR-verified bills and policy rules.</p>
                         </div>
                     </div>
                 </div>
@@ -666,7 +675,7 @@
                 <!-- Decision Flow & Reconciliation -->
                 <div class="row g-4 mt-3">
                     <div class="col-md-6">
-                        <div class="p-4 rounded-4 h-100" style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.05);">
+                        <div class="p-4 rounded-4 h-100" style="background: var(--surface-audit); border: 1px solid var(--border-audit);">
                             <div class="tiny uppercase font-bold text-audit-teal mb-4">Decision Flow Path</div>
                             <div class="audit-timeline-compact">
                                 <div class="flow-item pb-4 border-start border-white border-opacity-10 ps-4 position-relative">
@@ -690,7 +699,7 @@
                     </div>
                     
                     <div class="col-md-6">
-                        <div class="p-4 rounded-4 h-100" style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.05);">
+                        <div class="p-4 rounded-4 h-100" style="background: var(--surface-audit); border: 1px solid var(--border-audit);">
                             <div class="tiny uppercase font-bold text-audit-blue mb-4">Reconciliation & Justification</div>
                             <div class="space-y-4">
                                 <div class="d-flex justify-content-between pb-3 border-bottom border-white border-opacity-5">
@@ -791,10 +800,10 @@
                                     <span class="tiny text-danger">Score > 40</span>
                                     <span class="tiny text-muted">High-Risk Case</span>
                                 </div>
-                                <div class="p-2 rounded bg-success bg-opacity-5 border border-success border-opacity-20">
-                                    <div class="tiny text-white fw-bold mb-1">Current Mapping:</div>
-                                    <div class="tiny text-success fw-black">Score {{ review_payload.risk_score|floatformat:2 }} ∈ [0,15)</div>
-                                    <div class="tiny text-success">→ No financial adjustment applied</div>
+                                <div class="p-2 rounded-3" style="background: rgba(62, 124, 69, 0.08); border: 1px solid rgba(62, 124, 69, 0.2);">
+                                    <div class="tiny text-audit-p fw-bold mb-1">Current Mapping:</div>
+                                    <div class="tiny text-audit-teal fw-black">Score {{ review_payload.risk_score|floatformat:2 }} ∈ [0,15)</div>
+                                    <div class="tiny text-audit-teal">→ No financial adjustment applied</div>
                                 </div>
                             </div>
                         </div>

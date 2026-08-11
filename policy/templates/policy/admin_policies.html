@@ -11,70 +11,69 @@
     
     /* Premium Table System (Standalone) */
     .premium-card {
-        background: rgba(17, 28, 53, 0.4);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: var(--bg-panel);
+        border: 1px solid var(--border-color);
         border-radius: 16px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
         margin-bottom: 30px;
         overflow: hidden;
     }
     .premium-card-header {
         padding: 20px 24px;
-        background: rgba(255, 255, 255, 0.02);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        background: rgba(101, 96, 79, 0.02);
+        border-bottom: 1px solid var(--border-color);
         display: flex;
         justify-content: space-between;
         align-items: center;
     }
-    .premium-card-header h5 { margin-bottom: 0; color: #f1f5f9; font-weight: 700; font-size: 1rem; }
+    .premium-card-header h5 { margin-bottom: 0; color: var(--text-main); font-weight: 700; font-size: 1rem; }
     
     .premium-table-container { overflow-x: auto; }
     .premium-table { width: 100%; border-collapse: separate; border-spacing: 0; }
     .premium-table thead th {
-        background: rgba(0, 0, 0, 0.3);
-        color: rgba(156, 149, 143, 0.7);
+        background: rgba(101, 96, 79, 0.03);
+        color: var(--text-muted);
         font-weight: 700;
         font-size: 11px;
         text-transform: uppercase;
         letter-spacing: 1px;
         padding: 16px 20px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        border-bottom: 1px solid var(--border-color);
     }
     .premium-table tbody td {
         padding: 16px 20px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        border-bottom: 1px solid rgba(101, 96, 79, 0.05);
         vertical-align: middle;
-        color: #cbd5e1;
+        color: var(--text-main);
         font-size: 13px;
     }
-    .premium-table tbody tr:hover td { background: rgba(101, 96, 79, 0.04); }
+    .premium-table tbody tr:hover td { background: rgba(101, 96, 79, 0.02); }
     .premium-table tbody tr:last-child td { border-bottom: none; }
 
     /* Badges */
     .badge {
         font-size: 9px; padding: 4px 10px; border-radius: 20px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
     }
-    .badge.active { background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); }
+    .badge.active { background: rgba(62, 124, 69, 0.1); color: #3E7C45; border: 1px solid rgba(62, 124, 69, 0.2); }
     .badge.pending { background: rgba(200, 138, 45, 0.1); color: #C88A2D; border: 1px solid rgba(200, 138, 45, 0.2); }
-    .badge.expired { background: rgba(197, 90, 90, 0.1); color: #c55a5a; border: 1px solid rgba(197, 90, 90, 0.2); }
+    .badge.expired { background: rgba(176, 74, 74, 0.1); color: #B04A4A; border: 1px solid rgba(176, 74, 74, 0.2); }
     .badge.awaiting-payment { background: rgba(200, 138, 45, 0.1); color: #C88A2D; border: 1px solid rgba(200, 138, 45, 0.2); }
-    .badge.rejected { background: rgba(197, 90, 90, 0.1); color: #c55a5a; border: 1px solid rgba(197, 90, 90, 0.2); }
-    .badge.default { background: rgba(148, 163, 184, 0.12); color: #cbd5e1; border: 1px solid rgba(203, 213, 225, 0.18); }
+    .badge.rejected { background: rgba(176, 74, 74, 0.1); color: #B04A4A; border: 1px solid rgba(176, 74, 74, 0.2); }
+    .badge.default { background: rgba(101, 96, 79, 0.1); color: var(--text-muted); border: 1px solid rgba(101, 96, 79, 0.2); }
 
     .btn-premium-sm {
         width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center;
-        border-radius: 8px; background: rgba(255, 255, 255, 0.05); color: #94bcff !important;
-        transition: all 0.2s ease-in-out; border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px; background: rgba(101, 96, 79, 0.05); color: var(--text-main) !important;
+        transition: all 0.2s ease-in-out; border: 1px solid rgba(101, 96, 79, 0.1);
     }
-    .btn-premium-sm:hover { transform: translateY(-2px); border-color: #65604F; background: rgba(101, 96, 79, 0.1); color: white !important; }
+    .btn-premium-sm:hover { transform: translateY(-2px); border-color: var(--accent); background: rgba(101, 96, 79, 0.1); color: var(--accent) !important; }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4" data-aos="fade-down">
     <div>
-        <h3 class="mb-1 fw-bold"><span class="gradient-title">Policy Administration</span></h3>
+        <h3 class="mb-1 fw-bold" style="color: var(--text-main);">Policy Administration</h3>
         <p class="text-muted mb-0">Full oversight and lifecycle management for all system contracts.</p>
     </div>
     <div class="d-flex gap-2">
@@ -94,7 +93,7 @@
 
 <div class="premium-card" data-aos="fade-up" data-aos-delay="100">
     <div class="premium-card-header">
-        <h5><i class="bi bi-bookmarks me-2 text-primary"></i>System Policies</h5>
+        <h5><i class="bi bi-bookmarks me-2" style="color: var(--accent);"></i>System Policies</h5>
         <span class="text-muted small tracking-wider">{{ policies|length }} TOTAL CONTRACTS</span>
     </div>
 
@@ -115,11 +114,11 @@
             <tbody class="stagger-container">
                 {% for policy in policies %}
                 <tr>
-                    <td class="ps-4 fw-bold text-white">{{ policy.policy_number }}</td>
+                    <td class="ps-4 fw-bold" style="color: var(--text-main);">{{ policy.policy_number }}</td>
                     <td><span class="badge bg-secondary opacity-75">{{ policy.policy_type|default:"General" }}</span></td>
-                    <td><span class="text-muted px-2 py-1 rounded small" style="background: rgba(255,255,255,0.03);">{{ policy.insurer_name|default:"-" }}</span></td>
+                    <td><span class="text-muted px-2 py-1 rounded small" style="background: rgba(101,96,79,0.05);">{{ policy.insurer_name|default:"-" }}</span></td>
                     <td class="fw-bold">₹{{ policy.sum_insured|default:0|floatformat:0|intcomma }}</td>
-                    <td class="text-info fw-bold">
+                    <td class="fw-bold" style="color: #3E7C45;">
                         {{ policy.admin_premium_percent|default:0 }}% 
                         <span class="x-small text-muted d-block" style="font-size: 10px;">(₹{{ policy.calculate_final_premium|floatformat:2|intcomma }})</span>
                     </td>
@@ -134,7 +133,7 @@
                             <a href="{% url 'policy:detail' policy.public_id %}" class="btn-premium-sm hover-scale" title="View Details">
                                 <i class="bi bi-eye"></i>
                             </a>
-                            <a href="{% url 'policy:edit' policy.public_id %}" class="btn-premium-sm hover-scale" style="background: rgba(255,255,255,0.1); color: white !important;" title="Edit Policy">
+                            <a href="{% url 'policy:edit' policy.public_id %}" class="btn-premium-sm hover-scale" style="background: rgba(101,96,79,0.1);" title="Edit Policy">
                                 <i class="bi bi-pencil"></i>
                             </a>
                         </div>

@@ -8,31 +8,19 @@
 {% block extra_css %}
 <style>
     .report-card {
-        background: radial-gradient(circle at top right, rgba(255, 255, 255, 0.05), transparent 40%),
-                    rgba(15, 23, 42, 0.6);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        border: 1px solid rgba(148, 163, 184, 0.12);
+        background: var(--bg-panel);
+        border: 1px solid var(--border-color);
         border-radius: 16px;
         padding: 24px;
-        transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+        transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
         position: relative;
         overflow: hidden;
-        box-shadow: 0 4px 24px -2px rgba(0, 0, 0, 0.2);
-    }
-    .report-card::before {
-        content: "";
-        position: absolute;
-        top: 0; left: 0; right: 0; height: 100%;
-        background: radial-gradient(circle at top left, rgba(255,255,255,0.03), transparent);
-        pointer-events: none;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
     }
     .report-card:hover {
         transform: translateY(-4px);
-        border-color: rgba(59, 130, 246, 0.3);
-        box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.5);
-        background: radial-gradient(circle at top right, rgba(255, 255, 255, 0.08), transparent 50%),
-                    rgba(15, 23, 42, 0.7);
+        border-color: var(--accent);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
     }
     .stat-val {
         font-size: 32px;
@@ -190,7 +178,7 @@
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h4 class="text-white fw-bold mb-0">System Performance Metrics</h4>
+    <h4 class=" fw-bold mb-0">System Performance Metrics</h4>
     <button id="downloadReportBtn" class="btn btn-primary btn-sm rounded-pill px-4 d-flex align-items-center download-btn-premium">
         <i class="bi bi-file-earmark-pdf-fill me-2"></i> Download Report
     </button>
@@ -200,7 +188,7 @@
 <div id="pdfLoadingOverlay" class="position-fixed top-0 start-0 w-100 h-100 d-none flex-column justify-content-center align-items-center bg-slate-900 bg-opacity-75" style="z-index: 9999; backdrop-filter: blur(10px); background-color: rgba(15, 23, 42, 0.8);">
     <div class="text-center bg-slate-800 p-5 rounded-4 border border-indigo-500 shadow-lg" style="width: 400px; max-width: 90%; background-color: #FFFFFF;">
         <div class="spinner-border text-indigo mb-4" style="width: 3rem; height: 3rem; color: #6366f1;" role="status"></div>
-        <h4 class="text-white fw-bold mb-3">Enterprise PDF Engine</h4>
+        <h4 class=" fw-bold mb-3">Enterprise PDF Engine</h4>
         <p id="pdfLoadingText" class="text-slate-400 italic mb-4" style="color: rgba(156, 149, 143, 0.7);">Collecting dashboard analytics...</p>
         <div class="progress bg-slate-700" style="height: 6px; background-color: #334155;">
             <div id="pdfProgressBar" class="progress-bar bg-indigo progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%; background-color: #6366f1;"></div>
@@ -230,7 +218,7 @@
     <div class="col-lg-2 col-md-4 col-sm-6">
         <div class="report-card h-100" data-aos="zoom-in" data-aos-delay="100">
             <div class="stat-label">Total Claims</div>
-            <div class="stat-val text-white">{{ total_claims_count }}</div>
+            <div class="stat-val " style="color: var(--text-main);">{{ total_claims_count }}</div>
             <div class="skp-accent bg-primary"></div>
             <i class="bi bi-layers-fill position-absolute end-0 bottom-0 p-3 opacity-10 fs-1"></i>
         </div>
@@ -284,7 +272,7 @@
     <div class="col-md-3">
         <div class="report-card hover-scale" data-aos="zoom-in" data-aos-delay="100">
             <div class="stat-label">Approved Payouts</div>
-            <div class="stat-val text-white">₹{{ financials.total_approved|default:0|intcomma }}</div>
+            <div class="stat-val " style="color: var(--text-main);">₹{{ financials.total_approved|default:0|intcomma }}</div>
             <div class="skp-accent bg-success opacity-50"></div>
         </div>
     </div>
@@ -328,7 +316,7 @@
                 {% for status in status_counts %}
                 <div class="d-flex justify-content-between align-items-center">
                     <span class="text-muted small text-capitalize">{{ status.status|replace:"_, " }}</span>
-                    <span class="badge bg-dark border border-secondary">{{ status.total }}</span>
+                    <span class="badge bg-light border border-secondary text-dark">{{ status.total }}</span>
                 </div>
                 {% endfor %}
             </div>
@@ -345,9 +333,9 @@
                 <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-2 py-1 small">Staff Roster Analytics</span>
             </div>
             <div class="table-responsive">
-                <table class="table table-dark table-hover small align-middle">
+                <table class="table table-light table-hover small align-middle">
                     <thead>
-                        <tr class="text-muted border-bottom border-secondary">
+                        <tr class="text-dark fw-bold border-bottom border-secondary">
                             <th class="ps-3 py-3">Auditor Name</th>
                             <th class="py-3">Volume Audited</th>
                             <th class="py-3">Financial Throughput</th>
@@ -360,16 +348,16 @@
                         <tr class="border-bottom border-secondary border-opacity-25">
                             <td class="ps-3 py-3">
                                 <div class="d-flex align-items-center gap-2">
-                                    <div class="bg-primary rounded-circle text-center d-inline-block" style="width: 24px; height: 24px; line-height: 24px; font-size: 10px; font-weight: bold;">
+                                    <div class="bg-primary text-white rounded-circle text-center d-inline-block" style="width: 24px; height: 24px; line-height: 24px; font-size: 10px; font-weight: bold;">
                                         {{ s.name|slice:":1"|upper }}
                                     </div>
-                                    <span class="fw-bold">{{ s.name }}</span>
+                                    <span class="fw-bold text-dark">{{ s.name }}</span>
                                 </div>
                             </td>
-                            <td class="py-3">{{ s.handled }} <small class="text-muted">Claims</small></td>
+                            <td class="py-3">{{ s.handled }} <small class="text-secondary fw-medium">Claims</small></td>
                             <td class="py-3">
-                                <div class="fw-bold text-info">₹{{ s.total_audited|intcomma }}</div>
-                                <div class="x-small text-muted">Avg: ₹{{ s.avg_rec|intcomma }}</div>
+                                <div class="fw-bold text-primary">₹{{ s.total_audited|intcomma }}</div>
+                                <div class="x-small text-secondary fw-medium">Avg: ₹{{ s.avg_rec|intcomma }}</div>
                             </td>
                             <td class="py-3">
                                 <div class="d-flex align-items-center gap-2" style="width: 120px;">
@@ -381,7 +369,7 @@
                                 </div>
                             </td>
                             <td class="py-3 text-end pe-3">
-                                <span class="badge {% if 'N/A' in s.avg_time %}bg-secondary{% else %}bg-dark border border-secondary{% endif %} opacity-75">
+                                <span class="badge {% if 'N/A' in s.avg_time %}bg-secondary{% else %}bg-light border border-secondary text-dark{% endif %} opacity-75">
                                     {{ s.avg_time }}
                                 </span>
                             </td>
@@ -420,7 +408,7 @@
                     <!-- Search Input -->
                     <div class="input-group input-group-sm hover-scale" style="max-width: 200px;">
                         <span class="input-group-text bg-transparent border-secondary text-muted"><i class="bi bi-search"></i></span>
-                        <input type="text" id="activity-search" class="form-control bg-transparent border-secondary text-white" 
+                        <input type="text" id="activity-search" class="form-control bg-transparent border-secondary " 
                                placeholder="Search logs..." oninput="debounceSearch(this.value)">
                     </div>
 
@@ -454,7 +442,7 @@
                             </div>
                             <div class="text-muted small mt-1">
                                 {{ act.description|truncatechars:100 }}
-                                {% if act.claim_number %}<span class="badge bg-dark border border-secondary ms-1">{{ act.claim_number }}</span>{% endif %}
+                                {% if act.claim_number %}<span class="badge bg-light border border-secondary text-dark ms-1">{{ act.claim_number }}</span>{% endif %}
                                 {% if act.user_name %}<span class="ms-1 text-info-premium x-small">By: {{ act.user_name }}</span>{% endif %}
                             </div>
                         </div>
@@ -798,7 +786,7 @@
                             </div>
                             <div class="text-muted small mt-1">
                                 ${act.description}
-                                ${act.claim_number ? `<span class="badge bg-dark border border-secondary ms-1">${act.claim_number}</span>` : ''}
+                                ${act.claim_number ? `<span class="badge bg-light border border-secondary text-dark ms-1">${act.claim_number}</span>` : ''}
                                 <span class="ms-1 text-info-premium x-small">By: ${act.user}</span>
                             </div>
                         </div>
@@ -854,9 +842,9 @@
                         <a href="/claim/review/${alert.id}/" class="fraud-alert-item ${alert.status} p-2 mb-2 rounded ${bgColor} small animate-fadeIn">
                             <div class="d-flex justify-content-between align-items-start">
                                 <span class="${textColor} fw-bold"><i class="bi ${icon} me-1"></i>${alert.claim_number}</span>
-                                <span class="badge bg-dark border border-secondary x-small mt-1">Review</span>
+                                <span class="badge bg-light border border-secondary text-dark x-small mt-1">Review</span>
                             </div>
-                            <div class="text-white opacity-75 mt-1">${alert.message}</div>
+                            <div class=" opacity-75 mt-1">${alert.message}</div>
                         </a>
                     `;
                 });

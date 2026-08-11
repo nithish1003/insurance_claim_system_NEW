@@ -251,8 +251,8 @@ def register_view(request):
 def admin_dashboard(request):
 
     total_policies = Policy.objects.count()
-    # ðŸ”¥ Governance FIX: Unfiltered base count for absolute totals
-    total_claims = Claim.objects.count()
+    # 🔥 Governance FIX: Exclude drafts, closed, and withdrawn claims from active totals
+    total_claims = Claim.objects.exclude(status__in=['draft', 'withdrawn', 'closed']).count()
     settled_claims = Claim.objects.filter(status="settled").count()
     
     # Debug Output for verification

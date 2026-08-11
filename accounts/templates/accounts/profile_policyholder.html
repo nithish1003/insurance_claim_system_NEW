@@ -31,8 +31,8 @@
     <i class="bi bi-plus-circle"></i> File Claim
 </a>
 
-<hr class="my-3" style="border-color: rgba(255,255,255,0.08);">
-<a href="{% url 'accounts:profile' %}" class="sidebar-link active" style="background: rgba(101, 96, 79, 0.15); color: white; border-left: 3px solid #65604F; padding-left: 24px;">
+<hr class="my-3" style="border-color: var(--border-color);">
+<a href="{% url 'accounts:profile' %}" class="sidebar-link active" style="background: rgba(101, 96, 79, 0.15); color: var(--text-main); border-left: 3px solid var(--accent); padding-left: 24px;">
     <i class="bi bi-person"></i> My Profile
 </a>
 
@@ -43,14 +43,22 @@
 
 {% block extra_css %}
 <style>
+.profile-shell {
+    animation: fadeIn 0.6s ease-out;
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
 .profile-container {
     max-width: 900px;
     margin: 0 auto;
 }
 .profile-header-card {
-    background: linear-gradient(145deg, #FFFFFF 0%, #0f1b33 100%);
-    border: 1px solid rgba(101, 96, 79, 0.25);
-    border-radius: 16px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
     padding: 40px;
     display: flex;
     align-items: center;
@@ -58,29 +66,28 @@
     margin-bottom: 30px;
     position: relative;
     overflow: hidden;
+    box-shadow: var(--card-shadow);
 }
 .profile-header-card::before {
     content: '';
     position: absolute;
-    top: -50px;
-    right: -50px;
-    width: 250px;
-    height: 250px;
-    background: radial-gradient(circle, rgba(26,110,245,0.15) 0%, rgba(0,0,0,0) 70%);
-    border-radius: 50%;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), rgba(255, 255, 255, 0));
 }
 .profile-avatar-large {
     width: 120px;
     height: 120px;
-    background: linear-gradient(135deg, #65604F 0%, #0a4ebd 100%);
+    background: rgba(101, 96, 79, 0.05);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 50px;
-    color: white;
-    box-shadow: 0 10px 30px rgba(101, 96, 79, 0.3);
-    border: 4px solid rgba(101, 96, 79, 0.25);
+    color: var(--accent);
+    border: 1px solid var(--border-color);
     flex-shrink: 0;
     z-index: 1;
 }
@@ -88,49 +95,51 @@
     z-index: 1;
 }
 .profile-title h2 {
-    font-weight: 600;
+    font-weight: 700;
     margin-bottom: 5px;
-    color: white;
+    color: var(--text-main);
 }
 .profile-title p {
-    color: rgba(156, 149, 143, 0.7);
+    color: var(--text-muted);
     font-size: 16px;
     margin-bottom: 15px;
+    font-weight: 500;
 }
 .role-badge {
     padding: 6px 16px;
     border-radius: 30px;
-    font-size: 13px;
-    font-weight: 600;
-    letter-spacing: 0.5px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
     display: inline-block;
+    border-width: 1px;
+    border-style: solid;
 }
-.role-admin { background: rgba(220, 53, 69, 0.15); color: #B04A4A; border: 1px solid rgba(220, 53, 69, 0.3); }
-.role-staff { background: rgba(255, 193, 7, 0.15); color: #ffd32a; border: 1px solid rgba(255, 193, 7, 0.3); }
-.role-policyholder { background: rgba(40, 167, 69, 0.15); color: #2ed573; border: 1px solid rgba(40, 167, 69, 0.3); }
+.role-policyholder { background: rgba(62, 124, 69, 0.1); color: var(--success); border-color: rgba(62, 124, 69, 0.2); }
 
 .details-card {
-    background: #FFFFFF;
-    border: 1px solid rgba(101, 96, 79, 0.25);
-    border-radius: 16px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
     padding: 30px;
+    box-shadow: var(--card-shadow);
 }
 .details-card h4 {
-    color: white;
+    color: var(--text-main);
     font-size: 18px;
-    margin-bottom: 25px;
-    font-weight: 600;
+    margin-bottom: 0;
+    font-weight: 700;
     display: flex;
     align-items: center;
     gap: 10px;
 }
 .details-card h4 i {
-    color: #65604F;
+    color: var(--accent);
 }
 .info-row {
     display: flex;
-    border-bottom: 1px solid rgba(31, 51, 92, 0.5);
+    border-bottom: 1px solid var(--border-color);
     padding: 18px 0;
 }
 .info-row:last-child {
@@ -139,14 +148,16 @@
 }
 .info-label {
     width: 35%;
-    color: rgba(156, 149, 143, 0.7);
+    color: var(--text-muted);
     font-size: 14px;
-    font-weight: 500;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 .info-value {
     width: 65%;
-    color: white;
-    font-weight: 500;
+    color: var(--text-main);
+    font-weight: 600;
     font-size: 15px;
 }
 
@@ -172,10 +183,13 @@ My Profile
 {% endblock %}
 
 {% block content %}
+<div class="dashboard-container">
+<div class="container-fluid px-0 pt-4 pb-5">
+<div class="profile-shell">
 <div class="profile-container">
     
     <!-- Header Banner -->
-    <div class="profile-header-card shadow-sm">
+    <div class="profile-header-card hover-scale">
         <div class="profile-avatar-large">
             <i class="bi bi-person"></i>
         </div>
@@ -191,20 +205,20 @@ My Profile
     <!-- Details Section -->
     <div class="row g-4">
         <div class="col-md-12">
-            <div class="details-card shadow-sm">
+            <div class="details-card">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h4 class="mb-0"><i class="bi bi-person-vcard"></i> Personal Information</h4>
-                    <a href="{% url 'accounts:edit_profile' %}" class="btn btn-sm btn-outline-primary shadow-sm">
+                    <a href="{% url 'accounts:edit_profile' %}" class="btn btn-sm hover-scale shadow-sm" style="background: var(--accent); color: white; border: 1px solid var(--accent); font-weight: 700; border-radius: 8px; padding: 6px 16px;">
                         <i class="bi bi-pencil-square me-1"></i> Edit Profile
                     </a>
                 </div>
                 
-                <div class="info-row">
+                <div class="info-row hover-scale" style="transition: all 0.3s ease; padding-left: 10px; padding-right: 10px; border-radius: 8px;">
                     <div class="info-label">Username</div>
                     <div class="info-value">@{{ request.user.username }}</div>
                 </div>
                 
-                <div class="info-row">
+                <div class="info-row hover-scale" style="transition: all 0.3s ease; padding-left: 10px; padding-right: 10px; border-radius: 8px;">
                     <div class="info-label">Email Address</div>
                     <div class="info-value">
                         {% if request.user.email %}
@@ -215,7 +229,7 @@ My Profile
                     </div>
                 </div>
                 
-                <div class="info-row">
+                <div class="info-row hover-scale" style="transition: all 0.3s ease; padding-left: 10px; padding-right: 10px; border-radius: 8px;">
                     <div class="info-label">Phone Number</div>
                     <div class="info-value">
                         {% if request.user.phone %}
@@ -226,7 +240,7 @@ My Profile
                     </div>
                 </div>
                 
-                <div class="info-row">
+                <div class="info-row hover-scale" style="transition: all 0.3s ease; padding-left: 10px; padding-right: 10px; border-radius: 8px;">
                     <div class="info-label">Address</div>
                     <div class="info-value">
                         {% if request.user.address %}
@@ -237,7 +251,7 @@ My Profile
                     </div>
                 </div>
                 
-                <div class="info-row">
+                <div class="info-row hover-scale" style="transition: all 0.3s ease; padding-left: 10px; padding-right: 10px; border-radius: 8px;">
                     <div class="info-label">Role</div>
                     <div class="info-value">
                         <span class="role-badge role-policyholder">
@@ -246,7 +260,7 @@ My Profile
                     </div>
                 </div>
 
-                <div class="info-row">
+                <div class="info-row hover-scale" style="transition: all 0.3s ease; padding-left: 10px; padding-right: 10px; border-radius: 8px;">
                     <div class="info-label">Date Joined</div>
                     <div class="info-value">{{ request.user.date_joined|date:"F j, Y" }}</div>
                 </div>
@@ -254,5 +268,8 @@ My Profile
             </div>
         </div>
     </div>
+</div>
+</div>
+</div>
 </div>
 {% endblock %}

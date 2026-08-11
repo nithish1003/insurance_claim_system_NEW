@@ -4,10 +4,10 @@
 {% block title %}Audit Trail — {{ claim.claim_number }}{% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
+<div class="dashboard-container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h3 class="text-white fw-bold mb-1">Audit Trail & Governance Log</h3>
+            <h3 class="fw-bold mb-1" style="color: var(--text-main);">Audit Trail & Governance Log</h3>
             <p class="text-muted small mb-0">Immutable record of all actions performed on dossier {{ claim.claim_number }}</p>
         </div>
         <a href="{% url 'claim:staff_review' claim.public_id %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
@@ -15,45 +15,45 @@
         </a>
     </div>
 
-    <div class="premium-card bg-slate-900/40 border-white/5 rounded-2xl overflow-hidden">
-        <div class="p-4 border-bottom border-white/5 bg-white/2">
+    <div class="premium-card rounded-2xl overflow-hidden">
+        <div class="p-4 border-bottom" style="border-color: var(--border-color) !important; background: rgba(101, 96, 79, 0.03);">
             <div class="row align-items-center">
                 <div class="col-md-6">
                     <div class="d-flex align-items-center gap-3">
-                        <div class="bg-primary/10 p-2 rounded-lg">
-                            <i class="bi bi-shield-lock text-primary fs-4"></i>
+                        <div class="p-2 rounded-lg" style="background: rgba(101, 96, 79, 0.1);">
+                            <i class="bi bi-shield-lock fs-4" style="color: var(--accent);"></i>
                         </div>
                         <div>
-                            <div class="text-white fw-bold">{{ claim.claim_number }}</div>
+                            <div class="fw-bold" style="color: var(--text-main);">{{ claim.claim_number }}</div>
                             <div class="text-muted x-small">Status: {{ claim.get_status_display }}</div>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-6 text-md-end">
                     <div class="text-muted x-small mb-1">Last Updated</div>
-                    <div class="text-white small fw-bold">{{ claim.updated_at|date:"d M Y, H:i" }}</div>
+                    <div class="small fw-bold" style="color: var(--text-main);">{{ claim.updated_at|date:"d M Y, H:i" }}</div>
                 </div>
             </div>
         </div>
         
         <div class="p-4">
             <div class="timeline-wrapper" style="position: relative; padding-left: 30px;">
-                <div style="position: absolute; left: 11px; top: 0; bottom: 0; width: 2px; background: rgba(255,255,255,0.05);"></div>
+                <div style="position: absolute; left: 11px; top: 0; bottom: 0; width: 2px; background: var(--border-color);"></div>
                 
                 {% for log in history %}
                 <div class="mb-5 position-relative">
-                    <div style="position: absolute; left: -25px; top: 0; width: 12px; height: 12px; border-radius: 50%; background: #3b82f6; border: 2px solid #FFFFFF; box-shadow: 0 0 10px rgba(59, 130, 246, 0.4);"></div>
+                    <div style="position: absolute; left: -25px; top: 0; width: 12px; height: 12px; border-radius: 50%; background: var(--accent); border: 2px solid var(--bg-panel); box-shadow: 0 0 10px rgba(101, 96, 79, 0.2);"></div>
                     <div class="d-flex justify-content-between align-items-start mb-2">
-                        <h6 class="text-white fw-bold mb-0">{{ log.action|title }}</h6>
+                        <h6 class="fw-bold mb-0" style="color: var(--text-main);">{{ log.action|title }}</h6>
                         <span class="text-muted x-small">{{ log.created_at|date:"d M Y, H:i:s" }}</span>
                     </div>
-                    <div class="p-3 rounded-xl bg-white/2 border border-white/5">
-                        <div class="text-slate-300 small mb-2">{{ log.description|default:"No detailed description provided." }}</div>
+                    <div class="p-3 rounded-xl border" style="background: var(--bg-deep); border-color: var(--border-color) !important;">
+                        <div class="small mb-2" style="color: var(--text-muted);">{{ log.description|default:"No detailed description provided." }}</div>
                         <div class="d-flex align-items-center gap-2 mt-3">
-                            <div class="bg-slate-800 rounded-full w-6 h-6 d-flex align-items-center justify-content-center text-primary x-small fw-bold">
+                            <div class="rounded-full w-6 h-6 d-flex align-items-center justify-content-center x-small fw-bold" style="background: rgba(101, 96, 79, 0.1); color: var(--accent);">
                                 {{ log.performed_by.username|slice:":1"|upper }}
                             </div>
-                            <span class="text-muted x-small">Performed by <span class="text-white fw-bold">@{{ log.performed_by.username|default:"System" }}</span></span>
+                            <span class="text-muted x-small">Performed by <span class="fw-bold" style="color: var(--text-main);">@{{ log.performed_by.username|default:"System" }}</span></span>
                         </div>
                     </div>
                 </div>
@@ -70,13 +70,15 @@
 
 <style>
     .premium-card {
-        background: rgba(15, 23, 42, 0.6);
-        backdrop-filter: blur(16px);
-        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: var(--bg-panel);
+        border: 1px solid var(--border-color);
+        box-shadow: 0 4px 15px rgba(101, 96, 79, 0.05);
     }
     .x-small { font-size: 0.7rem; }
     .rounded-2xl { border-radius: 1rem; }
     .rounded-xl { border-radius: 0.75rem; }
-    .bg-white\/2 { background: rgba(255, 255, 255, 0.02); }
+    .rounded-full { border-radius: 9999px; }
+    .w-6 { width: 1.5rem; }
+    .h-6 { height: 1.5rem; }
 </style>
 {% endblock %}
