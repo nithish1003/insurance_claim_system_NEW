@@ -74,3 +74,4 @@ media/
 venv311/
 insurance_claim_system_clean.zip
 replacements.txt
+scratch_*.py
