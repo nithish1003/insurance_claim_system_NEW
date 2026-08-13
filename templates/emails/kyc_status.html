@@ -1,0 +1,18 @@
+{% extends "emails/base.html" %}
+{% block title %}KYC Status Update{% endblock %}
+{% block content %}
+    <div class="badge">Identity Verification</div>
+    {% if status == 'approved' %}
+        <div class="success">Status: Verified</div>
+        <h1>Identity Verified</h1>
+        <p>Hello {{ user.get_full_name|default:user.username }},</p>
+        <p>Your identity has been successfully verified. Your account is now fully active.</p>
+    {% else %}
+        <div class="alert">Status: Action Required</div>
+        <h1>Verification Failed</h1>
+        <p>Hello {{ user.get_full_name|default:user.username }},</p>
+        <p>Unfortunately, your identity verification failed. Please review your details and re-upload your documents.</p>
+        <p>Reason: {{ reason }}</p>
+    {% endif %}
+    <a href="{{ dashboard_url|default:'#' }}" class="btn">Go to Dashboard</a>
+{% endblock %}

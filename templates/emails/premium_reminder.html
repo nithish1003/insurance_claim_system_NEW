@@ -1,0 +1,10 @@
+{% extends "emails/base.html" %}
+{% block title %}Premium Reminder{% endblock %}
+{% block content %}
+    <div class="badge">Billing Alert</div>
+    <h1>Premium Payment Reminder</h1>
+    <p>Hello {{ user.get_full_name|default:user.username }},</p>
+    <p>This is a friendly reminder that your premium payment of <strong>${{ payment.amount }}</strong> for policy <strong>{{ policy.policy_number }}</strong> is due on <strong>{{ payment.due_date }}</strong>.</p>
+    <p>Please ensure timely payment to avoid policy lapse.</p>
+    <a href="{{ payment_url|default:'#' }}" class="btn">Pay Now</a>
+{% endblock %}

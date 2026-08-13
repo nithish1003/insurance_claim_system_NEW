@@ -1,0 +1,8 @@
+{% extends "emails/base.html" %}
+{% block title %}Welcome to ClaimIQ{% endblock %}
+{% block content %}
+    <div class="badge">Welcome</div>
+    <h1>Welcome to ClaimIQ, {{ user.get_full_name|default:user.username }}!</h1>
+    <p>Your registration was successful. You can now explore our premium insurance policies and manage your claims effortlessly.</p>
+    <a href="{{ site_url|default:'#' }}" class="btn">Go to Dashboard</a>
+{% endblock %}

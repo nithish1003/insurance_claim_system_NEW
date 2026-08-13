@@ -1,0 +1,10 @@
+{% extends "emails/base.html" %}
+{% block title %}Claim Submitted{% endblock %}
+{% block content %}
+    <div class="badge">Claim Update</div>
+    <h1>Claim Submitted Successfully</h1>
+    <p>Hello {{ user.get_full_name|default:user.username }},</p>
+    <p>Your claim (<strong>{{ claim.claim_number }}</strong>) has been successfully submitted and is now under review by our team.</p>
+    <p>We will notify you once there is an update.</p>
+    <a href="{{ claim_url|default:'#' }}" class="btn">View Claim Details</a>
+{% endblock %}

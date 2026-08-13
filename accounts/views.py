@@ -1,4 +1,6 @@
 from decimal import Decimal
+from django.http import JsonResponse
+from .otp_service import OTPService
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
@@ -132,118 +134,308 @@ def _build_admin_integrity_metrics():
     }
 
 
+
 # REGISTER
 
 def register_view(request):
-    if request.method == "POST":
-        form = RegisterForm(request.POST, request.FILES)
+    """Renders the registration form GET request."""
+    if request.user.is_authenticated:
+        return redirect('accounts:home')
+    form = RegisterForm()
+    response = render(request, "accounts/register.html", {"form": form})
+    return add_security_headers(response)
+
+
+def add_security_headers(response):
+    response['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    response['Pragma'] = 'no-cache'
+    response['Expires'] = '0'
+    return response
+
+def register_send_otp(request):
+    """AJAX endpoint to validate basic info and dispatch OTPs."""
+    if request.method != "POST":
+        return JsonResponse({"success": False, "error": "Invalid request method."})
+
+    # Validate the basic fields first
+    form = RegisterForm(request.POST, request.FILES)
+    # We only care about the basic fields for now, so we manually check them
+    # instead of form.is_valid() which would fail on missing Aadhaar
+    
+    # We can check uniqueness manually to be fast
+    email = request.POST.get('email')
+    username = request.POST.get('username')
+    phone = request.POST.get('phone')
+
+    if User.objects.filter(username=username).exists():
+        return JsonResponse({"success": False, "errors": {"username": "Username already exists."}})
+    if User.objects.filter(email=email).exists():
+        return add_security_headers(JsonResponse({"success": False, "errors": {"email": "Email already exists."}}))
+
+    # Store basic fields in session
+    request.session['reg_data'] = {
+        'full_name': request.POST.get('full_name'),
+        'username': username,
+        'email': email,
+        'phone': phone,
+        'address': request.POST.get('address'),
+        'password': request.POST.get('password'),
+    }
+
+    session_key = request.session.session_key
+    if not session_key:
+        request.session.create()
+        session_key = request.session.session_key
+
+    ip_address = request.META.get('REMOTE_ADDR')
+    user_agent = request.META.get('HTTP_USER_AGENT', '')
+
+    # Dispatch OTPs
+    email_sent = OTPService.send_email_otp(email, session_key, ip_address=ip_address, user_agent=user_agent)
+    sms_sent = OTPService.send_sms_otp(phone, session_key, ip_address=ip_address, user_agent=user_agent)
+
+    if email_sent and sms_sent:
+        from django.utils import timezone
+        request.session["otp_resend_count"] = 0
+        request.session["otp_sent_at"] = timezone.now().isoformat()
+        request.session.modified = True
+        return add_security_headers(JsonResponse({"success": True, "message": "OTP sent successfully."}))
+    else:
+        # If one fails, we still return false
+        return add_security_headers(JsonResponse({"success": False, "message": "Failed to send OTP. Please check your network or try again."}))
+
+def register_resend_otp(request):
+    """AJAX endpoint to resend OTPs."""
+    if request.method != "POST":
+        return add_security_headers(JsonResponse({"success": False, "message": "Invalid request."}))
+
+    session_key = request.session.session_key
+    if not session_key:
+        request.session.create()
+        session_key = request.session.session_key
+
+    reg_data = request.session.get('reg_data', {})
+    email = reg_data.get('email')
+    phone = reg_data.get('phone')
+
+    if not email or not phone:
+        return add_security_headers(JsonResponse({"success": False, "message": "Session expired. Please restart registration."}))
+
+    from .models import OTPVerification
+    from django.utils import timezone
+    from datetime import datetime
+
+    last_sent_iso = request.session.get("otp_sent_at")
+    if last_sent_iso:
+        last_sent_dt = datetime.fromisoformat(last_sent_iso)
+        time_since = (timezone.now() - last_sent_dt).total_seconds()
         
-        try:
-            # 1. Capture KYC context and validate (MVC Separation)
-            is_valid = form.is_valid()
-            kyc_result = getattr(form, "kyc_result", None)
+        if time_since < 60:
+            return add_security_headers(JsonResponse({
+                "success": False, 
+                "message": "Please wait before requesting another OTP."
+            }))
+        elif time_since >= 600:
+            request.session["otp_resend_count"] = 0
+            request.session["otp_sent_at"] = timezone.now().isoformat()
+            request.session.modified = True
+
+    resend_count = request.session.get("otp_resend_count", 0)
+    if resend_count >= 3:
+        return add_security_headers(JsonResponse({
+            "success": False,
+            "message": "Maximum resend attempts reached. Please wait for the current OTP to expire before requesting a new one."
+        }))
+
+    # Rotate OTPs before resending (delete previous unverified OTPs for this session)
+    OTPVerification.objects.filter(session_key=session_key, purpose="email_verify", is_verified=False).delete()
+    OTPVerification.objects.filter(session_key=session_key, purpose="phone_verify", is_verified=False).delete()
+
+    ip_address = request.META.get('REMOTE_ADDR')
+    user_agent = request.META.get('HTTP_USER_AGENT', '')
+
+    try:
+        email_sent = OTPService.send_email_otp(email, session_key, ip_address=ip_address, user_agent=user_agent)
+        sms_sent = OTPService.send_sms_otp(phone, session_key, ip_address=ip_address, user_agent=user_agent)
+
+        if email_sent and sms_sent:
+            request.session["otp_resend_count"] = resend_count + 1
+            request.session["otp_sent_at"] = timezone.now().isoformat()
+            request.session.modified = True
+            return add_security_headers(JsonResponse({"success": True, "message": "OTP sent successfully."}))
+        else:
+            return add_security_headers(JsonResponse({"success": False, "message": "Failed to resend OTPs."}))
+    except Exception as e:
+        return add_security_headers(JsonResponse({"success": False, "message": "An error occurred while sending OTPs."}))
+
+def register_verify_otp(request):
+    """AJAX endpoint to verify both OTPs."""
+    if request.method != "POST":
+        return add_security_headers(JsonResponse({"success": False, "error": "Invalid request."}))
+
+    email_otp = request.POST.get('email_otp')
+    sms_otp = request.POST.get('sms_otp')
+    
+    session_key = request.session.session_key
+    if not session_key:
+        request.session.create()
+        session_key = request.session.session_key
+
+    reg_data = request.session.get('reg_data', {})
+    email = reg_data.get('email')
+    phone = reg_data.get('phone')
+
+    if not email or not phone:
+        return add_security_headers(JsonResponse({"success": False, "error": "Session expired. Please restart registration."}))
+
+    email_valid, email_err = OTPService.verify_otp(email, email_otp, 'email_verify', session_key)
+    sms_valid, sms_err = OTPService.verify_otp(phone, sms_otp, 'phone_verify', session_key)
+
+    if email_valid and sms_valid:
+        request.session['otp_verified'] = True
+        request.session.cycle_key()
+        return add_security_headers(JsonResponse({"success": True}))
+    else:
+        errors = {}
+        is_rate_limited = False
+        if not email_valid: 
+            errors['email_otp'] = email_err
+            if "Maximum attempts reached" in email_err: is_rate_limited = True
+        if not sms_valid: 
+            errors['sms_otp'] = sms_err
+            if "Maximum attempts reached" in sms_err: is_rate_limited = True
+        
+        status_code = 429 if is_rate_limited else 200
+        return add_security_headers(JsonResponse({"success": False, "errors": errors}, status=status_code))
+
+def register_complete(request):
+    """Final submission endpoint (handles Aadhaar upload and User creation)."""
+    if request.method != "POST":
+        return redirect('accounts:register')
+
+    if not request.session.get('otp_verified'):
+        messages.error(request, "You must verify your email and phone before completing registration.")
+        return redirect('accounts:register')
+
+    # Re-hydrate POST with session data to use the form's clean() method for Aadhaar validation
+    post_data = request.POST.copy()
+    reg_data = request.session.get('reg_data', {})
+    
+    for key, value in reg_data.items():
+        if key not in post_data:
+            post_data[key] = value
             
-            user = None
-            profile = None
+    # We must also re-inject the confirm password so the form is happy
+    if 'password' in reg_data and 'confirm_password' not in post_data:
+        post_data['confirm_password'] = reg_data['password']
 
-            if is_valid:
-                # 2. Atomic Success Pipeline (Role, Password, and Verification Sync)
-                with transaction.atomic():
-                    user = form.save(commit=False)
-                    user.role = 'user'
-                    user.set_password(form.cleaned_data["password"])
-                    user.aadhaar_number = kyc_result.get("submitted_number")
-                    
-                    is_auto_verified = kyc_result.get("verified", False)
-                    user.is_verified = is_auto_verified
-                    user.verified_at = timezone.now() if is_auto_verified else None
-                    user.save()
+    form = RegisterForm(post_data, request.FILES)
 
-                    profile = UserProfile.objects.create(
-                        user=user,
-                        full_name=form.cleaned_data["full_name"],
-                        aadhaar_number=user.aadhaar_number,
-                        id_proof=request.FILES.get('id_proof'),
-                        is_verified=is_auto_verified,
-                        verification_status='VERIFIED' if is_auto_verified else 'PENDING'
-                    )
+    try:
+        is_valid = form.is_valid()
+        kyc_result = getattr(form, "kyc_result", None)
 
-            # 3. Comprehensive KYC Persistence Pipeline
-            if kyc_result:
-                # Use safe access helper with expiry control & fingerprinting
-                pending_record = get_valid_pending_kyc(request)
-                previous_attempt_id = pending_record.id if pending_record else None
+        user = None
+        profile = None
+
+        if is_valid:
+            with transaction.atomic():
+                user = form.save(commit=False)
+                user.role = 'user'
+                user.set_password(form.cleaned_data["password"])
+                user.aadhaar_number = kyc_result.get("submitted_number")
                 
-                logger.debug(f"[KYC DEBUG] Attempting to save record. is_valid: {is_valid}, previous_id: {previous_attempt_id}")
+                is_auto_verified = kyc_result.get("verified", False)
+                user.is_verified = is_auto_verified
+                user.verified_at = timezone.now() if is_auto_verified else None
+                user.save()
 
-                try:
-                    # COMMIT STRATEGY: 
-                    # If valid, wrap in atomic with user. If invalid, run independent.
-                    if is_valid:
-                        with transaction.atomic():
-                            record = save_kyc_record(
-                                user=user,
-                                result=kyc_result,
-                                expected_name=kyc_result.get("submitted_name"),
-                                expected_number=kyc_result.get("submitted_number"),
-                                file_name=kyc_result.get("filename"),
-                                existing_id=previous_attempt_id
-                            )
-                            if profile:
-                                record.profile = profile
-                                record.save()
-                    else:
+                profile = UserProfile.objects.create(
+                    user=user,
+                    full_name=form.cleaned_data["full_name"],
+                    aadhaar_number=user.aadhaar_number,
+                    id_proof=request.FILES.get('id_proof'),
+                    is_verified=is_auto_verified,
+                    verification_status='VERIFIED' if is_auto_verified else 'PENDING'
+                )
+
+        if kyc_result:
+            pending_record = get_valid_pending_kyc(request)
+            previous_attempt_id = pending_record.id if pending_record else None
+            
+            try:
+                if is_valid:
+                    with transaction.atomic():
                         record = save_kyc_record(
-                            user=None,
+                            user=user,
                             result=kyc_result,
                             expected_name=kyc_result.get("submitted_name"),
                             expected_number=kyc_result.get("submitted_number"),
                             file_name=kyc_result.get("filename"),
                             existing_id=previous_attempt_id
                         )
-
-                    logger.debug(f"[KYC SUCCESS] Row ID {record.id} created/updated for {record.submitted_full_name}")
-
-                    # Session State Management
-                    if is_valid:
-                        cleanup_pending_kyc_session(request)
-                    else:
-                        request.session['pending_kyc_id'] = record.id
-                        request.session['pending_kyc_created_at'] = timezone.now().isoformat()
-                        request.session['pending_kyc_fingerprint'] = get_session_fingerprint(request)
-
-                except Exception as kyc_err:
-                    logger.error(f"[KYC CRITICAL FAILURE] Persistence crashed: {str(kyc_err)}")
-                    # We don't raise here to allow the user registration to survive if it was atomic
-                    # unless it was inside the is_valid atomic block, which it is.
-            else:
-                logger.debug("[KYC WARNING] No kyc_result found on form instance. Skipping persistence.")
-
-            # 4. Final Disposition
-            if is_valid:
-                from django.contrib.auth import login
-                login(request, user)
-                
-                if user.is_verified:
-                    messages.success(request, "Your identity has been verified successfully.")
+                        if profile:
+                            record.profile = profile
+                            record.save()
                 else:
-                    messages.info(request, "Your identity details require manual verification. Our team will review shortly.")
-                
-                return redirect("accounts:home")
-            else:
-                 messages.warning(request, "Please fix the identity verification or data errors below.")
+                    record = save_kyc_record(
+                        user=None,
+                        result=kyc_result,
+                        expected_name=kyc_result.get("submitted_name"),
+                        expected_number=kyc_result.get("submitted_number"),
+                        file_name=kyc_result.get("filename"),
+                        existing_id=previous_attempt_id
+                    )
 
-        except Exception as e:
-            logger.error(f"CORRUPTION TRACE: {str(e)}", exc_info=True)
-            messages.error(request, "A system error occurred. Please try again.")
+                if is_valid:
+                    cleanup_pending_kyc_session(request)
+                    # Also cleanup OTP session data and database records
+                    request.session.pop('reg_data', None)
+                    request.session.pop('otp_verified', None)
+                    request.session.pop('otp_resend_count', None)
+                    request.session.pop('otp_sent_at', None)
+                    
+                    from .models import OTPVerification
+                    OTPVerification.objects.filter(session_key=request.session.session_key).delete()
+                else:
+                    request.session['pending_kyc_id'] = record.id
+                    request.session['pending_kyc_created_at'] = timezone.now().isoformat()
+                    request.session['pending_kyc_fingerprint'] = get_session_fingerprint(request)
+
+            except Exception as kyc_err:
+                logger.error(f"[KYC CRITICAL FAILURE] Persistence crashed: {str(kyc_err)}")
+
+        if is_valid:
+            from django.contrib.auth import login
+            from notifications.utils import create_notification
+            login(request, user)
             
-        return render(request, "accounts/register.html", {"form": form})
-        
-    else:
-        form = RegisterForm()
+            if user.is_verified:
+                create_notification(
+                    user=user,
+                    title="Welcome to ClaimIQ",
+                    message="Your account has been successfully created and your identity verified. You can now purchase policies and submit claims.",
+                    type="success"
+                )
+                messages.success(request, "Your identity has been verified successfully.")
+            else:
+                create_notification(
+                    user=user,
+                    title="Welcome to ClaimIQ - Verification Pending",
+                    message="Your account has been created, but your identity is pending manual verification. Our team will review it shortly.",
+                    type="warning"
+                )
+                messages.info(request, "Your identity details require manual verification. Our team will review shortly.")
+            
+            return redirect("accounts:home")
+        else:
+             messages.warning(request, "Please fix the identity verification or data errors below.")
+
+    except Exception as e:
+        logger.error(f"CORRUPTION TRACE: {str(e)}", exc_info=True)
+        messages.error(request, "A system error occurred. Please try again.")
         
     return render(request, "accounts/register.html", {"form": form})
-    
 
 # DASHBOARDS
 

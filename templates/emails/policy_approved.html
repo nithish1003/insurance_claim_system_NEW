@@ -1,0 +1,10 @@
+{% extends "emails/base.html" %}
+{% block title %}Policy Approved{% endblock %}
+{% block content %}
+    <div class="badge">Policy Update</div>
+    <div class="success">Status: Active</div>
+    <h1>Policy Application Approved</h1>
+    <p>Hello {{ user.get_full_name|default:user.username }},</p>
+    <p>{{ message|default:"Congratulations! Your policy application has been approved and is now active." }}</p>
+    <a href="{{ cta_url|default:'#' }}" class="btn">View Policy</a>
+{% endblock %}

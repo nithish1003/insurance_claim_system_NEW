@@ -237,5 +237,10 @@ TWILIO_ACCOUNT_SID = os.getenv('TWILIO_ACCOUNT_SID', '')
 TWILIO_AUTH_TOKEN = os.getenv('TWILIO_AUTH_TOKEN', '')
 TWILIO_PHONE_NUMBER = os.getenv('TWILIO_PHONE_NUMBER', '')
 
+# 📲 TextBee SMS Gateway Configuration
+TEXTBEE_API_KEY = os.getenv('TEXTBEE_API_KEY', '')
+TEXTBEE_DEVICE_ID = os.getenv('TEXTBEE_DEVICE_ID', '')
+TEXTBEE_BASE_URL = os.getenv('TEXTBEE_BASE_URL', 'https://api.textbee.dev/api/v1')
+
 # 🔗 Branding & Base Links
 BASE_URL = os.getenv('BASE_URL', 'http://localhost:8000')

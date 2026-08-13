@@ -1,0 +1,11 @@
+{% extends "emails/base.html" %}
+{% block title %}Claim Rejected{% endblock %}
+{% block content %}
+    <div class="badge">Claim Update</div>
+    <div class="alert">Status: Rejected</div>
+    <h1>Claim Status Update</h1>
+    <p>Hello {{ user.get_full_name|default:user.username }},</p>
+    <p>We have reviewed your claim (<strong>{{ claim.claim_number }}</strong>) and unfortunately, it has been rejected.</p>
+    <p>Reason: {{ claim.rejection_reason }}</p>
+    <a href="{{ claim_url|default:'#' }}" class="btn">View Details</a>
+{% endblock %}

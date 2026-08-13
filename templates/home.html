@@ -109,6 +109,139 @@
             mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
         }
 
+        
+        .glow-effect {
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+        }
+        .glow-effect::before {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            border-radius: inherit;
+            background: linear-gradient(135deg, rgba(170,135,88,0), rgba(170,135,88,0), rgba(170,135,88,0.3));
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+        .glow-effect::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            box-shadow: 0 0 0 0 rgba(170, 135, 88, 0);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: -2;
+            opacity: 0;
+        }
+        .glow-effect:hover {
+            transform: translateY(-8px);
+            border-color: rgba(170, 135, 88, 0.5);
+            box-shadow: 0 15px 40px -10px rgba(170, 135, 88, 0.25), 0 0 20px rgba(170, 135, 88, 0.1) !important;
+        }
+        .glow-effect:hover::before, .glow-effect:hover::after {
+            opacity: 1;
+        }
+        .glow-effect:hover::after {
+            box-shadow: 0 0 40px 15px rgba(170, 135, 88, 0.15);
+        }
+
+        .btn-glow {
+            position: relative;
+        }
+        .btn-glow::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            box-shadow: 0 0 20px 5px rgba(170, 135, 88, 0);
+            transition: all 0.4s ease;
+            opacity: 0;
+            z-index: -1;
+        }
+        .btn-glow:hover {
+            box-shadow: 0 5px 25px rgba(170, 135, 88, 0.4);
+        }
+        .btn-glow:hover::after {
+            opacity: 1;
+            box-shadow: 0 0 30px 10px rgba(170, 135, 88, 0.3);
+        }
+
+        
+        /* Dashboard mock-up hover effects */
+        .mock-card {
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        .mock-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.4), rgba(255,255,255,0));
+            border-radius: inherit;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+        .mock-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        }
+        .mock-card:hover::before {
+            opacity: 1;
+        }
+
+        .sidebar-item {
+            transition: all 0.3s ease;
+        }
+        .sidebar-item:hover {
+            background-color: rgba(170, 135, 88, 0.05);
+            transform: scale(1.02);
+            color: #AA8758;
+        }
+        .sidebar-active {
+            border: 1px solid rgba(201, 168, 106, 0.5) !important;
+            box-shadow: 0 0 15px rgba(201, 168, 106, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .pulse-glow {
+            animation: pulseGlow 2s infinite;
+        }
+        @keyframes pulseGlow {
+            0% { box-shadow: 0 0 0 0 rgba(62, 124, 69, 0.4); }
+            70% { box-shadow: 0 0 0 6px rgba(62, 124, 69, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(62, 124, 69, 0); }
+        }
+
+        @keyframes float3px {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-3px); }
+        }
+        .mock-kpi {
+            animation: float3px 4s ease-in-out infinite;
+            transition: all 0.3s ease;
+        }
+        .mock-kpi:hover {
+            border-color: #C9A86A !important;
+            box-shadow: 0 0 20px rgba(201, 168, 106, 0.2);
+        }
+
+        @keyframes borderGlow {
+            0%, 100% { border-color: rgba(201, 168, 106, 0.2); box-shadow: 0 0 10px rgba(201, 168, 106, 0.05); }
+            50% { border-color: rgba(201, 168, 106, 0.5); box-shadow: 0 0 15px rgba(201, 168, 106, 0.15); }
+        }
+        .ai-glow-card {
+            animation: borderGlow 3s ease-in-out infinite;
+        }
+
+        .chart-area {
+            transition: all 0.3s ease;
+        }
+        .chart-area:hover {
+            box-shadow: 0 0 30px rgba(201, 168, 106, 0.15);
+        }
+
         /* Mockup specific animations */
         .mockup-item {
             opacity: 0;
@@ -210,15 +343,15 @@
                 </p>
                 <div class="flex flex-wrap items-center gap-4">
                     {% if user.is_authenticated %}
-                        <a href="{% url 'claims:claim_submit' %}" class="btn-primary px-8 py-4 rounded-xl font-medium flex items-center gap-2 shadow-soft">
+                        <a href="{% url 'claims:claim_submit' %}" class="btn-primary btn-glow px-8 py-4 rounded-xl font-medium flex items-center gap-2 shadow-soft">
                             File a Claim <i data-lucide="arrow-right" class="w-4 h-4"></i>
                         </a>
                     {% else %}
-                        <a href="{% url 'accounts:login' %}" class="btn-primary px-8 py-4 rounded-xl font-medium flex items-center gap-2 shadow-soft">
+                        <a href="{% url 'accounts:login' %}" class="btn-primary btn-glow px-8 py-4 rounded-xl font-medium flex items-center gap-2 shadow-soft">
                             File a Claim <i data-lucide="arrow-right" class="w-4 h-4"></i>
                         </a>
                     {% endif %}
-                    <a href="#features" class="btn-outline px-8 py-4 rounded-xl font-medium shadow-sm">
+                    <a href="#features" class="btn-outline btn-glow px-8 py-4 rounded-xl font-medium shadow-sm">
                         Explore Features
                     </a>
                 </div>
@@ -250,7 +383,7 @@
                             <div class="w-3 h-3 rounded-full bg-success/80"></div>
                             <div class="flex-1 text-center text-xs text-textMain font-semibold opacity-80">ClaimIQ AI Dashboard</div>
                             <div class="flex items-center gap-2">
-                                <div class="px-2 py-1 bg-success/10 text-success rounded text-[10px] font-bold tracking-wide">SYSTEM ONLINE</div>
+                                <div class="px-2 py-1 bg-success/10 text-success rounded text-[10px] font-bold tracking-wide pulse-glow">SYSTEM ONLINE</div>
                             </div>
                         </div>
                         
@@ -258,20 +391,20 @@
                         <div class="flex flex-1 p-5 gap-5 h-[460px] bg-[#FAFAFA]">
                             <!-- Sidebar -->
                             <div class="w-[140px] flex flex-col gap-3">
-                                <div class="flex items-center gap-2 p-2 rounded-lg bg-surface border border-borderLight shadow-sm text-primary font-medium text-xs">
+                                <div class="flex items-center gap-2 p-2 rounded-lg bg-surface border border-borderLight shadow-sm text-primary font-medium text-xs sidebar-active">
                                     <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Overview
                                 </div>
-                                <div class="flex items-center gap-2 p-2 rounded-lg text-textSec hover:bg-surface hover:shadow-sm transition-all text-xs font-medium cursor-pointer">
+                                <div class="flex items-center gap-2 p-2 rounded-lg text-textSec sidebar-item text-xs font-medium cursor-pointer">
                                     <i data-lucide="file-text" class="w-4 h-4"></i> All Claims
                                 </div>
-                                <div class="flex items-center gap-2 p-2 rounded-lg text-textSec hover:bg-surface hover:shadow-sm transition-all text-xs font-medium cursor-pointer">
+                                <div class="flex items-center gap-2 p-2 rounded-lg text-textSec sidebar-item text-xs font-medium cursor-pointer">
                                     <i data-lucide="shield-alert" class="w-4 h-4"></i> Fraud Risk
                                 </div>
-                                <div class="flex items-center gap-2 p-2 rounded-lg text-textSec hover:bg-surface hover:shadow-sm transition-all text-xs font-medium cursor-pointer">
+                                <div class="flex items-center gap-2 p-2 rounded-lg text-textSec sidebar-item text-xs font-medium cursor-pointer">
                                     <i data-lucide="scan-line" class="w-4 h-4"></i> OCR Engine
                                 </div>
                                 
-                                <div class="mt-auto bg-gradient-to-br from-bg to-white rounded-xl p-3 border border-borderLight relative overflow-hidden">
+                                <div class="mt-auto bg-gradient-to-br from-bg to-white rounded-xl p-3 border border-borderLight relative overflow-hidden ai-glow-card">
                                     <i data-lucide="zap" class="absolute -right-2 -bottom-2 w-10 h-10 text-gold opacity-10"></i>
                                     <div class="text-[10px] text-textSec font-medium mb-1">AI Accuracy</div>
                                     <div class="text-lg font-bold text-primary">99.4%</div>
@@ -284,7 +417,7 @@
                                 <!-- Top Stats Row -->
                                 <div class="grid grid-cols-3 gap-4 h-[90px]">
                                     <!-- Total Claims -->
-                                    <div class="bg-surface rounded-xl border border-borderLight p-3.5 flex flex-col justify-between shadow-sm relative overflow-hidden">
+                                    <div class="bg-surface rounded-xl border border-borderLight p-3.5 flex flex-col justify-between shadow-sm relative overflow-hidden mock-card mock-kpi">
                                         <div class="flex justify-between items-start">
                                             <div class="text-[10px] font-semibold text-textSec uppercase">Total Claims</div>
                                             <div class="w-6 h-6 rounded bg-primary/10 flex items-center justify-center text-primary"><i data-lucide="files" class="w-3.5 h-3.5"></i></div>
@@ -295,7 +428,7 @@
                                         </div>
                                     </div>
                                     <!-- Settlement Amount -->
-                                    <div class="bg-surface rounded-xl border border-borderLight p-3.5 flex flex-col justify-between shadow-sm relative overflow-hidden">
+                                    <div class="bg-surface rounded-xl border border-borderLight p-3.5 flex flex-col justify-between shadow-sm relative overflow-hidden mock-card mock-kpi">
                                         <div class="flex justify-between items-start">
                                             <div class="text-[10px] font-semibold text-textSec uppercase">Settled (MTD)</div>
                                             <div class="w-6 h-6 rounded bg-gold/10 flex items-center justify-center text-gold"><i data-lucide="dollar-sign" class="w-3.5 h-3.5"></i></div>
@@ -306,7 +439,7 @@
                                         </div>
                                     </div>
                                     <!-- Avg Approval Time -->
-                                    <div class="bg-gradient-to-br from-primary to-accent rounded-xl p-3.5 flex flex-col justify-between shadow-soft relative overflow-hidden text-white">
+                                    <div class="bg-gradient-to-br from-primary to-accent rounded-xl p-3.5 flex flex-col justify-between shadow-soft relative overflow-hidden text-white mock-card mock-kpi">
                                         <div class="absolute top-0 right-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/noise-lines.png')] opacity-20"></div>
                                         <div class="flex justify-between items-start relative z-10">
                                             <div class="text-[10px] font-semibold text-white/80 uppercase">Approval Time</div>
@@ -320,7 +453,7 @@
                                 </div>
                                 
                                 <!-- Chart Area -->
-                                <div class="flex-1 bg-surface rounded-xl border border-borderLight p-5 flex flex-col relative shadow-sm overflow-hidden">
+                                <div class="flex-1 bg-surface rounded-xl border border-borderLight p-5 flex flex-col relative shadow-sm overflow-hidden chart-area">
                                     <div class="flex justify-between items-center mb-6">
                                         <div>
                                             <h4 class="text-sm font-bold text-textMain">Claim Processing Volume</h4>
@@ -387,7 +520,7 @@
                     </div>
                     
                     <!-- Floating Badge 1: OCR Complete -->
-                    <div class="absolute top-10 -right-6 bg-surface rounded-xl p-3 shadow-[0_15px_35px_rgba(0,0,0,0.1)] border border-white flex items-center gap-3 z-20 mockup-item" style="animation-delay: 0.5s;">
+                    <div class="absolute top-10 -right-6 bg-surface rounded-xl p-3 shadow-[0_15px_35px_rgba(0,0,0,0.1)] border border-white flex items-center gap-3 z-20 mockup-item mock-card" style="animation-delay: 0.5s;">
                         <div class="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center text-accent">
                             <i data-lucide="scan-text" class="w-4 h-4"></i>
                         </div>
@@ -398,7 +531,7 @@
                     </div>
                     
                     <!-- Floating Badge 2: AI Verified -->
-                    <div class="absolute bottom-8 -left-10 bg-surface rounded-xl p-3.5 shadow-[0_15px_35px_rgba(0,0,0,0.1)] border border-white flex items-center gap-3.5 z-20 mockup-item" style="animation-delay: 0.4s;">
+                    <div class="absolute bottom-8 -left-10 bg-surface rounded-xl p-3.5 shadow-[0_15px_35px_rgba(0,0,0,0.1)] border border-white flex items-center gap-3.5 z-20 mockup-item mock-card" style="animation-delay: 0.4s;">
                         <div class="w-10 h-10 rounded-full bg-success/10 flex items-center justify-center text-success relative">
                             <i data-lucide="shield-check" class="w-5 h-5"></i>
                             <div class="absolute -top-1 -right-1 w-3 h-3 bg-success rounded-full border-2 border-white"></div>
@@ -460,7 +593,7 @@
             
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <!-- Feature 1 -->
-                <div class="bg-surface p-7 rounded-3xl border border-borderLight/60 hover:-translate-y-2 hover:shadow-premium hover:border-gold/40 transition-all duration-400 group flex flex-col h-full relative overflow-hidden gsap-reveal">
+                <div class="bg-surface p-7 rounded-3xl border border-borderLight/60 glow-effect transition-all duration-400 group flex flex-col h-full relative overflow-hidden gsap-reveal">
                     <div class="absolute -right-16 -top-16 w-40 h-40 bg-gold/5 rounded-full blur-2xl group-hover:bg-gold/15 transition-all duration-500"></div>
                     
                     <div class="flex justify-between items-start mb-6 relative z-10">
@@ -487,7 +620,7 @@
                 </div>
 
                 <!-- Feature 2 -->
-                <div class="bg-surface p-7 rounded-3xl border border-borderLight/60 hover:-translate-y-2 hover:shadow-premium hover:border-gold/40 transition-all duration-400 group flex flex-col h-full relative overflow-hidden gsap-reveal">
+                <div class="bg-surface p-7 rounded-3xl border border-borderLight/60 glow-effect transition-all duration-400 group flex flex-col h-full relative overflow-hidden gsap-reveal">
                     <div class="absolute -right-16 -top-16 w-40 h-40 bg-gold/5 rounded-full blur-2xl group-hover:bg-gold/15 transition-all duration-500"></div>
                     
                     <div class="flex justify-between items-start mb-6 relative z-10">
@@ -514,7 +647,7 @@
                 </div>
 
                 <!-- Feature 3 -->
-                <div class="bg-surface p-7 rounded-3xl border border-borderLight/60 hover:-translate-y-2 hover:shadow-premium hover:border-gold/40 transition-all duration-400 group flex flex-col h-full relative overflow-hidden gsap-reveal">
+                <div class="bg-surface p-7 rounded-3xl border border-borderLight/60 glow-effect transition-all duration-400 group flex flex-col h-full relative overflow-hidden gsap-reveal">
                     <div class="absolute -right-16 -top-16 w-40 h-40 bg-gold/5 rounded-full blur-2xl group-hover:bg-gold/15 transition-all duration-500"></div>
                     
                     <div class="flex justify-between items-start mb-6 relative z-10">
@@ -541,7 +674,7 @@
                 </div>
 
                 <!-- Feature 4 -->
-                <div class="bg-surface p-7 rounded-3xl border border-borderLight/60 hover:-translate-y-2 hover:shadow-premium hover:border-gold/40 transition-all duration-400 group flex flex-col h-full relative overflow-hidden gsap-reveal">
+                <div class="bg-surface p-7 rounded-3xl border border-borderLight/60 glow-effect transition-all duration-400 group flex flex-col h-full relative overflow-hidden gsap-reveal">
                     <div class="absolute -right-16 -top-16 w-40 h-40 bg-gold/5 rounded-full blur-2xl group-hover:bg-gold/15 transition-all duration-500"></div>
                     
                     <div class="flex justify-between items-start mb-6 relative z-10">
@@ -585,27 +718,27 @@
 
                 <div class="grid grid-cols-2 lg:grid-cols-6 gap-8 relative z-10">
                     <!-- Steps -->
-                    <div class="flex flex-col items-center text-center gsap-process group">
+                    <div class="flex flex-col items-center text-center gsap-process group glow-effect p-4 rounded-3xl border border-transparent">
                         <div class="w-16 h-16 rounded-2xl bg-surface border border-borderLight flex items-center justify-center text-textSec font-bold mb-5 shadow-sm group-hover:border-gold group-hover:text-gold transition-colors duration-300"><i data-lucide="file-plus" class="w-6 h-6"></i></div>
                         <h4 class="font-semibold text-textMain text-sm mb-1">Submit Claim</h4>
                     </div>
-                    <div class="flex flex-col items-center text-center gsap-process group">
+                    <div class="flex flex-col items-center text-center gsap-process group glow-effect p-4 rounded-3xl border border-transparent">
                         <div class="w-16 h-16 rounded-2xl bg-surface border border-borderLight flex items-center justify-center text-textSec font-bold mb-5 shadow-sm group-hover:border-gold group-hover:text-gold transition-colors duration-300"><i data-lucide="upload-cloud" class="w-6 h-6"></i></div>
                         <h4 class="font-semibold text-textMain text-sm mb-1">Upload Docs</h4>
                     </div>
-                    <div class="flex flex-col items-center text-center gsap-process group">
+                    <div class="flex flex-col items-center text-center gsap-process group glow-effect p-4 rounded-3xl border border-transparent">
                         <div class="w-16 h-16 rounded-2xl bg-surface border border-borderLight flex items-center justify-center text-textSec font-bold mb-5 shadow-sm group-hover:border-gold group-hover:text-gold transition-colors duration-300"><i data-lucide="cpu" class="w-6 h-6"></i></div>
                         <h4 class="font-semibold text-textMain text-sm mb-1">AI Processing</h4>
                     </div>
-                    <div class="flex flex-col items-center text-center gsap-process group">
+                    <div class="flex flex-col items-center text-center gsap-process group glow-effect p-4 rounded-3xl border border-transparent">
                         <div class="w-16 h-16 rounded-2xl bg-surface border border-borderLight flex items-center justify-center text-textSec font-bold mb-5 shadow-sm group-hover:border-gold group-hover:text-gold transition-colors duration-300"><i data-lucide="users" class="w-6 h-6"></i></div>
                         <h4 class="font-semibold text-textMain text-sm mb-1">Staff Review</h4>
                     </div>
-                    <div class="flex flex-col items-center text-center gsap-process group">
+                    <div class="flex flex-col items-center text-center gsap-process group glow-effect p-4 rounded-3xl border border-transparent">
                         <div class="w-16 h-16 rounded-2xl bg-surface border border-borderLight flex items-center justify-center text-textSec font-bold mb-5 shadow-sm group-hover:border-gold group-hover:text-gold transition-colors duration-300"><i data-lucide="dollar-sign" class="w-6 h-6"></i></div>
                         <h4 class="font-semibold text-textMain text-sm mb-1">Settlement</h4>
                     </div>
-                    <div class="flex flex-col items-center text-center gsap-process group">
+                    <div class="flex flex-col items-center text-center gsap-process group glow-effect p-4 rounded-3xl border border-transparent">
                         <div class="w-16 h-16 rounded-2xl bg-primary flex items-center justify-center text-white font-bold mb-5 shadow-float"><i data-lucide="check-circle-2" class="w-6 h-6"></i></div>
                         <h4 class="font-semibold text-textMain text-sm mb-1">Claim Closed</h4>
                     </div>

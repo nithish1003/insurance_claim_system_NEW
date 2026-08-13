@@ -291,3 +291,26 @@ class AadhaarKYCVerification(models.Model):
     def __str__(self):
         target = self.user.username if self.user else self.submitted_full_name or "KYC Attempt"
         return f"{target} [{self.public_id}]"
+
+
+class OTPVerification(models.Model):
+    PURPOSE_CHOICES = [
+        ('email_verify', 'Email Verification'),
+        ('phone_verify', 'Phone Verification'),
+    ]
+    
+    email = models.EmailField(blank=True)
+    phone = models.CharField(max_length=15, blank=True)
+    otp_code = models.CharField(max_length=128)
+    purpose = models.CharField(max_length=20, choices=PURPOSE_CHOICES)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(blank=True)
+    is_verified = models.BooleanField(default=False)
+    verified_at = models.DateTimeField(null=True, blank=True)
+    attempts = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    session_key = models.CharField(max_length=64, db_index=True)
+
+    def __str__(self):
+        return f"{self.purpose} OTP for {self.email or self.phone} ({'Verified' if self.is_verified else 'Pending'})"

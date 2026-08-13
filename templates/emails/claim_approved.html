@@ -1,0 +1,11 @@
+{% extends "emails/base.html" %}
+{% block title %}Claim Approved{% endblock %}
+{% block content %}
+    <div class="badge">Claim Update</div>
+    <div class="success">Status: Approved</div>
+    <h1>Claim Approved</h1>
+    <p>Hello {{ user.get_full_name|default:user.username }},</p>
+    <p>Great news! Your claim (<strong>{{ claim.claim_number }}</strong>) has been approved.</p>
+    <p>The settlement amount of <strong>${{ claim.approved_amount }}</strong> will be processed shortly.</p>
+    <a href="{{ claim_url|default:'#' }}" class="btn">View Details</a>
+{% endblock %}

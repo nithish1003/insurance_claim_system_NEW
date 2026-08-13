@@ -158,10 +158,25 @@ from django.contrib.auth.forms import PasswordResetForm, SetPasswordForm
 class CustomPasswordResetForm(PasswordResetForm):
     def clean_email(self):
         email = self.cleaned_data.get('email')
-        # We don't raise validation error if email doesn't exist
-        # to prevent user enumeration. This is handled by Django's
-        # default PasswordResetForm but we can be explicit here.
         return email
+
+    def send_mail(self, subject_template_name, email_template_name,
+                  context, from_email, to_email, html_email_template_name=None):
+        """Override to centralize through NotificationService."""
+        from django.template.loader import render_to_string
+        from notifications.services import NotificationService
+        
+        subject = render_to_string(subject_template_name, context).strip()
+        
+        # Use our new standardized template
+        template = html_email_template_name or 'accounts/password_reset_email_html.html'
+        
+        NotificationService.send_html_email(
+            subject=subject,
+            template_name=template,
+            context=context,
+            recipient_list=[to_email]
+        )
 
 class CustomSetPasswordForm(SetPasswordForm):
     # This form is used for the actual reset.

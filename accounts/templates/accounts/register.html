@@ -423,14 +423,15 @@
             <!-- Progress Bar -->
             <div class="mb-8 bg-white p-4 rounded-2xl border border-borderLight shadow-sm">
                 <div class="flex justify-between items-end mb-3">
-                    <span class="text-[10px] font-extrabold uppercase tracking-widest text-textMuted" id="step-label">Step 1 of 4</span>
+                    <span class="text-[10px] font-extrabold uppercase tracking-widest text-textMuted" id="step-label">Step 1 of 3</span>
                     <span class="text-[10px] font-extrabold uppercase tracking-widest text-gold" id="step-title">Basic Info</span>
                 </div>
                 <div class="h-1.5 w-full bg-borderLight/50 rounded-full overflow-hidden">
-                    <div class="h-full bg-[#B08A57] transition-all duration-500 w-1/4 rounded-full shadow-[0_0_10px_rgba(176,138,87,0.4)]" id="progress-bar"></div>
+                    <div class="h-full bg-[#B08A57] transition-all duration-500 w-1/3 rounded-full shadow-[0_0_10px_rgba(176,138,87,0.4)]" id="progress-bar"></div>
                 </div>
             </div>
 
+            <div id="django-messages">
             {% if form.errors or messages %}
             <div class="bg-danger/5 border border-danger/20 p-4 rounded-xl mb-6 shadow-sm">
                 {% for message in messages %}
@@ -443,210 +444,372 @@
                 {% endif %}
             </div>
             {% endif %}
+            </div>
 
-            <form method="POST" action="{% url 'accounts:register' %}" enctype="multipart/form-data" id="regForm">
+            <form method="POST" action="{% url 'accounts:register_complete' %}" enctype="multipart/form-data" id="regForm">
                 {% csrf_token %}
                 
                 <!-- STEP 1: BASIC INFO -->
-                <div class="reg-step space-y-7" id="step1">
+                <div class="reg-step space-y-5" id="step1">
                     <div class="relative group">
                         <i data-lucide="user" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-textMuted group-focus-within:text-gold transition-colors pointer-events-none z-10"></i>
                         <input type="text" name="full_name" id="full_name" class="peer w-full bg-[#FAF8F4] border-[#E6DED1] hover:border-gold/50 focus:bg-white rounded-xl pl-12 pr-4 pt-7 pb-2 text-sm font-semibold text-textMain outline-none shadow-input focus:ring-4 focus:ring-gold/15 focus:border-gold transition-all placeholder-transparent" required placeholder="Full Name" value="{{ form.data.full_name|default:'' }}">
                         <label for="full_name" class="absolute left-12 top-2 text-[10px] uppercase tracking-widest font-bold text-textMuted transition-all peer-placeholder-shown:text-sm peer-placeholder-shown:normal-case peer-placeholder-shown:tracking-normal peer-placeholder-shown:font-medium peer-placeholder-shown:top-[1.1rem] pointer-events-none peer-focus:top-2 peer-focus:text-[10px] peer-focus:uppercase peer-focus:tracking-widest peer-focus:font-bold peer-focus:text-gold z-10">Full Name (as per ID)</label>
-                        {% if form.full_name.errors %}<span class="error-msg text-danger text-[10px] font-bold absolute -bottom-5 left-1 tracking-wide">⚠ {{ form.full_name.errors.0 }}</span>{% endif %}
+                        <span id="full_name_error" class="error-msg text-danger text-[10px] font-bold absolute -bottom-5 left-1 tracking-wide hidden"></span>
                     </div>
 
                     <div class="relative group">
                         <i data-lucide="at-sign" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-textMuted group-focus-within:text-gold transition-colors pointer-events-none z-10"></i>
                         <input type="text" name="username" id="username" class="peer w-full bg-[#FAF8F4] border-[#E6DED1] hover:border-gold/50 focus:bg-white rounded-xl pl-12 pr-4 pt-7 pb-2 text-sm font-semibold text-textMain outline-none shadow-input focus:ring-4 focus:ring-gold/15 focus:border-gold transition-all placeholder-transparent" required placeholder="Username" value="{{ form.data.username|default:'' }}">
                         <label for="username" class="absolute left-12 top-2 text-[10px] uppercase tracking-widest font-bold text-textMuted transition-all peer-placeholder-shown:text-sm peer-placeholder-shown:normal-case peer-placeholder-shown:tracking-normal peer-placeholder-shown:font-medium peer-placeholder-shown:top-[1.1rem] pointer-events-none peer-focus:top-2 peer-focus:text-[10px] peer-focus:uppercase peer-focus:tracking-widest peer-focus:font-bold peer-focus:text-gold z-10">Username</label>
-                        {% if form.username.errors %}<span class="error-msg text-danger text-[10px] font-bold absolute -bottom-5 left-1 tracking-wide">⚠ {{ form.username.errors.0 }}</span>{% endif %}
+                        <span id="username_error" class="error-msg text-danger text-[10px] font-bold absolute -bottom-5 left-1 tracking-wide hidden"></span>
                     </div>
 
                     <div class="relative group">
                         <i data-lucide="mail" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-textMuted group-focus-within:text-gold transition-colors pointer-events-none z-10"></i>
                         <input type="email" name="email" id="email" class="peer w-full bg-[#FAF8F4] border-[#E6DED1] hover:border-gold/50 focus:bg-white rounded-xl pl-12 pr-4 pt-7 pb-2 text-sm font-semibold text-textMain outline-none shadow-input focus:ring-4 focus:ring-gold/15 focus:border-gold transition-all placeholder-transparent" required placeholder="Email" value="{{ form.data.email|default:'' }}">
                         <label for="email" class="absolute left-12 top-2 text-[10px] uppercase tracking-widest font-bold text-textMuted transition-all peer-placeholder-shown:text-sm peer-placeholder-shown:normal-case peer-placeholder-shown:tracking-normal peer-placeholder-shown:font-medium peer-placeholder-shown:top-[1.1rem] pointer-events-none peer-focus:top-2 peer-focus:text-[10px] peer-focus:uppercase peer-focus:tracking-widest peer-focus:font-bold peer-focus:text-gold z-10">Email Address</label>
-                        {% if form.email.errors %}<span class="error-msg text-danger text-[10px] font-bold absolute -bottom-5 left-1 tracking-wide">⚠ {{ form.email.errors.0 }}</span>{% endif %}
+                        <span id="email_error" class="error-msg text-danger text-[10px] font-bold absolute -bottom-5 left-1 tracking-wide hidden"></span>
                     </div>
 
-                    <div class="pt-2">
-                        <button type="button" class="w-full py-4 bg-gradient-to-r from-primary to-gold text-white hover:shadow-[0_4px_20px_rgba(170,135,88,0.3)] hover:opacity-90 rounded-xl font-extrabold text-sm shadow-md transition-all flex items-center justify-center gap-2 group border-0" onclick="nextStep(2)">
-                            Continue <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- STEP 2: IDENTITY -->
-                <div class="reg-step space-y-5 hidden" id="step2">
-                    <div class="relative group">
-                        <i data-lucide="credit-card" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-textMuted group-focus-within:text-gold transition-colors pointer-events-none z-10"></i>
-                        <input type="number" name="aadhaar_number" id="aadhaar_number" class="peer w-full bg-[#FAF8F4] border-[#E6DED1] hover:border-gold/50 focus:bg-white rounded-xl pl-12 pr-4 pt-7 pb-2 text-sm font-semibold text-textMain outline-none shadow-input focus:ring-4 focus:ring-gold/15 focus:border-gold transition-all placeholder-transparent" required placeholder="Aadhaar" value="{{ form.data.aadhaar_number|default:'' }}">
-                        <label for="aadhaar_number" class="absolute left-12 top-2 text-[10px] uppercase tracking-widest font-bold text-textMuted transition-all peer-placeholder-shown:text-sm peer-placeholder-shown:normal-case peer-placeholder-shown:tracking-normal peer-placeholder-shown:font-medium peer-placeholder-shown:top-[1.1rem] pointer-events-none peer-focus:top-2 peer-focus:text-[10px] peer-focus:uppercase peer-focus:tracking-widest peer-focus:font-bold peer-focus:text-gold z-10">Aadhaar Number (12 digits)</label>
-                        {% if form.aadhaar_number.errors %}<span class="error-msg text-danger text-[10px] font-bold absolute -bottom-5 left-1 tracking-wide">⚠ {{ form.aadhaar_number.errors.0 }}</span>{% endif %}
-                    </div>
-
-                    <div class="relative group">
-                        <i data-lucide="upload-cloud" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-textMuted group-focus-within:text-gold transition-colors pointer-events-none z-10"></i>
-                        <input type="file" name="id_proof" id="id_proof" class="peer w-full bg-[#FAF8F4] border-[#E6DED1] hover:border-gold/50 focus:bg-white rounded-xl pl-12 pr-4 py-4 text-sm font-semibold text-textMain outline-none shadow-input focus:ring-4 focus:ring-gold/15 focus:border-gold transition-all file:mr-4 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-[10px] file:font-bold file:uppercase file:tracking-wider file:bg-gold/10 file:text-gold hover:file:bg-gold/20 file:cursor-pointer cursor-pointer" required>
-                        <!-- No floating label needed for file input -->
-                        {% if form.id_proof.errors %}<span class="error-msg text-danger text-[10px] font-bold absolute -bottom-5 left-1 tracking-wide">⚠ {{ form.id_proof.errors.0 }}</span>{% endif %}
-                    </div>
-
-                    <div class="pt-2 flex gap-3">
-                        <button type="button" class="w-1/3 py-4 bg-transparent border border-borderLight text-textSec hover:text-textMain hover:border-textMuted rounded-xl font-bold text-sm transition-colors flex items-center justify-center" onclick="prevStep(1)">
-                            Back
-                        </button>
-                        <button type="button" class="w-2/3 py-4 bg-gradient-to-r from-primary to-gold text-white hover:shadow-[0_4px_20px_rgba(170,135,88,0.3)] hover:opacity-90 rounded-xl font-extrabold text-sm shadow-md transition-all flex items-center justify-center gap-2 group border-0" onclick="nextStep(3)">
-                            Continue <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- STEP 3: CONTACT -->
-                <div class="reg-step space-y-5 hidden" id="step3">
                     <div class="relative group">
                         <i data-lucide="phone" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-textMuted group-focus-within:text-gold transition-colors pointer-events-none z-10"></i>
                         <input type="text" name="phone" id="phone" class="peer w-full bg-[#FAF8F4] border-[#E6DED1] hover:border-gold/50 focus:bg-white rounded-xl pl-12 pr-4 pt-7 pb-2 text-sm font-semibold text-textMain outline-none shadow-input focus:ring-4 focus:ring-gold/15 focus:border-gold transition-all placeholder-transparent" required placeholder="Phone" value="{{ form.data.phone|default:'' }}">
-                        <label for="phone" class="absolute left-12 top-2 text-[10px] uppercase tracking-widest font-bold text-textMuted transition-all peer-placeholder-shown:text-sm peer-placeholder-shown:normal-case peer-placeholder-shown:tracking-normal peer-placeholder-shown:font-medium peer-placeholder-shown:top-[1.1rem] pointer-events-none peer-focus:top-2 peer-focus:text-[10px] peer-focus:uppercase peer-focus:tracking-widest peer-focus:font-bold peer-focus:text-gold z-10">Phone Number</label>
-                        {% if form.phone.errors %}<span class="error-msg text-danger text-[10px] font-bold absolute -bottom-5 left-1 tracking-wide">⚠ {{ form.phone.errors.0 }}</span>{% endif %}
+                        <label for="phone" class="absolute left-12 top-2 text-[10px] uppercase tracking-widest font-bold text-textMuted transition-all peer-placeholder-shown:text-sm peer-placeholder-shown:normal-case peer-placeholder-shown:tracking-normal peer-placeholder-shown:font-medium peer-placeholder-shown:top-[1.1rem] pointer-events-none peer-focus:top-2 peer-focus:text-[10px] peer-focus:uppercase peer-focus:tracking-widest peer-focus:font-bold peer-focus:text-gold z-10">Phone Number (with +91)</label>
+                        <span id="phone_error" class="error-msg text-danger text-[10px] font-bold absolute -bottom-5 left-1 tracking-wide hidden"></span>
                     </div>
 
                     <div class="relative group">
                         <i data-lucide="map-pin" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-textMuted group-focus-within:text-gold transition-colors pointer-events-none z-10"></i>
                         <input type="text" name="address" id="address" class="peer w-full bg-[#FAF8F4] border-[#E6DED1] hover:border-gold/50 focus:bg-white rounded-xl pl-12 pr-4 pt-7 pb-2 text-sm font-semibold text-textMain outline-none shadow-input focus:ring-4 focus:ring-gold/15 focus:border-gold transition-all placeholder-transparent" required placeholder="Address" value="{{ form.data.address|default:'' }}">
                         <label for="address" class="absolute left-12 top-2 text-[10px] uppercase tracking-widest font-bold text-textMuted transition-all peer-placeholder-shown:text-sm peer-placeholder-shown:normal-case peer-placeholder-shown:tracking-normal peer-placeholder-shown:font-medium peer-placeholder-shown:top-[1.1rem] pointer-events-none peer-focus:top-2 peer-focus:text-[10px] peer-focus:uppercase peer-focus:tracking-widest peer-focus:font-bold peer-focus:text-gold z-10">Residential Address</label>
-                        {% if form.address.errors %}<span class="error-msg text-danger text-[10px] font-bold absolute -bottom-5 left-1 tracking-wide">⚠ {{ form.address.errors.0 }}</span>{% endif %}
                     </div>
 
-                    <div class="pt-2 flex gap-3">
-                        <button type="button" class="w-1/3 py-4 bg-transparent border border-borderLight text-textSec hover:text-textMain hover:border-textMuted rounded-xl font-bold text-sm transition-colors flex items-center justify-center" onclick="prevStep(2)">
-                            Back
-                        </button>
-                        <button type="button" class="w-2/3 py-4 bg-gradient-to-r from-primary to-gold text-white hover:shadow-[0_4px_20px_rgba(170,135,88,0.3)] hover:opacity-90 rounded-xl font-extrabold text-sm shadow-md transition-all flex items-center justify-center gap-2 group border-0" onclick="nextStep(4)">
-                            Continue <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- STEP 4: SECURITY -->
-                <div class="reg-step space-y-5 hidden" id="step4">
                     <div class="relative group">
                         <i data-lucide="lock" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-textMuted group-focus-within:text-gold transition-colors pointer-events-none z-10"></i>
                         <input type="password" name="password" id="pass1" class="peer w-full bg-[#FAF8F4] border-[#E6DED1] hover:border-gold/50 focus:bg-white rounded-xl pl-12 pr-12 pt-7 pb-2 text-sm font-semibold text-textMain outline-none shadow-input focus:ring-4 focus:ring-gold/15 focus:border-gold transition-all placeholder-transparent" required placeholder="Password">
                         <label for="pass1" class="absolute left-12 top-2 text-[10px] uppercase tracking-widest font-bold text-textMuted transition-all peer-placeholder-shown:text-sm peer-placeholder-shown:normal-case peer-placeholder-shown:tracking-normal peer-placeholder-shown:font-medium peer-placeholder-shown:top-[1.1rem] pointer-events-none peer-focus:top-2 peer-focus:text-[10px] peer-focus:uppercase peer-focus:tracking-widest peer-focus:font-bold peer-focus:text-gold z-10">Password</label>
-                        <button type="button" class="absolute right-4 top-1/2 transform -translate-y-1/2 text-textMuted hover:text-textMain transition-colors focus:outline-none z-10" onclick="togglePassword('pass1', this)">
-                            <i data-lucide="eye" class="w-5 h-5"></i>
+                        <button type="button" class="absolute right-4 top-1/2 transform -translate-y-1/2 text-textMuted hover:text-textMain transition-colors" onclick="togglePassword('pass1', this)">
+                            <i data-lucide="eye" class="w-4 h-4"></i>
                         </button>
-                        <span class="text-[10px] font-bold text-textMuted absolute -bottom-4 left-1 uppercase tracking-widest" id="pass-hint">⚠ Min 8 characters</span>
                     </div>
 
-                    <div class="relative group mt-7">
+                    <div class="relative group">
                         <i data-lucide="shield-check" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-textMuted group-focus-within:text-gold transition-colors pointer-events-none z-10"></i>
-                        <input type="password" name="confirm_password" id="pass2" class="peer w-full bg-[#FAF8F4] border-[#E6DED1] hover:border-gold/50 focus:bg-white rounded-xl pl-12 pr-12 pt-7 pb-2 text-sm font-semibold text-textMain outline-none shadow-input focus:ring-4 focus:ring-gold/15 focus:border-gold transition-all placeholder-transparent" required placeholder="Confirm">
+                        <input type="password" name="confirm_password" id="pass2" class="peer w-full bg-[#FAF8F4] border-[#E6DED1] hover:border-gold/50 focus:bg-white rounded-xl pl-12 pr-12 pt-7 pb-2 text-sm font-semibold text-textMain outline-none shadow-input focus:ring-4 focus:ring-gold/15 focus:border-gold transition-all placeholder-transparent" required placeholder="Confirm Password">
                         <label for="pass2" class="absolute left-12 top-2 text-[10px] uppercase tracking-widest font-bold text-textMuted transition-all peer-placeholder-shown:text-sm peer-placeholder-shown:normal-case peer-placeholder-shown:tracking-normal peer-placeholder-shown:font-medium peer-placeholder-shown:top-[1.1rem] pointer-events-none peer-focus:top-2 peer-focus:text-[10px] peer-focus:uppercase peer-focus:tracking-widest peer-focus:font-bold peer-focus:text-gold z-10">Confirm Password</label>
-                        <button type="button" class="absolute right-4 top-1/2 transform -translate-y-1/2 text-textMuted hover:text-textMain transition-colors focus:outline-none z-10" onclick="togglePassword('pass2', this)">
-                            <i data-lucide="eye" class="w-5 h-5"></i>
-                        </button>
                     </div>
 
-                    <div class="pt-2 flex gap-3">
-                        <button type="button" class="w-1/3 py-4 bg-transparent border border-borderLight text-textSec hover:text-textMain hover:border-textMuted rounded-xl font-bold text-sm transition-colors flex items-center justify-center" onclick="prevStep(3)">
-                            Back
+                    <div class="pt-2">
+                        <button type="button" id="btn-send-otp" class="w-full py-4 bg-gradient-to-r from-primary to-gold text-white hover:shadow-[0_4px_20px_rgba(170,135,88,0.3)] hover:opacity-90 rounded-xl font-extrabold text-sm shadow-md transition-all flex items-center justify-center gap-2 group border-0" onclick="sendOtp(event)">
+                            <span class="btn-text">Send Verification OTPs</span>
+                            <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform btn-icon"></i>
                         </button>
-                        <button type="submit" id="submitBtn" class="w-2/3 py-4 bg-gradient-to-r from-primary to-gold text-white rounded-xl font-bold text-[15px] shadow-btn-glow hover:shadow-[0_0_25px_rgba(170,135,88,0.6)] hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-2 group relative overflow-hidden">
-                            <div class="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent group-hover:animate-[progress_1s_ease-in-out]"></div>
-                            <span class="btn-text relative z-10">Create Account</span> 
-                            <i data-lucide="check-circle" class="w-4 h-4 btn-icon relative z-10"></i>
+                    </div>
+                </div>
+
+                <!-- STEP 2: OTP VERIFICATION -->
+                <div class="reg-step space-y-5 hidden" id="step2">
+                    <div class="bg-blue-50 border border-blue-100 p-4 rounded-xl text-xs text-blue-800 mb-2">
+                        <p class="font-semibold flex items-center gap-2 mb-1"><i data-lucide="info" class="w-4 h-4"></i> OTPs Dispatched</p>
+                        <p>We've sent a 6-digit OTP to your email and phone number. Please enter both below to proceed.</p>
+                    </div>
+
+                    <div class="relative group">
+                        <i data-lucide="mail-check" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-textMuted group-focus-within:text-gold transition-colors pointer-events-none z-10"></i>
+                        <input type="text" name="email_otp" id="email_otp" class="peer w-full bg-[#FAF8F4] border-[#E6DED1] hover:border-gold/50 focus:bg-white rounded-xl pl-12 pr-4 pt-7 pb-2 text-sm font-semibold text-textMain outline-none shadow-input focus:ring-4 focus:ring-gold/15 focus:border-gold transition-all placeholder-transparent" placeholder="Email OTP">
+                        <label for="email_otp" class="absolute left-12 top-2 text-[10px] uppercase tracking-widest font-bold text-textMuted transition-all peer-placeholder-shown:text-sm peer-placeholder-shown:normal-case peer-placeholder-shown:tracking-normal peer-placeholder-shown:font-medium peer-placeholder-shown:top-[1.1rem] pointer-events-none peer-focus:top-2 peer-focus:text-[10px] peer-focus:uppercase peer-focus:tracking-widest peer-focus:font-bold peer-focus:text-gold z-10">Email OTP (6 digits)</label>
+                        <span id="email_otp_error" class="error-msg text-danger text-[10px] font-bold absolute -bottom-5 left-1 tracking-wide hidden"></span>
+                    </div>
+
+                    <div class="relative group">
+                        <i data-lucide="message-square" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-textMuted group-focus-within:text-gold transition-colors pointer-events-none z-10"></i>
+                        <input type="text" name="sms_otp" id="sms_otp" class="peer w-full bg-[#FAF8F4] border-[#E6DED1] hover:border-gold/50 focus:bg-white rounded-xl pl-12 pr-4 pt-7 pb-2 text-sm font-semibold text-textMain outline-none shadow-input focus:ring-4 focus:ring-gold/15 focus:border-gold transition-all placeholder-transparent" placeholder="Phone OTP">
+                        <label for="sms_otp" class="absolute left-12 top-2 text-[10px] uppercase tracking-widest font-bold text-textMuted transition-all peer-placeholder-shown:text-sm peer-placeholder-shown:normal-case peer-placeholder-shown:tracking-normal peer-placeholder-shown:font-medium peer-placeholder-shown:top-[1.1rem] pointer-events-none peer-focus:top-2 peer-focus:text-[10px] peer-focus:uppercase peer-focus:tracking-widest peer-focus:font-bold peer-focus:text-gold z-10">Phone OTP (6 digits)</label>
+                        <span id="sms_otp_error" class="error-msg text-danger text-[10px] font-bold absolute -bottom-5 left-1 tracking-wide hidden"></span>
+                    </div>
+
+                    
+                    
+                    <div class="pt-2 flex flex-col gap-3">
+                        <div class="flex gap-3">
+                            <button type="button" class="w-1/3 py-4 bg-transparent border border-borderLight text-textSec hover:text-textMain hover:border-textMuted rounded-xl font-bold text-sm transition-colors flex items-center justify-center" onclick="showStep(1)">
+                                Back
+                            </button>
+                            <button type="button" id="btn-verify-otp" class="w-2/3 py-4 bg-gradient-to-r from-primary to-gold text-white hover:shadow-[0_4px_20px_rgba(170,135,88,0.3)] hover:opacity-90 rounded-xl font-extrabold text-sm shadow-md transition-all flex items-center justify-center gap-2 group border-0" onclick="verifyOtp(event)">
+                                <span class="btn-text">Verify & Continue</span>
+                                <i data-lucide="check-circle" class="w-4 h-4 btn-icon"></i>
+                            </button>
+                        </div>
+                        <div class="text-center mt-2">
+                            <button type="button" id="btn-resend-otp" class="text-[10px] font-bold text-gold hover:text-primary uppercase tracking-widest transition-colors hidden" onclick="resendOTP(event)">
+                                Resend OTP
+                            </button>
+                            <span id="resend-timer" class="text-[10px] font-bold text-textMuted uppercase tracking-widest">Resend available in <span id="timer-count">60</span>s</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 3: IDENTITY -->
+                <div class="reg-step space-y-5 hidden" id="step3">
+                    <div class="relative group">
+                        <i data-lucide="credit-card" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-textMuted group-focus-within:text-gold transition-colors pointer-events-none z-10"></i>
+                        <input type="number" name="aadhaar_number" id="aadhaar_number" class="peer w-full bg-[#FAF8F4] border-[#E6DED1] hover:border-gold/50 focus:bg-white rounded-xl pl-12 pr-4 pt-7 pb-2 text-sm font-semibold text-textMain outline-none shadow-input focus:ring-4 focus:ring-gold/15 focus:border-gold transition-all placeholder-transparent" placeholder="Aadhaar" value="{{ form.data.aadhaar_number|default:'' }}">
+                        <label for="aadhaar_number" class="absolute left-12 top-2 text-[10px] uppercase tracking-widest font-bold text-textMuted transition-all peer-placeholder-shown:text-sm peer-placeholder-shown:normal-case peer-placeholder-shown:tracking-normal peer-placeholder-shown:font-medium peer-placeholder-shown:top-[1.1rem] pointer-events-none peer-focus:top-2 peer-focus:text-[10px] peer-focus:uppercase peer-focus:tracking-widest peer-focus:font-bold peer-focus:text-gold z-10">Aadhaar Number (12 digits)</label>
+                        {% if form.aadhaar_number.errors %}<span class="error-msg text-danger text-[10px] font-bold absolute -bottom-5 left-1 tracking-wide">⚠ {{ form.aadhaar_number.errors.0 }}</span>{% endif %}
+                    </div>
+
+                    <div class="relative group">
+                        <i data-lucide="upload-cloud" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-textMuted group-focus-within:text-gold transition-colors pointer-events-none z-10"></i>
+                        <input type="file" name="id_proof" id="id_proof" class="peer w-full bg-[#FAF8F4] border-[#E6DED1] hover:border-gold/50 focus:bg-white rounded-xl pl-12 pr-4 py-4 text-sm font-semibold text-textMain outline-none shadow-input focus:ring-4 focus:ring-gold/15 focus:border-gold transition-all file:mr-4 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-[10px] file:font-bold file:uppercase file:tracking-wider file:bg-gold/10 file:text-gold hover:file:bg-gold/20 file:cursor-pointer cursor-pointer">
+                        <!-- No floating label needed for file input -->
+                        {% if form.id_proof.errors %}<span class="error-msg text-danger text-[10px] font-bold absolute -bottom-5 left-1 tracking-wide">⚠ {{ form.id_proof.errors.0 }}</span>{% endif %}
+                    </div>
+
+                    <!-- KYC Warning -->
+                    <div class="bg-primary/5 border border-primary/20 p-4 rounded-xl flex gap-3 shadow-sm">
+                        <i data-lucide="info" class="w-5 h-5 text-gold flex-shrink-0 mt-0.5"></i>
+                        <div class="text-xs text-textMain leading-relaxed">
+                            <span class="font-bold text-[#4F4A42]">AI KYC Engine:</span> Please ensure your ID proof is clear and well-lit. Our AI will automatically verify your details in real-time.
+                        </div>
+                    </div>
+
+                    <div class="pt-2">
+                        <button type="submit" id="submitBtn" class="w-full py-4 bg-gradient-to-r from-success to-[#2F6635] text-white hover:shadow-[0_4px_20px_rgba(62,124,69,0.3)] hover:opacity-90 rounded-xl font-extrabold text-sm shadow-md transition-all flex items-center justify-center gap-2 group border-0">
+                            <span class="btn-text">Submit Application</span>
+                            <i data-lucide="check-square" class="w-4 h-4 btn-icon"></i>
                         </button>
                     </div>
                 </div>
             </form>
 
-            <!-- Navigation Links -->
-            <div class="mt-12 flex flex-col items-center gap-3">
-                <p class="text-[13px] text-textSec font-medium">Already have an account? <a href="{% url 'accounts:login' %}" class="text-gold font-bold hover:text-primary transition-colors">Sign in</a></p>
-                <a href="/" class="inline-flex items-center gap-1.5 text-xs font-bold text-textMuted hover:text-textMain transition-colors">
-                    <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Back to home
-                </a>
+            <div class="mt-8 text-center border-t border-borderLight/50 pt-6">
+                <p class="text-textSec text-xs font-medium">Already have an account? <a href="{% url 'accounts:login' %}" class="text-gold hover:text-primary font-bold hover:underline underline-offset-4 transition-colors">Sign in to Enterprise</a></p>
             </div>
-
-            <!-- Footer Links -->
-            <div class="mt-8 flex flex-wrap justify-center gap-x-6 gap-y-2 text-[11px] font-semibold text-textMuted border-t border-borderLight/40 pt-6">
-                <a href="#" class="hover:text-textMain transition-colors">Privacy Policy</a>
-                <a href="#" class="hover:text-textMain transition-colors">Terms of Service</a>
-                <a href="#" class="hover:text-textMain transition-colors">Security</a>
-                <span class="text-borderLight">|</span>
-                <span>© ClaimIQ 2026</span>
-            </div>
-            
         </div>
     </div>
 
+    <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         lucide.createIcons();
 
-        let currentStep = 1;
-        const totalSteps = 4;
-        const stepTitles = ["Basic Info", "Identity Verification", "Contact Details", "Security Setup"];
-
-        function updateProgress() {
-            document.getElementById('step-label').innerText = `Step ${currentStep} of ${totalSteps}`;
-            document.getElementById('step-title').innerText = stepTitles[currentStep - 1];
-            const progress = document.getElementById('progress-bar');
-            if (progress) progress.style.width = `${(currentStep / totalSteps) * 100}%`;
+        const totalSteps = 3;
+        const titles = ["Basic Info", "OTP Verification", "Identity Verification"];
+        
+        function updateProgress(stepNum) {
+            const pct = (stepNum / totalSteps) * 100;
+            document.getElementById('progress-bar').style.width = pct + '%';
+            document.getElementById('step-label').innerText = `Step ${stepNum} of ${totalSteps}`;
+            document.getElementById('step-title').innerText = titles[stepNum-1];
         }
 
-        function showStep(step) {
-            document.querySelectorAll('.reg-step').forEach(s => {
-                s.classList.add('hidden');
-                s.classList.remove('animate-fade-in');
+        function showStep(stepNum) {
+            document.querySelectorAll('.reg-step').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`step${stepNum}`).classList.remove('hidden');
+            updateProgress(stepNum);
+        }
+
+        function clearErrors() {
+            document.querySelectorAll('.error-msg').forEach(el => {
+                el.classList.add('hidden');
+                el.innerText = '';
             });
-            const target = document.getElementById(`step${step}`);
-            if (target) {
-                target.classList.remove('hidden');
-                target.classList.add('animate-fade-in');
-                currentStep = step;
-                updateProgress();
+            document.querySelectorAll('input').forEach(el => {
+                el.classList.remove('border-danger', 'ring-1', 'ring-danger');
+            });
+        }
+
+        function showError(fieldId, msg) {
+            const input = document.getElementById(fieldId);
+            if(input) {
+                input.classList.add('border-danger', 'ring-1', 'ring-danger');
+                const errSpan = document.getElementById(`${fieldId}_error`);
+                if(errSpan) {
+                    errSpan.innerText = `⚠ ${msg}`;
+                    errSpan.classList.remove('hidden');
+                }
             }
         }
 
-        function nextStep(step) {
-            const currentFields = document.getElementById(`step${currentStep}`).querySelectorAll('input[required]');
-            let valid = true;
-            currentFields.forEach(f => {
-                if(!f.value) {
-                    f.classList.add('border-danger', 'ring-1', 'ring-danger');
-                    valid = false;
+        
+        
+        let resendTimer = null;
+        let cooldown = 60;
+
+        function updateTimer() {
+            const countEl = document.getElementById('timer-count');
+            countEl.innerText = cooldown;
+        }
+
+        function enableResend() {
+            document.getElementById('resend-timer').classList.add('hidden');
+            document.getElementById('btn-resend-otp').classList.remove('hidden');
+        }
+
+        function disableResend() {
+            document.getElementById('btn-resend-otp').classList.add('hidden');
+            document.getElementById('resend-timer').classList.remove('hidden');
+        }
+
+        function startCountdown() {
+            clearInterval(resendTimer);
+            cooldown = 60;
+            disableResend();
+            updateTimer();
+            
+            resendTimer = setInterval(() => {
+                cooldown--;
+                updateTimer();
+                if(cooldown <= 0) {
+                    clearInterval(resendTimer);
+                    enableResend();
+                }
+            }, 1000);
+        }
+
+        async function resendOTP(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btn-resend-otp');
+            btn.innerText = "Sending...";
+            
+            try {
+                const response = await fetch("{% url 'accounts:register_resend_otp' %}", {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    }
+                });
+                
+                const data = await response.json();
+                btn.innerText = "Resend OTP";
+                
+                if(data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'OTPs Resent!',
+                        text: data.message || 'OTP sent successfully.',
+                        timer: 3000,
+                        showConfirmButton: false
+                    });
+                    startCountdown();
                 } else {
-                    f.classList.remove('border-danger', 'ring-1', 'ring-danger');
+                    Swal.fire('Error', data.message || 'Failed to resend.', 'error');
                 }
-            });
-
-            if(!valid) return;
-            showStep(step);
-        }
-
-        function prevStep(step) {
-            showStep(step);
-        }
-
-        // Smart Error Detection for Django Forms
-        document.addEventListener('DOMContentLoaded', function() {
-            let errorStep = 0;
-            for (let i = 1; i <= totalSteps; i++) {
-                const stepEl = document.getElementById(`step${i}`);
-                if (stepEl && stepEl.querySelector('.error-msg')) {
-                    errorStep = i;
-                    break;
-                }
+            } catch (err) {
+                btn.innerText = "Resend OTP";
+                Swal.fire('Network Error', 'Could not connect to the server.', 'error');
             }
+        }
 
-            if (errorStep > 0) {
-                showStep(errorStep);
+
+        async function sendOtp(e) {
+            e.preventDefault();
+            clearErrors();
+            
+            // Basic client side validation
+            const p1 = document.getElementById('pass1').value;
+            const p2 = document.getElementById('pass2').value;
+            if(p1 !== p2) {
+                showError('pass2', 'Passwords do not match');
+                return;
+            }
+            if(!document.getElementById('full_name').value) { showError('full_name', 'Required'); return; }
+            if(!document.getElementById('username').value) { showError('username', 'Required'); return; }
+            if(!document.getElementById('email').value) { showError('email', 'Required'); return; }
+            if(!document.getElementById('phone').value) { showError('phone', 'Required'); return; }
+
+            const btn = document.getElementById('btn-send-otp');
+            btn.classList.add('btn-loading');
+
+            const formData = new FormData(document.getElementById('regForm'));
+            
+            try {
+                const response = await fetch("{% url 'accounts:register_send_otp' %}", {
+                    method: 'POST',
+                    body: formData,
+                    headers: {'X-Requested-With': 'XMLHttpRequest'}
+                });
+                
+                const data = await response.json();
+                btn.classList.remove('btn-loading');
+                
+                if(data.success) {
+                    showStep(2);
+                    startCountdown();
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'OTPs Sent!',
+                        text: 'Please check your Email and Phone for the verification codes.',
+                        timer: 3000,
+                        showConfirmButton: false
+                    });
+                } else {
+                    if(data.errors) {
+                        for (const [field, msg] of Object.entries(data.errors)) {
+                            showError(field, msg);
+                        }
+                    } else if (data.error) {
+                        Swal.fire('Error', data.error, 'error');
+                    }
+                }
+            } catch (err) {
+                btn.classList.remove('btn-loading');
+                Swal.fire('Network Error', 'Could not connect to the server.', 'error');
+            }
+        }
+
+        async function verifyOtp(e) {
+            e.preventDefault();
+            clearErrors();
+            
+            const emailOtp = document.getElementById('email_otp').value;
+            const smsOtp = document.getElementById('sms_otp').value;
+
+            if(!emailOtp) { showError('email_otp', 'Enter Email OTP'); return; }
+            if(!smsOtp) { showError('sms_otp', 'Enter Phone OTP'); return; }
+
+            const btn = document.getElementById('btn-verify-otp');
+            btn.classList.add('btn-loading');
+
+            const formData = new FormData(document.getElementById('regForm'));
+            
+            try {
+                const response = await fetch("{% url 'accounts:register_verify_otp' %}", {
+                    method: 'POST',
+                    body: formData,
+                    headers: {'X-Requested-With': 'XMLHttpRequest'}
+                });
+                
+                const data = await response.json();
+                btn.classList.remove('btn-loading');
+                
+                if(data.success) {
+                    showStep(3);
+                } else {
+                    if(data.errors) {
+                        if(data.errors.email_otp) showError('email_otp', data.errors.email_otp);
+                        if(data.errors.sms_otp) showError('sms_otp', data.errors.sms_otp);
+                    } else if (data.error) {
+                        Swal.fire('Error', data.error, 'error');
+                    }
+                }
+            } catch (err) {
+                btn.classList.remove('btn-loading');
+                Swal.fire('Network Error', 'Could not connect to the server.', 'error');
+            }
+        }
+
+        // Initialize state
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if there are form errors from a failed Step 3 submission
+            const hasDjangoErrors = document.querySelector('.bg-danger\/5');
+            if(hasDjangoErrors) {
+                // If it reached complete step but failed, it must have verified OTP
+                showStep(3);
             } else {
-                updateProgress();
+                updateProgress(1);
             }
         });
 
@@ -665,22 +828,6 @@
         }
 
         document.getElementById('regForm').addEventListener('submit', function(e) {
-            const p1 = document.getElementById('pass1').value;
-            const p2 = document.getElementById('pass2').value;
-
-            if(p1 !== p2) {
-                e.preventDefault();
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Passwords Mismatch',
-                    text: 'Please ensure both passwords match.',
-                    background: '#FCFAF6',
-                    color: '#605E5B',
-                    confirmButtonColor: '#65604F'
-                });
-                return;
-            }
-
             const btn = document.getElementById('submitBtn');
             btn.classList.add('btn-loading');
         });

@@ -7,6 +7,10 @@ urlpatterns = [
 path("", views.home_redirect, name="home"),
 
 path("register/",views.register_view,name="register"),
+path("register/send-otp/", views.register_send_otp, name="register_send_otp"),
+path("register/verify-otp/", views.register_verify_otp, name="register_verify_otp"),
+path("register/resend-otp/", views.register_resend_otp, name="register_resend_otp"),
+path("register/complete/", views.register_complete, name="register_complete"),
 path("login/",views.login_view,name="login"),
 path("logout/",views.logout_view,name="logout"),
 
