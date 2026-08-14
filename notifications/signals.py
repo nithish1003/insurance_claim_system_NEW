@@ -17,6 +17,8 @@ User = get_user_model()
 @receiver(post_save, sender=Claim)
 def claim_status_notification(sender, instance, created, **kwargs):
     """Triggers multi-channel alerts for Claim events."""
+    if kwargs.get("raw", False):
+        return
     if created:
         auditors = User.objects.filter(role__in=['admin', 'staff'])
         for auditor in auditors:
@@ -49,6 +51,8 @@ def claim_status_notification(sender, instance, created, **kwargs):
 @receiver(post_save, sender=AadhaarKYCVerification)
 def kyc_alert_signal(sender, instance, created, **kwargs):
     """Triggers alerts for KYC status changes."""
+    if kwargs.get("raw", False):
+        return
     if not created and instance.user:
         status_map = {
             'verified': ('KYC Verified ✅', 'Identity validation successful. Your profile is now elite.', 'success'),
@@ -70,6 +74,8 @@ def kyc_alert_signal(sender, instance, created, **kwargs):
 @receiver(post_save, sender=PremiumPayment)
 def payment_alert_signal(sender, instance, created, **kwargs):
     """Triggers alerts for Premium Payment statuses."""
+    if kwargs.get("raw", False):
+        return
     if not created and instance.schedule.user_policy.user:
         user = instance.schedule.user_policy.user
         if instance.status == 'paid':
@@ -135,6 +141,8 @@ def payment_alert_signal(sender, instance, created, **kwargs):
 @receiver(post_save, sender=UserPolicy)
 def policy_activation_signal(sender, instance, created, **kwargs):
     """Triggers alert when a policy is activated."""
+    if kwargs.get("raw", False):
+        return
     if not created and instance.status == 'active' and instance.user:
         # 🛡️ Deduplication: Avoid duplicate activation alerts for the same certificate
         exists = Notification.objects.filter(
@@ -158,6 +166,8 @@ if SupportTicket:
     @receiver(post_save, sender=SupportTicket)
     def support_ticket_notification(sender, instance, created, **kwargs):
         """Triggers alerts for Support Ticket lifecycles."""
+        if kwargs.get("raw", False):
+            return
         if created:
             # Notify Staff
             staff_users = User.objects.filter(role__in=['admin', 'staff'])

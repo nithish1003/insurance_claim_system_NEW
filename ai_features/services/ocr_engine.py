@@ -152,7 +152,7 @@ class OCREngine:
                 logger.error(f"OCR path does not exist: {image_path}")
                 return []
                 
-            result = reader.ocr(image_path, cls=True)
+            result = reader.ocr(image_path)
             if not result or not result[0]:
                 return []
             
@@ -179,7 +179,7 @@ class OCREngine:
         if not reader:
             return []
         try:
-            result = reader.ocr(image_path, cls=True)
+            result = reader.ocr(image_path)
             if not result or not result[0]:
                 return []
             

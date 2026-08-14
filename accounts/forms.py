@@ -134,6 +134,10 @@ class RegisterForm(forms.ModelForm):
         if email and User.objects.filter(email=email).exists():
             self.add_error('email', "Email already exists.")
             
+        phone = cleaned_data.get("phone")
+        if phone and User.objects.filter(phone=phone).exists():
+            self.add_error('phone', "This phone number is already registered.")
+            
         if aadhaar_number:
             norm_aadhaar = "".join(filter(str.isdigit, str(aadhaar_number)))
             if User.objects.filter(aadhaar_number=norm_aadhaar).exists():

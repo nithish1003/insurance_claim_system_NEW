@@ -282,44 +282,59 @@
     <div class="fixed inset-0 gradient-bg-2 pointer-events-none -z-10"></div>
 
     <!-- NAVBAR -->
-    <nav class="fixed top-0 w-full z-50 glass-nav border-b border-white/20 shadow-[0_4px_30px_rgba(0,0,0,0.03)]" style="border-bottom-left-radius: 24px; border-bottom-right-radius: 24px;">
-        <div class="max-w-7xl mx-auto px-6 h-[80px] flex items-center justify-between">
-            <!-- Logo -->
-            <div class="flex items-center gap-3 cursor-pointer group">
-                <div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white transition-transform group-hover:scale-105">
-                    <i data-lucide="shield-check" class="w-5 h-5"></i>
+    <nav class="fixed top-4 left-0 right-0 z-50 transition-all duration-300" id="main-nav">
+        <div class="max-w-6xl mx-auto px-4 md:px-6">
+            <div class="glass-nav border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-full px-6 h-[72px] flex items-center justify-between backdrop-blur-md bg-surface/70 transition-all duration-500 hover:shadow-[0_8px_40px_rgb(170,135,88,0.08)] hover:bg-surface/80">
+                
+                <!-- Logo -->
+                <div class="flex items-center gap-3 cursor-pointer group">
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-heading flex items-center justify-center text-white transition-transform duration-500 group-hover:rotate-12 shadow-md">
+                        <i data-lucide="shield-check" class="w-5 h-5"></i>
+                    </div>
+                    <span class="text-xl font-extrabold text-heading tracking-tight group-hover:text-gold transition-colors duration-300">ClaimIQ</span>
                 </div>
-                <span class="text-xl font-bold text-textMain tracking-tight">ClaimIQ</span>
-            </div>
 
-            <!-- Links -->
-            <div class="hidden md:flex items-center gap-10 text-sm font-medium text-textSec">
-                <a href="#" class="text-textMain hover:text-gold transition-colors">Home</a>
-                <a href="#features" class="hover:text-gold transition-colors">Features</a>
-                <a href="#process" class="hover:text-gold transition-colors">How It Works</a>
-                <a href="#ai-showcase" class="hover:text-gold transition-colors">AI Showcase</a>
-            </div>
+                <!-- Links -->
+                <div class="hidden lg:flex items-center gap-2 text-sm font-semibold text-textSec">
+                    <a href="#" class="px-5 py-2.5 rounded-full hover:bg-gold/10 hover:text-primary transition-all duration-300 relative group">
+                        Home
+                        <span class="absolute inset-x-4 -bottom-1 h-0.5 bg-gold scale-x-0 group-hover:scale-x-100 transition-transform origin-left rounded-full"></span>
+                    </a>
+                    <a href="#features" class="px-5 py-2.5 rounded-full hover:bg-gold/10 hover:text-primary transition-all duration-300 relative group">
+                        Features
+                        <span class="absolute inset-x-4 -bottom-1 h-0.5 bg-gold scale-x-0 group-hover:scale-x-100 transition-transform origin-left rounded-full"></span>
+                    </a>
+                    <a href="#process" class="px-5 py-2.5 rounded-full hover:bg-gold/10 hover:text-primary transition-all duration-300 relative group">
+                        How It Works
+                        <span class="absolute inset-x-4 -bottom-1 h-0.5 bg-gold scale-x-0 group-hover:scale-x-100 transition-transform origin-left rounded-full"></span>
+                    </a>
+                    <a href="#ai-showcase" class="px-5 py-2.5 rounded-full hover:bg-gold/10 hover:text-primary transition-all duration-300 relative group">
+                        AI Showcase
+                        <span class="absolute inset-x-4 -bottom-1 h-0.5 bg-gold scale-x-0 group-hover:scale-x-100 transition-transform origin-left rounded-full"></span>
+                    </a>
+                </div>
 
-            <!-- Auth/Right Side -->
-            <div class="flex items-center gap-4">
-                {% if user.is_authenticated %}
-                    <a href="{% url 'notifications:bell' %}" class="w-10 h-10 rounded-full hover:bg-neutral/50 flex items-center justify-center text-textSec hover:text-gold transition-colors border border-transparent hover:border-borderLight">
-                        <i data-lucide="bell" class="w-4 h-4"></i>
-                    </a>
-                    <a href="{% url 'accounts:profile' %}" class="w-10 h-10 rounded-full hover:bg-neutral/50 flex items-center justify-center text-textSec hover:text-gold transition-colors border border-transparent hover:border-borderLight mr-2">
-                        <i data-lucide="user" class="w-4 h-4"></i>
-                    </a>
-                    {% if user.role == 'admin' %}
-                        <a href="{% url 'accounts:dashboard_admin' %}" class="btn-primary px-5 py-2.5 rounded-xl text-sm font-medium shadow-sm">Dashboard</a>
-                    {% elif user.role == 'staff' %}
-                        <a href="{% url 'accounts:dashboard_staff' %}" class="btn-primary px-5 py-2.5 rounded-xl text-sm font-medium shadow-sm">Dashboard</a>
+                <!-- Auth/Right Side -->
+                <div class="flex items-center gap-3">
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'notifications:bell' %}" class="w-10 h-10 rounded-full bg-white hover:bg-gold/10 flex items-center justify-center text-textSec hover:text-primary transition-all shadow-sm border border-borderLight/50">
+                            <i data-lucide="bell" class="w-4 h-4"></i>
+                        </a>
+                        <a href="{% url 'accounts:profile' %}" class="w-10 h-10 rounded-full bg-white hover:bg-gold/10 flex items-center justify-center text-textSec hover:text-primary transition-all shadow-sm border border-borderLight/50 mr-1 md:mr-2">
+                            <i data-lucide="user" class="w-4 h-4"></i>
+                        </a>
+                        {% if user.role == 'admin' %}
+                            <a href="{% url 'accounts:dashboard_admin' %}" class="bg-heading hover:bg-primary text-white px-6 py-2.5 rounded-full text-sm font-bold shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">Dashboard</a>
+                        {% elif user.role == 'staff' %}
+                            <a href="{% url 'accounts:dashboard_staff' %}" class="bg-heading hover:bg-primary text-white px-6 py-2.5 rounded-full text-sm font-bold shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">Dashboard</a>
+                        {% else %}
+                            <a href="{% url 'accounts:dashboard_policyholder' %}" class="bg-heading hover:bg-primary text-white px-6 py-2.5 rounded-full text-sm font-bold shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">Dashboard</a>
+                        {% endif %}
                     {% else %}
-                        <a href="{% url 'accounts:dashboard_policyholder' %}" class="btn-primary px-5 py-2.5 rounded-xl text-sm font-medium shadow-sm">Dashboard</a>
+                        <a href="{% url 'accounts:login' %}" class="text-textSec font-bold hover:text-primary text-sm px-4 py-2 rounded-full transition-colors hidden md:block">Sign In</a>
+                        <a href="{% url 'accounts:register' %}" class="bg-heading hover:bg-gold text-white px-7 py-2.5 rounded-full text-sm font-bold shadow-[0_4px_14px_0_rgba(79,74,66,0.39)] hover:shadow-[0_6px_20px_rgba(170,135,88,0.23)] transition-all duration-300 hover:-translate-y-0.5 ml-2">Get Started</a>
                     {% endif %}
-                {% else %}
-                    <a href="{% url 'accounts:login' %}" class="text-textSec font-medium hover:text-gold text-sm mr-4 transition-colors">Sign In</a>
-                    <a href="{% url 'accounts:register' %}" class="btn-primary px-6 py-2.5 rounded-xl text-sm font-medium shadow-sm">Get Started</a>
-                {% endif %}
+                </div>
             </div>
         </div>
     </nav>
@@ -547,37 +562,99 @@
     </section>
 
     <!-- TRUST SECTION -->
-    <section class="py-16 border-y border-borderLight bg-bgAlt">
-        <div class="max-w-7xl mx-auto px-6 fade-mask overflow-hidden">
-            <p class="text-center text-[11px] font-bold text-textSec uppercase tracking-[0.2em] mb-10">Trusted by industry leaders</p>
-            <div class="flex justify-center items-center gap-16 lg:gap-28 opacity-40 grayscale hover:grayscale-0 hover:opacity-80 transition-all duration-700 whitespace-nowrap">
-                <div class="flex items-center gap-3 text-xl font-bold tracking-tight text-textMain"><i data-lucide="building" class="w-6 h-6"></i> GLOBAL LIFE</div>
-                <div class="flex items-center gap-3 text-xl font-bold tracking-tight text-textMain"><i data-lucide="heart-pulse" class="w-6 h-6"></i> HEALTH FIRST</div>
-                <div class="flex items-center gap-3 text-xl font-bold tracking-tight text-textMain"><i data-lucide="shield" class="w-6 h-6"></i> SAFEGUARD CO.</div>
-                <div class="flex items-center gap-3 text-xl font-bold tracking-tight text-textMain"><i data-lucide="landmark" class="w-6 h-6"></i> GOV ALLIANCE</div>
+    <section class="py-20 border-y border-borderLight bg-gradient-to-b from-bgAlt to-bg">
+        <div class="max-w-7xl mx-auto px-6 overflow-hidden">
+            <div class="flex items-center justify-center gap-4 mb-12 opacity-70">
+                <div class="h-px bg-gradient-to-r from-transparent to-textSec/40 w-16 md:w-32"></div>
+                <p class="text-center text-[11px] font-bold text-textSec uppercase tracking-[0.2em] m-0">Trusted by industry leaders</p>
+                <div class="h-px bg-gradient-to-l from-transparent to-textSec/40 w-16 md:w-32"></div>
+            </div>
+            
+            <div class="flex flex-wrap justify-center items-center gap-6 lg:gap-10">
+                <!-- Partner 1 -->
+                <div class="group px-8 py-4 rounded-full bg-surface border border-white/60 shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_30px_rgba(101,96,79,0.12)] hover:-translate-y-1 transition-all duration-400 flex items-center gap-3 grayscale hover:grayscale-0 cursor-pointer">
+                    <div class="w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                        <i data-lucide="building" class="w-4.5 h-4.5"></i>
+                    </div>
+                    <span class="text-lg font-extrabold tracking-tight text-textMain group-hover:text-primary transition-colors">GLOBAL LIFE</span>
+                </div>
+                
+                <!-- Partner 2 -->
+                <div class="group px-8 py-4 rounded-full bg-surface border border-white/60 shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_30px_rgba(170,135,88,0.15)] hover:-translate-y-1 transition-all duration-400 flex items-center gap-3 grayscale hover:grayscale-0 cursor-pointer">
+                    <div class="w-9 h-9 rounded-full bg-gold/10 text-gold flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                        <i data-lucide="heart-pulse" class="w-4.5 h-4.5"></i>
+                    </div>
+                    <span class="text-lg font-extrabold tracking-tight text-textMain group-hover:text-gold transition-colors">HEALTH FIRST</span>
+                </div>
+
+                <!-- Partner 3 -->
+                <div class="group px-8 py-4 rounded-full bg-surface border border-white/60 shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_30px_rgba(62,124,69,0.15)] hover:-translate-y-1 transition-all duration-400 flex items-center gap-3 grayscale hover:grayscale-0 cursor-pointer">
+                    <div class="w-9 h-9 rounded-full bg-success/10 text-success flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                        <i data-lucide="shield" class="w-4.5 h-4.5"></i>
+                    </div>
+                    <span class="text-lg font-extrabold tracking-tight text-textMain group-hover:text-success transition-colors">SAFEGUARD CO.</span>
+                </div>
+
+                <!-- Partner 4 -->
+                <div class="group px-8 py-4 rounded-full bg-surface border border-white/60 shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_30px_rgba(176,138,87,0.15)] hover:-translate-y-1 transition-all duration-400 flex items-center gap-3 grayscale hover:grayscale-0 cursor-pointer">
+                    <div class="w-9 h-9 rounded-full bg-highlight/10 text-highlight flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                        <i data-lucide="landmark" class="w-4.5 h-4.5"></i>
+                    </div>
+                    <span class="text-lg font-extrabold tracking-tight text-textMain group-hover:text-highlight transition-colors">GOV ALLIANCE</span>
+                </div>
             </div>
         </div>
     </section>
 
     <!-- STATISTICS SECTION -->
-    <section class="py-32 relative">
-        <div class="max-w-7xl mx-auto px-6">
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-12 text-center divide-x divide-borderLight/60">
-                <div class="gsap-stat px-4">
-                    <h3 class="text-5xl font-bold text-primary mb-3 tracking-tighter"><span class="counter" data-target="15">0</span>K+</h3>
-                    <p class="text-sm text-textSec font-medium">Claims Processed</p>
-                </div>
-                <div class="gsap-stat px-4">
-                    <h3 class="text-5xl font-bold text-primary mb-3 tracking-tighter"><span class="counter" data-target="98">0</span>%</h3>
-                    <p class="text-sm text-textSec font-medium">AI Accuracy</p>
-                </div>
-                <div class="gsap-stat px-4">
-                    <h3 class="text-5xl font-bold text-primary mb-3 tracking-tighter"><span class="counter" data-target="2">0</span> Min</h3>
-                    <p class="text-sm text-textSec font-medium">Approval Time</p>
-                </div>
-                <div class="gsap-stat px-4 border-r-0">
-                    <h3 class="text-5xl font-bold text-primary mb-3 tracking-tighter"><span class="counter" data-target="99">0</span>%</h3>
-                    <p class="text-sm text-textSec font-medium">Customer Satisfaction</p>
+    <section class="py-24 relative -mt-12 z-20">
+        <div class="max-w-6xl mx-auto px-4 md:px-6">
+            <div class="bg-surface/80 backdrop-blur-xl border border-white/60 shadow-[0_20px_60px_rgba(170,135,88,0.08)] rounded-[2.5rem] p-8 md:p-12 relative overflow-hidden transition-all duration-500 hover:shadow-[0_25px_70px_rgba(170,135,88,0.12)]">
+                <!-- Background decoration -->
+                <div class="absolute top-0 right-0 w-64 h-64 bg-gold/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+                <div class="absolute bottom-0 left-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2 pointer-events-none"></div>
+                
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-4 relative z-10">
+                    
+                    <!-- Stat 1 -->
+                    <div class="gsap-stat flex flex-col items-center justify-center p-4 group">
+                        <div class="w-14 h-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mb-5 group-hover:-translate-y-1 group-hover:bg-primary group-hover:text-white transition-all duration-300 shadow-sm border border-primary/5 group-hover:border-primary/20">
+                            <i data-lucide="file-check-2" class="w-6 h-6"></i>
+                        </div>
+                        <h3 class="text-4xl md:text-5xl font-extrabold bg-clip-text text-transparent bg-gradient-to-br from-heading to-primary mb-2 tracking-tighter"><span class="counter" data-target="15">0</span>K+</h3>
+                        <p class="text-xs md:text-sm text-textSec font-bold uppercase tracking-widest opacity-80">Claims Processed</p>
+                    </div>
+
+                    <!-- Stat 2 -->
+                    <div class="gsap-stat flex flex-col items-center justify-center p-4 group relative">
+                        <div class="hidden md:block absolute left-0 top-1/2 -translate-y-1/2 w-px h-20 bg-gradient-to-b from-transparent via-borderLight/80 to-transparent"></div>
+                        <div class="w-14 h-14 rounded-2xl bg-gold/10 text-gold flex items-center justify-center mb-5 group-hover:-translate-y-1 group-hover:bg-gold group-hover:text-white transition-all duration-300 shadow-sm border border-gold/5 group-hover:border-gold/20">
+                            <i data-lucide="cpu" class="w-6 h-6"></i>
+                        </div>
+                        <h3 class="text-4xl md:text-5xl font-extrabold bg-clip-text text-transparent bg-gradient-to-br from-heading to-primary mb-2 tracking-tighter"><span class="counter" data-target="98">0</span>%</h3>
+                        <p class="text-xs md:text-sm text-textSec font-bold uppercase tracking-widest opacity-80">AI Accuracy</p>
+                    </div>
+
+                    <!-- Stat 3 -->
+                    <div class="gsap-stat flex flex-col items-center justify-center p-4 group relative">
+                        <div class="hidden md:block absolute left-0 top-1/2 -translate-y-1/2 w-px h-20 bg-gradient-to-b from-transparent via-borderLight/80 to-transparent"></div>
+                        <div class="w-14 h-14 rounded-2xl bg-success/10 text-success flex items-center justify-center mb-5 group-hover:-translate-y-1 group-hover:bg-success group-hover:text-white transition-all duration-300 shadow-sm border border-success/5 group-hover:border-success/20">
+                            <i data-lucide="zap" class="w-6 h-6"></i>
+                        </div>
+                        <h3 class="text-4xl md:text-5xl font-extrabold bg-clip-text text-transparent bg-gradient-to-br from-heading to-primary mb-2 tracking-tighter"><span class="counter" data-target="2">0</span> Min</h3>
+                        <p class="text-xs md:text-sm text-textSec font-bold uppercase tracking-widest opacity-80">Approval Time</p>
+                    </div>
+
+                    <!-- Stat 4 -->
+                    <div class="gsap-stat flex flex-col items-center justify-center p-4 group relative">
+                        <div class="hidden md:block absolute left-0 top-1/2 -translate-y-1/2 w-px h-20 bg-gradient-to-b from-transparent via-borderLight/80 to-transparent"></div>
+                        <div class="w-14 h-14 rounded-2xl bg-highlight/10 text-highlight flex items-center justify-center mb-5 group-hover:-translate-y-1 group-hover:bg-highlight group-hover:text-white transition-all duration-300 shadow-sm border border-highlight/5 group-hover:border-highlight/20">
+                            <i data-lucide="heart-handshake" class="w-6 h-6"></i>
+                        </div>
+                        <h3 class="text-4xl md:text-5xl font-extrabold bg-clip-text text-transparent bg-gradient-to-br from-heading to-primary mb-2 tracking-tighter"><span class="counter" data-target="99">0</span>%</h3>
+                        <p class="text-xs md:text-sm text-textSec font-bold uppercase tracking-widest opacity-80">Satisfaction</p>
+                    </div>
+
                 </div>
             </div>
         </div>
@@ -907,19 +984,22 @@
                         <span class="text-3xl font-extrabold text-footerText tracking-tight">ClaimIQ</span>
                     </div>
                     <p class="text-base text-footerText/60 max-w-sm mb-10 leading-relaxed font-light">
-                        The enterprise standard for AI-powered insurance claim processing. Secure, reliable, and intelligently automated for the modern era.
+                        AI-powered insurance claim processing platform designed for secure, intelligent, and automated claim management.
                     </p>
                     
-                    <!-- Security Badges -->
+                    <!-- Feature Badges -->
                     <div class="flex flex-wrap gap-3">
                         <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs font-semibold text-footerText/80 hover:bg-white/10 transition-colors cursor-default">
-                            <i data-lucide="lock" class="w-3.5 h-3.5 text-footerGold"></i> SOC 2 Type II
+                            <i data-lucide="scan-line" class="w-3.5 h-3.5 text-footerGold"></i> AI OCR
                         </div>
                         <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs font-semibold text-footerText/80 hover:bg-white/10 transition-colors cursor-default">
-                            <i data-lucide="shield" class="w-3.5 h-3.5 text-footerGold"></i> ISO 27001
+                            <i data-lucide="shield-alert" class="w-3.5 h-3.5 text-footerGold"></i> Fraud Detection
                         </div>
                         <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs font-semibold text-footerText/80 hover:bg-white/10 transition-colors cursor-default">
-                            <i data-lucide="globe" class="w-3.5 h-3.5 text-footerGold"></i> GDPR Compliant
+                            <i data-lucide="lock" class="w-3.5 h-3.5 text-footerGold"></i> Secure Login
+                        </div>
+                        <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs font-semibold text-footerText/80 hover:bg-white/10 transition-colors cursor-default">
+                            <i data-lucide="cpu" class="w-3.5 h-3.5 text-footerGold"></i> ML Powered
                         </div>
                     </div>
                 </div>
@@ -928,19 +1008,20 @@
                 <div class="col-span-1">
                     <h4 class="font-bold text-footerText text-sm mb-8 uppercase tracking-widest opacity-90">Platform</h4>
                     <ul class="space-y-5 text-sm text-footerText/60 font-medium">
-                        <li><a href="#" class="hover:text-footerGold transition-colors inline-flex items-center gap-2 group">Features <i data-lucide="arrow-right" class="w-3 h-3 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all"></i></a></li>
-                        <li><a href="#" class="hover:text-footerGold transition-colors inline-flex items-center gap-2 group">Security Overview <i data-lucide="arrow-right" class="w-3 h-3 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all"></i></a></li>
+                        <li><a href="#" class="hover:text-footerGold transition-colors inline-flex items-center gap-2 group">AI Features <i data-lucide="arrow-right" class="w-3 h-3 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all"></i></a></li>
+                        <li><a href="#" class="hover:text-footerGold transition-colors inline-flex items-center gap-2 group">Claim Tracking <i data-lucide="arrow-right" class="w-3 h-3 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all"></i></a></li>
+                        <li><a href="#" class="hover:text-footerGold transition-colors inline-flex items-center gap-2 group">OCR Verification <i data-lucide="arrow-right" class="w-3 h-3 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all"></i></a></li>
+                        <li><a href="#" class="hover:text-footerGold transition-colors inline-flex items-center gap-2 group">Fraud Detection <i data-lucide="arrow-right" class="w-3 h-3 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all"></i></a></li>
                         <li><a href="#" class="hover:text-footerGold transition-colors inline-flex items-center gap-2 group">API Docs <i data-lucide="arrow-right" class="w-3 h-3 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all"></i></a></li>
-                        <li><a href="#" class="hover:text-footerGold transition-colors inline-flex items-center gap-2 group">Integrations <i data-lucide="arrow-right" class="w-3 h-3 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all"></i></a></li>
                     </ul>
                 </div>
                 
                 <div class="col-span-1">
                     <h4 class="font-bold text-footerText text-sm mb-8 uppercase tracking-widest opacity-90">Company</h4>
                     <ul class="space-y-5 text-sm text-footerText/60 font-medium">
-                        <li><a href="#" class="hover:text-footerGold transition-colors inline-flex items-center gap-2 group">About Us <i data-lucide="arrow-right" class="w-3 h-3 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all"></i></a></li>
-                        <li><a href="#" class="hover:text-footerGold transition-colors inline-flex items-center gap-2 group">Careers <span class="px-2 py-0.5 rounded-full bg-footerGold/20 text-footerGold text-[9px] font-bold ml-1">HIRING</span></a></li>
-                        <li><a href="#" class="hover:text-footerGold transition-colors inline-flex items-center gap-2 group">Blog <i data-lucide="arrow-right" class="w-3 h-3 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all"></i></a></li>
+                        <li><a href="#" class="hover:text-footerGold transition-colors inline-flex items-center gap-2 group">About <i data-lucide="arrow-right" class="w-3 h-3 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all"></i></a></li>
+                        <li><a href="#" class="hover:text-footerGold transition-colors inline-flex items-center gap-2 group">Privacy Policy <i data-lucide="arrow-right" class="w-3 h-3 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all"></i></a></li>
+                        <li><a href="#" class="hover:text-footerGold transition-colors inline-flex items-center gap-2 group">Terms <i data-lucide="arrow-right" class="w-3 h-3 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all"></i></a></li>
                         <li><a href="#" class="hover:text-footerGold transition-colors inline-flex items-center gap-2 group">Contact <i data-lucide="arrow-right" class="w-3 h-3 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all"></i></a></li>
                     </ul>
                 </div>
@@ -949,26 +1030,26 @@
                     <h4 class="font-bold text-footerText text-sm mb-8 uppercase tracking-widest opacity-90">Contact</h4>
                     <ul class="space-y-6 text-sm text-footerText/60 font-medium">
                         <li>
-                            <a href="mailto:hello@claimiq.ai" class="flex items-center gap-4 hover:text-footerGold transition-colors group">
+                            <a href="mailto:support@claimiq.ai" class="flex items-center gap-4 hover:text-footerGold transition-colors group">
                                 <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center border border-white/10 group-hover:border-footerGold/30 transition-colors">
                                     <i data-lucide="mail" class="w-4 h-4 text-footerGold"></i>
                                 </div>
-                                hello@claimiq.ai
+                                support@claimiq.ai
                             </a>
                         </li>
                         <li>
-                            <a href="tel:+15551234567" class="flex items-center gap-4 hover:text-footerGold transition-colors group">
+                            <a href="tel:+91XXXXXXXXXX" class="flex items-center gap-4 hover:text-footerGold transition-colors group">
                                 <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center border border-white/10 group-hover:border-footerGold/30 transition-colors">
                                     <i data-lucide="phone" class="w-4 h-4 text-footerGold"></i>
                                 </div>
-                                +1 (555) 123-4567
+                                +91 XXXXX XXXXX
                             </a>
                         </li>
                         <li class="flex items-start gap-4">
                             <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center border border-white/10 mt-1 shrink-0">
                                 <i data-lucide="map-pin" class="w-4 h-4 text-footerGold"></i>
                             </div>
-                            <span class="leading-relaxed">100 Innovation Drive<br/>San Francisco, CA 94103</span>
+                            <span class="leading-relaxed">Chennai, Tamil Nadu</span>
                         </li>
                     </ul>
                 </div>
@@ -976,18 +1057,16 @@
             
             <div class="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-6">
                 <div class="flex items-center gap-3 text-sm text-footerText/50 font-medium">
-                    <span>© 2026 ClaimIQ AI Systems</span>
-                    <span class="w-1 h-1 rounded-full bg-footerText/30"></span>
-                    <span>Built with AI</span>
-                    <span class="w-1 h-1 rounded-full bg-footerText/30"></span>
-                    <span>Secure</span>
-                    <span class="w-1 h-1 rounded-full bg-footerText/30"></span>
-                    <span>Enterprise Ready</span>
+                    <span>© 2026 ClaimIQ AI Core. All Rights Reserved.</span>
                 </div>
-                <div class="flex gap-8 text-sm text-footerText/60 font-medium">
-                    <a href="#" class="hover:text-footerGold transition-colors">Privacy Policy</a>
-                    <a href="#" class="hover:text-footerGold transition-colors">Terms of Service</a>
-                    <a href="#" class="hover:text-footerGold transition-colors">Cookie Settings</a>
+                <div class="flex items-center gap-3 text-sm text-footerText/40 font-medium">
+                    <span>Powered by Django</span>
+                    <span class="w-1 h-1 rounded-full bg-footerText/30"></span>
+                    <span>PostgreSQL</span>
+                    <span class="w-1 h-1 rounded-full bg-footerText/30"></span>
+                    <span>AI OCR</span>
+                    <span class="w-1 h-1 rounded-full bg-footerText/30"></span>
+                    <span>Machine Learning</span>
                 </div>
             </div>
         </div>

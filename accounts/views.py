@@ -429,7 +429,17 @@ def register_complete(request):
             
             return redirect("accounts:home")
         else:
-             messages.warning(request, "Please fix the identity verification or data errors below.")
+            # Extract precise errors instead of generic message
+            error_msgs = []
+            for field, errors in form.errors.items():
+                for error in errors:
+                    error_msgs.append(str(error))
+            
+            if error_msgs:
+                exact_error = " | ".join(error_msgs)
+                messages.error(request, f"Registration Failed: {exact_error}")
+            else:
+                messages.warning(request, "Please fix the identity verification or data errors below.")
 
     except Exception as e:
         logger.error(f"CORRUPTION TRACE: {str(e)}", exc_info=True)

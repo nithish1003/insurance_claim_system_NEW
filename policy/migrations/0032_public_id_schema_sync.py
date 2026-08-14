@@ -46,45 +46,25 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.SeparateDatabaseAndState(
-            database_operations=[],
-            state_operations=[
-                migrations.AddField(
-                    model_name="userprofile",
-                    name="public_id",
-                    field=models.UUIDField(db_index=True, editable=False, null=True),
-                ),
-            ],
+        migrations.AddField(
+            model_name="userprofile",
+            name="public_id",
+            field=models.UUIDField(db_index=True, editable=False, null=True),
         ),
-        migrations.SeparateDatabaseAndState(
-            database_operations=[],
-            state_operations=[
-                migrations.AddField(
-                    model_name="userpolicy",
-                    name="public_id",
-                    field=models.UUIDField(db_index=True, editable=False, null=True),
-                ),
-            ],
+        migrations.AddField(
+            model_name="userpolicy",
+            name="public_id",
+            field=models.UUIDField(db_index=True, editable=False, null=True),
         ),
-        migrations.SeparateDatabaseAndState(
-            database_operations=[],
-            state_operations=[
-                migrations.AddField(
-                    model_name="payment",
-                    name="public_id",
-                    field=models.UUIDField(db_index=True, editable=False, null=True),
-                ),
-            ],
+        migrations.AddField(
+            model_name="payment",
+            name="public_id",
+            field=models.UUIDField(db_index=True, editable=False, null=True),
         ),
-        migrations.SeparateDatabaseAndState(
-            database_operations=[],
-            state_operations=[
-                migrations.AddField(
-                    model_name="policy",
-                    name="public_id",
-                    field=models.UUIDField(db_index=True, editable=False, null=True),
-                ),
-            ],
+        migrations.AddField(
+            model_name="policy",
+            name="public_id",
+            field=models.UUIDField(db_index=True, editable=False, null=True),
         ),
         migrations.AddField(
             model_name="policydocument",

@@ -55,7 +55,11 @@ class Migration(migrations.Migration):
             name='expires_at',
             field=models.DateTimeField(blank=True, db_index=True, null=True),
         ),
-        migrations.AlterField(
+        migrations.RemoveField(
+            model_name='notification',
+            name='id',
+        ),
+        migrations.AddField(
             model_name='notification',
             name='id',
             field=models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False),
