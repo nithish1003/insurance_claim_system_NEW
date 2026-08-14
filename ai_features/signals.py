@@ -18,6 +18,7 @@ def trigger_ai_predictions(sender, instance, created, update_fields, **kwargs):
     Automatically trigger AI predictions when a claim is created or updated.
     Includes a recursion guard for AI-only field updates.
     """
+    if kwargs.get("raw", False): return
     # ── 🚨 RECURSION GUARD ─────────────────────────────────────────────
     # If the save was specifically for AI fields, do NOT re-trigger
     ai_fields = {

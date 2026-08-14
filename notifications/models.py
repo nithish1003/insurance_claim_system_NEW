@@ -100,5 +100,6 @@ from django.dispatch import receiver
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def create_user_notification_preferences(sender, instance, created, **kwargs):
     """Ensures every new user has a preference profile on creation."""
+    if kwargs.get("raw", False): return
     if created:
         NotificationPreference.objects.get_or_create(user=instance)

@@ -10,6 +10,7 @@ def capture_old_status(sender, instance, **kwargs):
     """
     Captures the status of the claim before it is saved.
     """
+    if kwargs.get("raw", False): return
     if instance.pk:
         try:
             old_instance = Claim.objects.get(pk=instance.pk)
@@ -25,6 +26,7 @@ def track_claim_status_history(sender, instance, created, **kwargs):
     """
     Creates a ClaimStatusHistory record if the status has changed.
     """
+    if kwargs.get("raw", False): return
     old_status = getattr(instance, '_old_status', None)
     new_status = instance.status
 
@@ -42,6 +44,7 @@ def handle_settlement_financials(sender, instance, created, **kwargs):
     """
     Synchronize the exact user-owned policy after claim settlement.
     """
+    if kwargs.get("raw", False): return
     claim = instance.claim
     user_policy = get_claim_subject_user_policy(claim)
     if not user_policy:
