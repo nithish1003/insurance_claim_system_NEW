@@ -36,6 +36,10 @@ ALLOWED_HOSTS = [
     "127.0.0.1",
 ]
 
+RENDER_EXTERNAL_HOSTNAME = os.getenv("RENDER_EXTERNAL_HOSTNAME")
+if RENDER_EXTERNAL_HOSTNAME:
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
+
 
 # Application definition
 
@@ -220,13 +224,17 @@ if not DEBUG:
     SESSION_COOKIE_HTTPONLY = True
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
-# 📡 Origins trusted for CSRF (Fixes 403 for local development)
+# 📡 Origins trusted for CSRF
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost:8000',
     'http://127.0.0.1:8000',
     'https://*.onrender.com',
 ]
+
+if RENDER_EXTERNAL_HOSTNAME:
+    CSRF_TRUSTED_ORIGINS.append(f"https://{RENDER_EXTERNAL_HOSTNAME}")
 
 X_FRAME_OPTIONS = 'SAMEORIGIN'
 

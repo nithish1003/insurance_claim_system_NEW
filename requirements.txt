@@ -110,3 +110,4 @@ yarl==1.23.0
 psycopg2-binary
 gunicorn
 whitenoise
+daphne==4.2.1

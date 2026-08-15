@@ -77,3 +77,5 @@ replacements.txt
 scratch_*.py
 .env
 .env.example
+# Django collected static files
+staticfiles/

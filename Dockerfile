@@ -1,36 +1,36 @@
-# Decision Intelligence System - Production Dockerfile
+# ClaimIQ Production Dockerfile
 FROM python:3.11-slim
 
-# System dependencies
-RUN apt-get update && apt-get install -y \
+# System dependencies for PostgreSQL, Tesseract OCR, and OpenCV
+RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     libpq-dev \
-    default-libmysqlclient-dev \
     tesseract-ocr \
     ffmpeg \
     libsm6 \
     libxext6 \
+    libgl1 \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Environment variables
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
-ENV PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK True
+# Python environment
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK=True
 
-# Install dependencies
+# Install Python dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy project
+# Copy project source
 COPY . .
 
-# Static collection
-RUN mkdir -p /app/static /app/media
+# Collect static files into STATIC_ROOT (BASE_DIR / "staticfiles")
+RUN SECRET_KEY=build-placeholder python manage.py collectstatic --noinput
 
-# Execution Entrypoint
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+# Expose the port Render will bind to
+EXPOSE 10000
 
-ENTRYPOINT ["/entrypoint.sh"]
+# Start Daphne ASGI server (supports HTTP + WebSockets)
+CMD ["sh", "-c", "daphne -b 0.0.0.0 -p ${PORT:-10000} insurance_claim_system.asgi:application"]
