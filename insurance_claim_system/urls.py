@@ -6,8 +6,27 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 from django.views.generic import RedirectView, TemplateView
+from django.http import HttpResponse
+
+def robots_txt_view(request):
+    """Serve robots.txt dynamically from the static directory."""
+    robots_path = os.path.join(settings.BASE_DIR, 'static', 'robots.txt')
+    try:
+        with open(robots_path, 'r') as f:
+            return HttpResponse(f.read(), content_type="text/plain")
+    except FileNotFoundError:
+        return HttpResponse("User-agent: *\nAllow: /\n", content_type="text/plain")
+
+from django.contrib.sitemaps.views import sitemap
+from .sitemaps import StaticViewSitemap
+
+sitemaps = {
+    'static': StaticViewSitemap,
+}
 
 urlpatterns = [
+    path('robots.txt', robots_txt_view),
+    path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
     path('admin/', admin.site.urls),
 
     # ── ACCOUNTS ──

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://claimiq-vydt.onrender.com/sitemap.xml
