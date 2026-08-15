@@ -1,7 +1,6 @@
-# ClaimIQ Production Dockerfile
 FROM python:3.11-slim
 
-# System dependencies for PostgreSQL, Tesseract OCR, and OpenCV
+# Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     libpq-dev \
@@ -14,7 +13,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /app
 
-# Python environment
+# Environment variables
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK=True
@@ -26,11 +25,14 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy project source
 COPY . .
 
-# Collect static files into STATIC_ROOT (BASE_DIR / "staticfiles")
+# Create required directories
+RUN mkdir -p /app/static /app/media
+
+# Collect static files during Docker build
 RUN SECRET_KEY=build-placeholder python manage.py collectstatic --noinput
 
-# Expose the port Render will bind to
+# Expose Render default port
 EXPOSE 10000
 
-# Start Daphne ASGI server (supports HTTP + WebSockets)
+# Start the Django ASGI application
 CMD ["sh", "-c", "daphne -b 0.0.0.0 -p ${PORT:-10000} insurance_claim_system.asgi:application"]
