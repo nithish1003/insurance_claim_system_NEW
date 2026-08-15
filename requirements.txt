@@ -46,7 +46,6 @@ markdown-it-py==4.0.0
 mdurl==0.1.2
 modelscope==1.35.4
 multidict==6.7.1
-==2.2.8
 networkx==3.6.1
 numba==0.65.0
 numpy==2.4.4
@@ -62,7 +61,7 @@ pillow==12.2.0
 prettytable==3.17.0
 prompt_toolkit==3.0.52
 propcache==0.4.1
-protobuf==7.34.1
+protobuf==5.29.6
 psutil==7.2.2
 py-cpuinfo==9.0.0
 pyclipper==1.4.0
