@@ -1239,6 +1239,29 @@
 
     {% block extra_css %}{% endblock %}
 
+    <!-- 🌐 SEO Structured Data (JSON-LD) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "ClaimIQ",
+      "url": "https://claimiq-vydt.onrender.com/",
+      "description": "ClaimIQ is an AI-powered insurance claim processing and tracking system built with Django, Python, PostgreSQL, machine learning, OCR, and fraud detection.",
+      "applicationCategory": "BusinessApplication",
+      "operatingSystem": "Web",
+      "softwareVersion": "1.0",
+      "author": {
+        "@type": "Person",
+        "name": "NITHISH.N"
+      },
+      "programmingLanguage": [
+        "Python",
+        "Django",
+        "JavaScript"
+      ],
+      "keywords": "ClaimIQ, insurance claim processing, AI insurance, fraud detection, OCR, machine learning, Django project, Python project"
+    }
+    </script>
 </head>
 
 <body>
