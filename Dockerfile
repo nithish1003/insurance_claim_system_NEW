@@ -34,5 +34,5 @@ RUN SECRET_KEY=build-placeholder python manage.py collectstatic --noinput
 # Expose Render default port
 EXPOSE 10000
 
-# Start the Django ASGI application
-CMD ["sh", "-c", "daphne -b 0.0.0.0 -p ${PORT:-10000} insurance_claim_system.asgi:application"]
+# Start the Django ASGI application with diagnostics
+CMD ["sh", "-c", "echo '=== ClaimIQ startup ==='; echo \"PORT=${PORT}\"; python manage.py check; echo '=== Starting Daphne ==='; exec daphne -b 0.0.0.0 -p ${PORT:-10000} insurance_claim_system.asgi:application"]
