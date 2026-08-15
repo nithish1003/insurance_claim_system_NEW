@@ -17,6 +17,15 @@ def robots_txt_view(request):
     except FileNotFoundError:
         return HttpResponse("User-agent: *\nAllow: /\n", content_type="text/plain")
 
+def google_verification_view(request):
+    """Serve the Google verification HTML file."""
+    file_path = os.path.join(settings.BASE_DIR, 'google8f788afc0a4fb706.html')
+    try:
+        with open(file_path, 'r') as f:
+            return HttpResponse(f.read(), content_type="text/html")
+    except FileNotFoundError:
+        return HttpResponse("Verification file not found.", status=404)
+
 from django.contrib.sitemaps.views import sitemap
 from .sitemaps import StaticViewSitemap
 
@@ -25,6 +34,7 @@ sitemaps = {
 }
 
 urlpatterns = [
+    path('google8f788afc0a4fb706.html', google_verification_view),
     path('robots.txt', robots_txt_view),
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
     path('admin/', admin.site.urls),
