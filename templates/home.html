@@ -324,11 +324,11 @@
                             <i data-lucide="user" class="w-4 h-4"></i>
                         </a>
                         {% if user.role == 'admin' %}
-                            <a href="{% url 'accounts:dashboard_admin' %}" class="bg-heading hover:bg-primary text-white px-6 py-2.5 rounded-full text-sm font-bold shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">Dashboard</a>
+                            <a href="{% url 'accounts:admin_dashboard' %}" class="bg-heading hover:bg-primary text-white px-6 py-2.5 rounded-full text-sm font-bold shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">Dashboard</a>
                         {% elif user.role == 'staff' %}
-                            <a href="{% url 'accounts:dashboard_staff' %}" class="bg-heading hover:bg-primary text-white px-6 py-2.5 rounded-full text-sm font-bold shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">Dashboard</a>
+                            <a href="{% url 'accounts:staff_dashboard' %}" class="bg-heading hover:bg-primary text-white px-6 py-2.5 rounded-full text-sm font-bold shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">Dashboard</a>
                         {% else %}
-                            <a href="{% url 'accounts:dashboard_policyholder' %}" class="bg-heading hover:bg-primary text-white px-6 py-2.5 rounded-full text-sm font-bold shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">Dashboard</a>
+                            <a href="{% url 'accounts:policyholder_dashboard' %}" class="bg-heading hover:bg-primary text-white px-6 py-2.5 rounded-full text-sm font-bold shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">Dashboard</a>
                         {% endif %}
                     {% else %}
                         <a href="{% url 'accounts:login' %}" class="text-textSec font-bold hover:text-primary text-sm px-4 py-2 rounded-full transition-colors hidden md:block">Sign In</a>
