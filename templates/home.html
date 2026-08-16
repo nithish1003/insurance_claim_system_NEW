@@ -358,7 +358,7 @@
                 </p>
                 <div class="flex flex-wrap items-center gap-4">
                     {% if user.is_authenticated %}
-                        <a href="{% url 'claims:claim_submit' %}" class="btn-primary btn-glow px-8 py-4 rounded-xl font-medium flex items-center gap-2 shadow-soft">
+                        <a href="{% url 'claim:create' %}" class="btn-primary btn-glow px-8 py-4 rounded-xl font-medium flex items-center gap-2 shadow-soft">
                             File a Claim <i data-lucide="arrow-right" class="w-4 h-4"></i>
                         </a>
                     {% else %}
